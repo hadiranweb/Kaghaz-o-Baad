@@ -1,0 +1,2 @@
+ALTER TABLE public.articles DROP CONSTRAINT articles_author_id_fkey, ADD CONSTRAINT articles_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+ALTER TABLE public.media DROP CONSTRAINT media_created_by_fkey, ADD CONSTRAINT media_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.profiles(id) ON DELETE SET NULL;
