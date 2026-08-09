@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.create-admin]
 verify_jwt = false
 
+[functions.create-test-users]
+verify_jwt = false
+
 [functions.admin-users]
 verify_jwt = false
 

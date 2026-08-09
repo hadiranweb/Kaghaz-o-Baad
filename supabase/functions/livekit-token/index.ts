@@ -58,8 +58,18 @@ Deno.serve(async (req) => {
       })
     }
 
-    const isHost = session.host_user_id === userId
-    const role: 'host' | 'viewer' = isHost ? 'host' : 'viewer'
+    // بررسی نقش‌های کاربر برای نگاشت آبشاری به نقش‌های زنده (host | speaker | viewer)
+    const { data: userRoles } = await admin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+
+    const appRoles = (userRoles ?? []).map((r: { role: string }) => r.role)
+    const isAdmin = appRoles.includes('admin')
+    const isEditor = appRoles.includes('editor')
+
+    const isHost = session.host_user_id === userId || isAdmin
+    const role: 'host' | 'speaker' | 'viewer' = isHost ? 'host' : (isEditor ? 'speaker' : 'viewer')
 
     // Get display name from profile
     const { data: profile } = await admin
@@ -83,10 +93,11 @@ Deno.serve(async (req) => {
     at.addGrant({
       room: session.room_name,
       roomJoin: true,
-      canPublish: isHost,            // only host can publish initially
+      canPublish: isHost || isEditor, // میزبان و ویرایشگر می‌توانند پخش کنند
       canSubscribe: true,
       canPublishData: true,           // chat / reactions
       roomRecord: isHost,
+      roomAdmin: isHost,
     })
 
     const jwt = await at.toJwt()

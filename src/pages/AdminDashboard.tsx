@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,11 +28,10 @@ import {
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { canAccessAdmin, isAdmin, loading: checkingAdmin } = useRole();
   const { locale } = useLanguage();
   const { toast } = useToast();
   const [articles, setArticles] = useState<any[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [projectSections, setProjectSections] = useState<any[]>([]);
   const [activeView, setActiveView] = useState<'articles' | 'project' | 'users' | 'live'>('articles');
   const isRTL = locale === 'fa';
@@ -42,39 +42,23 @@ export default function AdminDashboard() {
       navigate('/auth');
       return;
     }
-
-    if (user) {
-      checkAdminStatus();
-    }
   }, [user, loading, navigate]);
 
-  const checkAdminStatus = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user?.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (!error && data) {
-        setIsAdmin(true);
+  useEffect(() => {
+    if (!checkingAdmin && !loading && user) {
+      if (canAccessAdmin) {
         loadAllArticles();
         loadProjectSections();
       } else {
         toast({
           variant: "destructive",
           title: locale === 'fa' ? "دسترسی غیرمجاز" : "Unauthorized",
-          description: locale === 'fa' ? "شما دسترسی ادمین ندارید" : "You don't have admin access",
+          description: locale === 'fa' ? "شما دسترسی مدیریت یا ویرایشگر ندارید" : "You don't have admin or editor access",
         });
         navigate('/dashboard');
       }
-    } catch (error) {
-      navigate('/dashboard');
-    } finally {
-      setCheckingAdmin(false);
     }
-  };
+  }, [canAccessAdmin, checkingAdmin, loading, user]);
 
   const loadProjectSections = async () => {
     const { data } = await supabase
@@ -236,7 +220,7 @@ export default function AdminDashboard() {
     );
   }
 
-  if (!isAdmin) {
+  if (!canAccessAdmin) {
     return null;
   }
 
@@ -304,7 +288,10 @@ export default function AdminDashboard() {
           <SidebarFooter>
             <SidebarSeparator />
             <div className="p-2 text-xs text-muted-foreground text-center">
-              {locale === 'fa' ? 'دسترسی ادمین' : 'Admin access'}
+              {isAdmin
+                ? (locale === 'fa' ? 'دسترسی ادمین' : 'Admin access')
+                : (locale === 'fa' ? 'دسترسی ویرایشگر' : 'Editor access')
+              }
             </div>
           </SidebarFooter>
         </Sidebar>

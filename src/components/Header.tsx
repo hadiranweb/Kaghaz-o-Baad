@@ -1,10 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRole } from '@/hooks/useRole';
 import { Button } from '@/components/ui/button';
 import { Search, User, Shield, Menu, X, Moon, Sun, ChevronDown, BookOpen, Film, Info, FileText, Users } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { supabase } from '@/integrations/supabase/client';
 import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
@@ -16,9 +16,9 @@ import {
 export const Header = () => {
   const { locale, t } = useLanguage();
   const { user } = useAuth();
+  const { canAccessAdmin } = useRole();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 
@@ -27,20 +27,6 @@ export const Header = () => {
   useEffect(() => {
     setMobileOpen(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (!user) { setIsAdmin(false); return; }
-      const { data } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
-      setIsAdmin(!!data);
-    };
-    checkAdminStatus();
-  }, [user]);
 
   // ——— ساختار سلسله‌مراتبی بهینه — بر اساس تحلیل جستجو و دسته‌بندی آبشاری
   // جستجو روی کلیدواژه‌های پرتکرار (Read/Media هم‌خانواده، About/Project هم‌خانواده) نشان داد تجمیع آن‌ها
@@ -157,7 +143,7 @@ export const Header = () => {
               </Button>
               {user ? (
                 <>
-                  {isAdmin && (
+                  {canAccessAdmin && (
                     <Button variant="ghost" size="icon" asChild>
                       <Link to="/admin"><Shield className="h-4 w-4" /></Link>
                     </Button>

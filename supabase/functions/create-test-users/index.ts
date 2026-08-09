@@ -9,15 +9,6 @@ const corsHeaders = {
 const TEST_USERS = [
   {
     role: "admin" as const,
-    email: "hadiranweb@gmail.com",
-    password: "H@drianus#Jeff2026!Baad",
-    first_name: "hadrianus",
-    last_name: "jeff",
-    show_on_cards: true,
-    show_in_community: true,
-  },
-  {
-    role: "admin" as const,
     email: "admin@kaghazbaad.test",
     password: "TestAdmin@2026!",
     first_name: "مدیر",
@@ -63,8 +54,8 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const { data: list } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
     const results = [];
+    const { data: list } = await supabase.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
     for (const item of TEST_USERS) {
       let userId: string | null = null;
@@ -88,7 +79,6 @@ Deno.serve(async (req) => {
         userId = created.user!.id;
       }
 
-      // Ensure profile
       await supabase.from("profiles").upsert(
         {
           user_id: userId,
@@ -101,21 +91,21 @@ Deno.serve(async (req) => {
         { onConflict: "user_id" },
       );
 
-      // Grant role
       const { error: roleErr } = await supabase
         .from("user_roles")
         .upsert({ user_id: userId, role: item.role }, { onConflict: "user_id,role" });
       if (roleErr) throw roleErr;
 
       results.push({
-        email: item.email,
         role: item.role,
+        email: item.email,
+        password: item.password,
         user_id: userId,
       });
     }
 
     return new Response(
-      JSON.stringify({ ok: true, users: results }),
+      JSON.stringify({ ok: true, testUsers: results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {

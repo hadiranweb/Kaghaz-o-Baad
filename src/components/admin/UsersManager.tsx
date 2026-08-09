@@ -8,9 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Trash2, RefreshCw, Search, UserCog, Pencil } from 'lucide-react';
+import { Trash2, RefreshCw, Search, UserCog, Pencil, KeyRound } from 'lucide-react';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import {
@@ -40,6 +40,12 @@ interface EditForm {
   password: string;
 }
 
+interface ApiResponse {
+  error?: string;
+  users?: AdminUser[];
+  forcedPasswordChange?: boolean;
+}
+
 export default function UsersManager() {
   const { user } = useAuth();
   const { locale } = useLanguage();
@@ -51,6 +57,8 @@ export default function UsersManager() {
   const [editing, setEditing] = useState<AdminUser | null>(null);
   const [form, setForm] = useState<EditForm>({ email: '', first_name: '', last_name: '', phone: '', password: '' });
   const [saving, setSaving] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+  const [showTestCreds, setShowTestCreds] = useState(false);
 
   const t = (fa: string, en: string) => (locale === 'fa' ? fa : en);
 
@@ -59,15 +67,30 @@ export default function UsersManager() {
     const { data, error } = await supabase.functions.invoke('admin-users', {
       body: { action: 'list' },
     });
-    if (error || (data as any)?.error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as any)?.error });
+    if (error || (data as ApiResponse)?.error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as ApiResponse)?.error });
     } else {
-      setUsers((data as any).users || []);
+      setUsers((data as ApiResponse)?.users || []);
     }
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
+
+  const seedTestUsers = async () => {
+    setSeeding(true);
+    const { data, error } = await supabase.functions.invoke('create-test-users');
+    setSeeding(false);
+    if (error || (data as ApiResponse)?.error) {
+      toast({ variant: 'destructive', title: t('خطا در ایجاد کاربران تستی', 'Error seeding test users'), description: error?.message || (data as ApiResponse)?.error });
+    } else {
+      toast({
+        title: t('۴ کاربر تستی ساخته شد', '4 test users seeded'),
+        description: t('حساب‌های تست برای admin, editor, contributor, user ایجاد و آماده شد.', 'Test accounts created for admin, editor, contributor, user.'),
+      });
+      load();
+    }
+  };
 
   const toggleRole = async (u: AdminUser, role: Role, enabled: boolean) => {
     setBusy(u.id + role);
@@ -75,8 +98,8 @@ export default function UsersManager() {
       body: { action: 'setRole', user_id: u.id, role, enabled },
     });
     setBusy(null);
-    if (error || (data as any)?.error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as any)?.error });
+    if (error || (data as ApiResponse)?.error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as ApiResponse)?.error });
       return;
     }
     setUsers((prev) => prev.map((x) => x.id === u.id
@@ -91,8 +114,8 @@ export default function UsersManager() {
       body: { action: 'deleteUser', user_id: u.id },
     });
     setBusy(null);
-    if (error || (data as any)?.error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as any)?.error });
+    if (error || (data as ApiResponse)?.error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as ApiResponse)?.error });
       return;
     }
     setUsers((prev) => prev.filter((x) => x.id !== u.id));
@@ -113,7 +136,7 @@ export default function UsersManager() {
   const saveEdit = async () => {
     if (!editing) return;
     setSaving(true);
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       action: 'updateUser',
       user_id: editing.id,
       email: form.email !== (editing.email ?? '') ? form.email : undefined,
@@ -124,13 +147,13 @@ export default function UsersManager() {
     if (form.password) payload.password = form.password;
     const { data, error } = await supabase.functions.invoke('admin-users', { body: payload });
     setSaving(false);
-    if (error || (data as any)?.error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as any)?.error });
+    if (error || (data as ApiResponse)?.error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as ApiResponse)?.error });
       return;
     }
     toast({
       title: t('ذخیره شد', 'Saved'),
-      description: (data as any)?.forcedPasswordChange
+      description: (data as ApiResponse)?.forcedPasswordChange
         ? t('کاربر در ورود بعدی باید رمز را تغییر دهد.', 'User must change password on next sign-in.')
         : undefined,
     });
@@ -164,20 +187,43 @@ export default function UsersManager() {
             <span className="text-muted-foreground text-sm mr-2 ml-2">({users.length})</span>
           </h2>
         </div>
-        <div className="flex items-center gap-2 flex-1 max-w-md">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('جستجو ایمیل، نام، تلفن...', 'Search email, name, phone...')}
-              className="pl-9"
-            />
-          </div>
-          <Button variant="outline" size="icon" onClick={load} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowTestCreds(true)}
+            className="flex items-center gap-1.5"
+          >
+            <KeyRound className="w-4 h-4 text-primary" />
+            <span>{t('رمزهای تستی (۴ نقش)', 'Test Accounts (4 Roles)')}</span>
+          </Button>
+
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={seedTestUsers}
+            disabled={seeding || loading}
+            className="flex items-center gap-1.5"
+          >
+            <RefreshCw className={`w-4 h-4 ${seeding ? 'animate-spin' : ''}`} />
+            <span>{t('ایجاد/بازنشانی کاربران تستی', 'Seed 4 Test Users')}</span>
           </Button>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 max-w-md">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('جستجو ایمیل، نام، تلفن...', 'Search email, name, phone...')}
+            className="pl-9"
+          />
+        </div>
+        <Button variant="outline" size="icon" onClick={load} disabled={loading}>
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </Button>
       </div>
 
       {loading ? (
@@ -317,6 +363,42 @@ export default function UsersManager() {
             <Button onClick={saveEdit} disabled={saving}>
               {saving ? t('در حال ذخیره...', 'Saving...') : t('ذخیره', 'Save')}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showTestCreds} onOpenChange={setShowTestCreds}>
+        <DialogContent className="glass-surface max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('حساب‌های تستی ۴ نقش رسمی', 'Test Accounts (4 Official Roles)')}</DialogTitle>
+            <DialogDescription>
+              {t('حساب‌های زیر برای تست سطوح دسترسی (RBAC) آماده شده‌اند.', 'The following test accounts are available for testing RBAC levels.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 text-sm">
+            <div className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-1">
+              <div className="font-semibold text-primary">1. Admin (مدیر)</div>
+              <div className="font-mono text-xs" dir="ltr">email: admin@kaghazbaad.test</div>
+              <div className="font-mono text-xs" dir="ltr">password: TestAdmin@2026!</div>
+            </div>
+            <div className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-1">
+              <div className="font-semibold text-primary">2. Editor (ویرایشگر)</div>
+              <div className="font-mono text-xs" dir="ltr">email: editor@kaghazbaad.test</div>
+              <div className="font-mono text-xs" dir="ltr">password: TestEditor@2026!</div>
+            </div>
+            <div className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-1">
+              <div className="font-semibold text-primary">3. Contributor (نویسنده)</div>
+              <div className="font-mono text-xs" dir="ltr">email: contributor@kaghazbaad.test</div>
+              <div className="font-mono text-xs" dir="ltr">password: TestContributor@2026!</div>
+            </div>
+            <div className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-1">
+              <div className="font-semibold text-primary">4. User (کاربر عادی)</div>
+              <div className="font-mono text-xs" dir="ltr">email: user@kaghazbaad.test</div>
+              <div className="font-mono text-xs" dir="ltr">password: TestUser@2026!</div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShowTestCreds(false)}>{t('بستن', 'Close')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

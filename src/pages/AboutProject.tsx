@@ -87,7 +87,7 @@ These three principles decide every new feature: if it does not serve brevity, b
 | **پژوهشگرِ نویسنده** | انتشارِ سریعِ ایده‌ی پخته، بدون دیوان‌سالاریِ مجله | ویرایشگرِ اسلاید، پیش‌نمایشِ زنده، و اتاقِ گفت‌وگو |
 | **خواننده‌ی متخصص** | فهمِ فشرده در کم‌ترین زمان | اسلایدهای ۶۰-ثانیه‌ای، ارجاعِ تمیز، و جست‌وجوی پیشنهادده |
 | **دانشجو** | دیدنِ فکر در حالِ ساخته‌شدن | بازنویسیِ هوشمند با لحنِ قابلِ انتخاب و جلساتِ باز |
-| **داورِ مهمان** | تمرکز بر محتوا، نه قالب | دسترسیِ نقش‌مند (ویراستار/همکار) و تاریخچه‌ی نسخه‌ها |
+| **داور / ویرایشگر** | تمرکز بر محتوا و داوریِ همتا | دسترسیِ نقش‌مند (editor/contributor) و مدیریت تاریخچه‌ی نسخه‌ها |
 
 پلتفرم در آغاز، **اجتماعی کوچک و دعوت‌محور** است؛ کیفیتِ پیوندها بر کمیتِ اعضا ترجیح دارد.`,
     body_en: `| Group | Wants | Finds |
@@ -95,7 +95,7 @@ These three principles decide every new feature: if it does not serve brevity, b
 | **Author-researcher** | Fast publication of a mature idea, without journal bureaucracy | Slide editor, live preview, and a discussion room |
 | **Expert reader** | Compressed understanding in minimal time | 60-second slides, clean references, and suggestive search |
 | **Student** | Seeing thought being built | Rewriting with selectable tone and open sessions |
-| **Guest reviewer** | Focus on content, not form | Role-based access (editor/collaborator) and version history |
+| **Editor / Reviewer** | Focus on content and peer review | Role-based access (editor/contributor) and version history |
 
 At launch the platform is a **small, invite-only community** — quality of ties over quantity of members.`,
   },
@@ -126,14 +126,28 @@ At launch the platform is a **small, invite-only community** — quality of ties
     id: '06',
     section_key: 'architecture',
     order_num: 6,
-    title_fa: '۶ — کالبدِ فنی',
-    title_en: '06 — Architecture',
+    title_fa: '۶ — کالبدِ فنی و نقش‌ها',
+    title_en: '06 — Architecture & Roles',
     body_fa: `معماری، عمداً **خلوت و خوانا** انتخاب شده است:
 
 - **فرانت‌اند:** React 18 + TypeScript + Vite 5 + Tailwind CSS 3 + shadcn/ui — تمِ روشنِ کاغذی (‎#FBF6EA) و تمِ تیره‌ی سرمه‌ای (‎#0F1E2E) برگرفته از پروفایلِ کاشانِ کتابچه‌ی هویت بصری؛ فونتِ فارسی **IRANSharp** (۳ وزن) و فونتِ لاتین **Cormorant Garamond / Inter**.
 - **بک‌اند:** Supabase — Postgres (هسته‌ی داده)، Auth (نشست)، Storage (رسانه)، Edge Functions (Deno) برای کارهایِ حساس
 - **زنده:** LiveKit Cloud برای صدا و تصویر؛ توکنِ کوتاه‌عمر از Edge Function صادر می‌شود و هرگز از کلاینت نشت نمی‌کند
 - **حالت:** Context (Auth, Language) + TanStack Query — بدونِ Reduxِ افزوده
+
+**سطوح دسترسی و نقش‌ها (RBAC Matrix):**
+پلتفرم دارای **۴ نقش رسمی (admin, editor, contributor, user)** + **مهمان (guest)** است:
+- **guest (مهمان):** خواندن مقالات منتشرشده، رسانه‌های عمومی و کارت‌های جامعه.
+- **user (کاربر عادی):** + ویرایش پروفایل، نظر روی مقالات، آپلود در فضای شخصی ۱۵ گیگابایتی.
+- **contributor (نویسنده):** + ایجاد و مدیریت مقالات و اسلایدهای خود، تغییر وضعیت نمایش رسانه.
+- **editor (ویرایشگر):** + ویرایش و بررسی همه مقالات و اسلایدها، انتشار مقالات، مدیریت اشخاص (persons).
+- **admin (مدیر):** + دسترسی کامل به کاربر، نقش‌ها، حذف آثار و تنظیمات پروژه.
+
+**حساب‌های تستی ۴ نقش رسمی (جهت تست و اعتبارسنجی):**
+- **Admin:** \`admin@kaghazbaad.test\` / \`TestAdmin@2026!\`
+- **Editor:** \`editor@kaghazbaad.test\` / \`TestEditor@2026!\`
+- **Contributor:** \`contributor@kaghazbaad.test\` / \`TestContributor@2026!\`
+- **User:** \`user@kaghazbaad.test\` / \`TestUser@2026!\`
 
 **طرحواره‌ی کلیدی:**
 \`profiles ↔ user_roles\`، \`articles ↔ slides\`، \`live_sessions ↔ live_participants\`، و \`otp_codes\` برای ورودِ بی‌گذر. تمامِ سطرها با **RLS** محافظت می‌شوند؛ کلاینت هرگز بیش از حقِ نقشِ خود نمی‌بیند.`,
@@ -143,6 +157,20 @@ At launch the platform is a **small, invite-only community** — quality of ties
 - **Backend:** Supabase — Postgres (core), Auth (session), Storage (media), Edge Functions (Deno) for sensitive work
 - **Live:** LiveKit Cloud for audio/video; short-lived tokens are minted by an Edge Function and never leak from the client
 - **State:** Context (Auth, Language) + TanStack Query — no extra Redux
+
+**Access Levels & Roles (RBAC Matrix):**
+The platform features **4 official roles (admin, editor, contributor, user)** + **guest (anon)**:
+- **guest:** Read published articles, public media, and community cards.
+- **user:** + Edit own profile, comment on articles, upload to 15GB personal quota.
+- **contributor:** + Create and manage own articles & slides, change media visibility.
+- **editor:** + Edit/review all articles & slides, publish articles, manage persons.
+- **admin:** + Full administrative control over users, roles, deletions, and project config.
+
+**Test Accounts (4 Official Roles):**
+- **Admin:** \`admin@kaghazbaad.test\` / \`TestAdmin@2026!\`
+- **Editor:** \`editor@kaghazbaad.test\` / \`TestEditor@2026!\`
+- **Contributor:** \`contributor@kaghazbaad.test\` / \`TestContributor@2026!\`
+- **User:** \`user@kaghazbaad.test\` / \`TestUser@2026!\`
 
 **Key schema:**
 \`profiles ↔ user_roles\`, \`articles ↔ slides\`, \`live_sessions ↔ live_participants\`, and \`otp_codes\` for passwordless entry. Every row is guarded by **RLS** — the client never sees beyond its role.`,
@@ -159,14 +187,14 @@ At launch the platform is a **small, invite-only community** — quality of ties
 4. **جلسه‌ی زنده، کلاسِ درس نیست؛ کارگاهِ پرسش است.** نویسنده ۱۰ دقیقه می‌گوید، ۵۰ دقیقه می‌شنود.
 5. **بازنویسیِ هوشمند ابزاری کمکی است** — لحن و طول را تغییر می‌دهد، ولی مسئولیتِ صحتِ علمی هم‌چنان با نویسنده است.
 
-تخلف از این آداب، پیش از هر آیین‌نامه‌ای، به قضاوتِ جمعِ کوچکِ داورانِ مهمان گذاشته می‌شود.`,
+تخلف از این آداب، پیش از هر آیین‌نامه‌ای، به قضاوتِ جمعِ کوچکِ داوران و ویراستاران گذاشته می‌شود.`,
     body_en: `1. **Standard Persian** with correct characters (Persian ی/ک, Persian numerals ۰-۹ and thousands separator ٬); full citations; no verbosity.
 2. **A good slide is one complete thought.** If it splits into two thoughts, make two slides.
 3. **An image is not decoration; it is an argument.** Every medium must help understand that slide.
 4. **A live session is not a lecture; it is a workshop of questions.** The author speaks for 10 minutes, listens for 50.
 5. **Smart rewriting is an aid** — it changes tone and length, but scientific accuracy remains the author’s responsibility.
 
-Violation is judged first by the small circle of guest reviewers, before any bylaw.`,
+Violation is judged first by the small circle of guest reviewers and editors, before any bylaw.`,
   },
   {
     id: '08',
