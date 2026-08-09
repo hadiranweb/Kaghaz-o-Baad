@@ -225,44 +225,56 @@ export type Database = {
         Row: {
           created_at: string
           created_by: string | null
+          file_size: number | null
           folders: string[] | null
           id: string
           meta: Json | null
+          owner_id: string | null
           provider: string | null
+          shared_with: string[] | null
           src_url: string
           tags: string[] | null
           thumb_url: string | null
           title_en: string
           title_fa: string
           type: string
+          visibility: string | null
         }
         Insert: {
           created_at?: string
           created_by?: string | null
+          file_size?: number | null
           folders?: string[] | null
           id?: string
           meta?: Json | null
+          owner_id?: string | null
           provider?: string | null
+          shared_with?: string[] | null
           src_url: string
           tags?: string[] | null
           thumb_url?: string | null
           title_en: string
           title_fa: string
           type: string
+          visibility?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string | null
+          file_size?: number | null
           folders?: string[] | null
           id?: string
           meta?: Json | null
+          owner_id?: string | null
           provider?: string | null
+          shared_with?: string[] | null
           src_url?: string
           tags?: string[] | null
           thumb_url?: string | null
           title_en?: string
           title_fa?: string
           type?: string
+          visibility?: string | null
         }
         Relationships: [
           {
@@ -538,6 +550,27 @@ export type Database = {
           en?: string
           fa?: string
           key?: string
+        }
+        Relationships: []
+      }
+      user_storage: {
+        Row: {
+          quota_bytes: number
+          updated_at: string
+          used_bytes: number
+          user_id: string
+        }
+        Insert: {
+          quota_bytes?: number
+          updated_at?: string
+          used_bytes?: number
+          user_id: string
+        }
+        Update: {
+          quota_bytes?: number
+          updated_at?: string
+          used_bytes?: number
+          user_id?: string
         }
         Relationships: []
       }

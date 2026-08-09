@@ -86,7 +86,7 @@ export const Header = () => {
                   <DropdownMenuItem asChild>
                     <Link to="/media" className="flex items-center gap-2 w-full">
                       <Film className="h-4 w-4 text-muted-foreground" />
-                      {t('nav.media')}
+                      {locale === 'fa' ? 'چندرسانه‌ای' : 'Media'}
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -200,7 +200,7 @@ export const Header = () => {
                   <BookOpen className="h-4 w-4" /> {t('nav.read')}
                 </Link>
                 <Link to="/media" className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm ${isActive('/media') ? 'text-foreground bg-accent/10' : 'text-foreground/70 hover:bg-accent/5'}`}>
-                  <Film className="h-4 w-4" /> {t('nav.media')}
+                  <Film className="h-4 w-4" /> {locale === 'fa' ? 'چندرسانه‌ای' : 'Media'}
                 </Link>
               </div>
             </div>
