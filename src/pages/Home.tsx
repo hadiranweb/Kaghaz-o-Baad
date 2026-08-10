@@ -37,9 +37,14 @@ export default function Home() {
         setSuggestions([]);
         setShowDropdown(false);
       }
-    } catch (err: any) {
-      if (err?.message?.includes('Rate limit') || err?.status === 429) {
-        toast({ title: locale === 'fa' ? 'محدودیت درخواست' : 'Rate limit', description: locale === 'fa' ? 'لطفاً کمی صبر کنید' : 'Please wait a moment', variant: 'destructive' });
+    } catch (err: unknown) {
+      const errorObj = err as { message?: string; status?: number };
+      if (errorObj?.message?.includes('Rate limit') || errorObj?.status === 429) {
+        toast({
+          title: locale === 'fa' ? 'محدودیت نرخ درخواست' : 'Rate limit exceeded',
+          description: locale === 'fa' ? 'تعداد درخواست‌ها زیاد است؛ لطفاً چند ثانیه صبر کنید' : 'Too many requests; please wait a few seconds',
+          variant: 'destructive',
+        });
       }
       setSuggestions([]);
       setShowDropdown(false);

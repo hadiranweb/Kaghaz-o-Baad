@@ -29,6 +29,51 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    const clientIp =
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      req.headers.get('cf-connecting-ip') ||
+      req.headers.get('x-real-ip') ||
+      'anon';
+
+    // Step 1: Check Rate Limits (Max 3 per 180s per identifier, max 10 per 60s per IP)
+    const [{ data: rlId }, { data: rlIp }] = await Promise.all([
+      supabase.rpc('check_rate_limit', {
+        p_key: `otp:id:${identifier}`,
+        p_max_requests: 3,
+        p_window_seconds: 180,
+      }),
+      supabase.rpc('check_rate_limit', {
+        p_key: `otp:ip:${clientIp}`,
+        p_max_requests: 10,
+        p_window_seconds: 60,
+      }),
+    ]);
+
+    if ((rlId && rlId.allowed === false) || (rlIp && rlIp.allowed === false)) {
+      const resetSeconds = Math.max(
+        Number(rlId?.reset_in_seconds || 0),
+        Number(rlIp?.reset_in_seconds || 0),
+        30
+      );
+      return new Response(
+        JSON.stringify({
+          error: 'تعداد درخواست‌های ارسال کد بیش از حد مجاز است. لطفاً چند لحظه صبر کنید | Rate limit exceeded',
+          retryAfter: resetSeconds,
+        }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'Retry-After': String(resetSeconds),
+          },
+        }
+      );
+    }
+
+    // Trigger non-blocking cleanup of expired OTP codes and edge cache
+    supabase.rpc('cleanup_expired_cache_and_otp').then().catch(() => {});
+
     if (type === 'email') {
       // Email OTP must come from the auth email itself so the code the user
       // receives is the same code verify-otp validates.
