@@ -3,7 +3,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRole } from '@/hooks/useRole';
 import { Button } from '@/components/ui/button';
-import { Search, User, Shield, Menu, X, Moon, Sun, ChevronDown, BookOpen, Film, Info, FileText, Users } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Search, User, Shield, Menu, X, Moon, Sun, ChevronDown, BookOpen, Film, Info, FileText, Users, LayoutDashboard, Globe, Settings, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import {
@@ -15,8 +17,8 @@ import {
 
 export const Header = () => {
   const { locale, t } = useLanguage();
-  const { user } = useAuth();
-  const { canAccessAdmin } = useRole();
+  const { user, signOut } = useAuth();
+  const { canAccessAdmin, isAdmin, isEditor, isContributor } = useRole();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -28,12 +30,10 @@ export const Header = () => {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  // ——— ساختار سلسله‌مراتبی بهینه — بر اساس تحلیل جستجو و دسته‌بندی آبشاری
-  // جستجو روی کلیدواژه‌های پرتکرار (Read/Media هم‌خانواده، About/Project هم‌خانواده) نشان داد تجمیع آن‌ها
-  // زیر دو والد «محتوا» و «درباره» نرخ کلیک و ماندگاری را بالا می‌برد.
   const isActive = (path: string) => location.pathname === path;
   const isContentActive = ['/read', '/media'].some(p => location.pathname.startsWith(p));
   const isAboutActive = ['/about', '/about-project'].some(p => location.pathname === p);
+  const isDashboardMode = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard');
 
   return (
     <>
@@ -115,7 +115,7 @@ export const Header = () => {
               </DropdownMenu>
             </nav>
 
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               {mounted && (
                 <Button
                   variant="ghost"
@@ -138,20 +138,101 @@ export const Header = () => {
                 {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
 
-              <Button variant="ghost" size="icon" className="hidden md:inline-flex">
-                <Search className="h-4 w-4" />
+              <Button variant="ghost" size="icon" className="hidden md:inline-flex" asChild>
+                <Link to="/read"><Search className="h-4 w-4" /></Link>
               </Button>
+
               {user ? (
-                <>
-                  {canAccessAdmin && (
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link to="/admin"><Shield className="h-4 w-4" /></Link>
+                <div className="flex items-center gap-2">
+                  {/* دکمه سوئیچ دو حالته: سایت عمومی (سئوشده) ↔ داشبورد اختصاصی نقش */}
+                  {isDashboardMode ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="h-8 gap-1.5 rounded-full border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 text-xs px-3 shadow-sm"
+                      title={locale === 'fa' ? 'سوئیچ به نمایش عمومی و سئوشده سایت' : 'Switch to public SEO site'}
+                    >
+                      <Link to="/">
+                        <Globe className="h-3.5 w-3.5 animate-pulse" />
+                        <span className="hidden sm:inline">{locale === 'fa' ? 'سایت عمومی' : 'Public Site'}</span>
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                      className="h-8 gap-1.5 rounded-full border-accent/40 bg-accent/10 text-accent hover:bg-accent/20 text-xs px-3 shadow-sm"
+                      title={locale === 'fa' ? 'سوئیچ به داشبورد اختصاصی نقش شما' : 'Switch to your role workspace'}
+                    >
+                      <Link to={canAccessAdmin ? '/admin' : '/dashboard'}>
+                        <LayoutDashboard className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">{locale === 'fa' ? 'داشبورد من' : 'My Dashboard'}</span>
+                      </Link>
                     </Button>
                   )}
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link to="/dashboard"><User className="h-4 w-4" /></Link>
-                  </Button>
-                </>
+
+                  {/* آواتار کاربر و منوی پروفایل */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full border border-border/60 p-0 overflow-hidden">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.user_metadata?.avatar_url || undefined} />
+                          <AvatarFallback className="text-[11px] bg-secondary text-secondary-foreground font-semibold">
+                            {(user.user_metadata?.first_name || user.email || 'U').slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align={locale === 'fa' ? 'end' : 'start'} className="w-56 p-2">
+                      <div className="px-2 py-1.5 border-b border-border/40 mb-1">
+                        <div className="text-xs font-semibold truncate">
+                          {[user.user_metadata?.first_name, user.user_metadata?.last_name].filter(Boolean).join(' ') || t('کاربر', 'User')}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground truncate" dir="ltr">
+                          {user.email}
+                        </div>
+                        <div className="mt-1">
+                          <Badge variant="secondary" className="text-[10px] h-4">
+                            {isAdmin
+                              ? t('مدیر (Admin)', 'Admin')
+                              : isEditor
+                              ? t('ویرایشگر (Editor)', 'Editor')
+                              : isContributor
+                              ? t('نویسنده (Contributor)', 'Contributor')
+                              : t('کاربر (User)', 'User')}
+                          </Badge>
+                        </div>
+                      </div>
+                      <DropdownMenuItem asChild>
+                        <Link to={canAccessAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-2 w-full text-xs cursor-pointer">
+                          <LayoutDashboard className="h-3.5 w-3.5" />
+                          <span>{t('داشبورد اختصاصی من', 'My Workspace')}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/complete-profile" className="flex items-center gap-2 w-full text-xs cursor-pointer">
+                          <User className="h-3.5 w-3.5" />
+                          <span>{t('ویرایش پروفایل', 'Edit Profile')}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/change-password" className="flex items-center gap-2 w-full text-xs cursor-pointer">
+                          <Settings className="h-3.5 w-3.5" />
+                          <span>{t('تغییر رمز عبور', 'Security Settings')}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 w-full text-xs text-destructive cursor-pointer mt-1 border-t border-border/40 pt-2"
+                        onClick={() => signOut()}
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        <span>{t('خروج از حساب', 'Sign Out')}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               ) : (
                 <Button variant="ghost" size="sm" asChild className="font-light text-sm">
                   <Link to="/auth">{locale === 'fa' ? 'ورود' : 'Sign In'}</Link>

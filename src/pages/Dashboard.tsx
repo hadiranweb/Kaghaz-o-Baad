@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useRole } from '@/hooks/useRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Plus, Edit, Trash2, LayoutDashboard, FileText, Video, User, Settings } from 'lucide-react';
+import { LogOut, Plus, Edit, Trash2, LayoutDashboard, FileText, Video, User, Settings, Globe, HardDrive } from 'lucide-react';
 import { z } from 'zod';
 import MDEditor from '@uiw/react-md-editor';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset, SidebarHeader, SidebarFooter, SidebarSeparator } from '@/components/ui/sidebar';
@@ -25,6 +26,7 @@ const articleSchema = z.object({
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, signOut, loading } = useAuth();
+  const { canAccessAdmin, isContributor } = useRole();
   const { locale } = useLanguage();
   const { toast } = useToast();
   const [articles, setArticles] = useState<any[]>([]);
@@ -255,7 +257,6 @@ export default function Dashboard() {
   return (
     <SidebarProvider>
       <div className="flex min-h-[calc(100vh-3.5rem)] w-full">
-        {/* ابزار — در فارسی راست، در انگلیسی چپ */}
         <Sidebar side={side} collapsible="offcanvas" className="border-border/40">
           <SidebarHeader>
             <div className="flex items-center gap-2 px-2 py-2">
@@ -263,7 +264,9 @@ export default function Dashboard() {
                 <LayoutDashboard className="h-4 w-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold font-[IRANSharp]">{locale === 'fa' ? 'داشبورد' : 'Dashboard'}</span>
+                <span className="text-sm font-semibold font-[IRANSharp]">
+                  {canAccessAdmin ? (locale === 'fa' ? 'داشبورد مدیریت' : 'Admin Workspace') : isContributor ? (locale === 'fa' ? 'داشبورد نویسنده' : 'Contributor Workspace') : (locale === 'fa' ? 'داشبورد کاربر' : 'User Workspace')}
+                </span>
                 <span className="text-xs text-muted-foreground">{locale === 'fa' ? 'کاغذ و باد' : 'KaghazBaad'}</span>
               </div>
             </div>
@@ -273,16 +276,26 @@ export default function Dashboard() {
               <SidebarGroupLabel>{locale === 'fa' ? 'ابزار' : 'Tools'}</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  {(isContributor || canAccessAdmin) && (
+                    <>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton isActive={activeView === 'articles' && !showForm && !managingSlidesFor} onClick={() => { setActiveView('articles'); setShowForm(false); setManagingSlidesFor(null); }}>
+                          <FileText className="h-4 w-4" />
+                          <span>{locale === 'fa' ? 'مقالات من' : 'My Articles'}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton onClick={() => { setShowForm(true); setEditingArticle(null); setManagingSlidesFor(null); }}>
+                          <Plus className="h-4 w-4" />
+                          <span>{locale === 'fa' ? 'مقاله جدید' : 'New Article'}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </>
+                  )}
                   <SidebarMenuItem>
-                    <SidebarMenuButton isActive={activeView === 'articles' && !showForm && !managingSlidesFor} onClick={() => { setActiveView('articles'); setShowForm(false); setManagingSlidesFor(null); }}>
-                      <FileText className="h-4 w-4" />
-                      <span>{locale === 'fa' ? 'مقالات من' : 'My Articles'}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => { setShowForm(true); setEditingArticle(null); setManagingSlidesFor(null); }}>
-                      <Plus className="h-4 w-4" />
-                      <span>{locale === 'fa' ? 'مقاله جدید' : 'New Article'}</span>
+                    <SidebarMenuButton onClick={() => navigate('/media')}>
+                      <HardDrive className="h-4 w-4" />
+                      <span>{locale === 'fa' ? 'درایو شخصی ۱۵ گیگابایتی' : '15GB Media Drive'}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
@@ -305,9 +318,9 @@ export default function Dashboard() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => navigate('/dashboard')}>
+                    <SidebarMenuButton onClick={() => navigate('/change-password')}>
                       <Settings className="h-4 w-4" />
-                      <span>{locale === 'fa' ? 'تنظیمات' : 'Settings'}</span>
+                      <span>{locale === 'fa' ? 'تنظیمات امنیتی' : 'Security Settings'}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -327,30 +340,70 @@ export default function Dashboard() {
 
         <SidebarInset>
           <div className="flex-1">
-            <div className="sticky top-0 z-10 flex h-12 items-center gap-2 border-b bg-background/80 backdrop-blur px-4" dir={isRTL ? 'rtl' : 'ltr'}>
-              <SidebarTrigger className="-ms-1" />
-              <div className="h-4 w-px bg-border" />
-              <h1 className="text-sm font-semibold">
-                {activeView === 'live' ? (locale === 'fa' ? 'جلسات زنده' : 'Live') : (locale === 'fa' ? 'مدیریت محتوا' : 'Content Manager')}
-              </h1>
+            <div className="sticky top-0 z-10 flex h-12 items-center justify-between border-b bg-background/80 backdrop-blur px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+              <div className="flex items-center gap-2">
+                <SidebarTrigger className="-ms-1" />
+                <div className="h-4 w-px bg-border" />
+                <h1 className="text-sm font-semibold">
+                  {activeView === 'live' ? (locale === 'fa' ? 'جلسات زنده' : 'Live') : (locale === 'fa' ? 'میز کار کاربری' : 'User Workspace')}
+                </h1>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => navigate('/')} className="h-8 gap-1.5 text-xs">
+                <Globe className="h-3.5 w-3.5" />
+                <span>{locale === 'fa' ? 'مشاهده سایت عمومی' : 'Public SEO Site'}</span>
+              </Button>
             </div>
 
             <div className="container mx-auto px-4 py-6 max-w-6xl" dir={isRTL ? 'rtl' : 'ltr'}>
               <div className="flex justify-between items-center mb-6">
                 <div>
                   <h2 className="text-2xl font-bold font-[IRANSharp]">
-                    {locale === 'fa' ? 'داشبورد مدیریت' : 'Dashboard'}
+                    {canAccessAdmin ? (locale === 'fa' ? 'داشبورد مدیریت' : 'Admin Workspace') : isContributor ? (locale === 'fa' ? 'داشبورد نویسنده' : 'Contributor Workspace') : (locale === 'fa' ? 'داشبورد کاربر' : 'User Workspace')}
                   </h2>
                   <p className="text-muted-foreground mt-1 text-sm">
-                    {locale === 'fa' ? 'مدیریت مقالات و محتوا' : 'Manage your articles and content'}
+                    {locale === 'fa' ? 'مدیریت ابزارها، اسناد و جلسات شما' : 'Manage your tools, documents, and sessions'}
                   </p>
                 </div>
-                <div className="hidden sm:flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => navigate('/read')}>
-                    {locale === 'fa' ? 'مشاهده سایت' : 'View Site'}
-                  </Button>
-                </div>
               </div>
+
+              {/* برای کاربر عادی که نویسنده نیست کارت خلاصه ابزارها نمایش داده شود */}
+              {!isContributor && !canAccessAdmin && activeView === 'articles' && !showForm && (
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                  <Card className="glass-surface">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <HardDrive className="h-5 w-5 text-primary" />
+                        <span>{locale === 'fa' ? 'درایو شخصی ۱۵ گیگابایتی' : 'Personal 15GB Drive'}</span>
+                      </CardTitle>
+                      <CardDescription>
+                        {locale === 'fa' ? 'ذخیره و مدیریت فایل‌های صوتی، ویدیویی، تصاویر و اسناد PDF' : 'Store and manage your audio, video, images, and PDFs'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button onClick={() => navigate('/media')} className="w-full">
+                        {locale === 'fa' ? 'ورود به کتابخانه چندرسانه‌ای' : 'Open Media Drive'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="glass-surface">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Video className="h-5 w-5 text-accent" />
+                        <span>{locale === 'fa' ? 'جلسات زنده و کارگاه‌ها' : 'Live Sessions & Workshops'}</span>
+                      </CardTitle>
+                      <CardDescription>
+                        {locale === 'fa' ? 'حضور در جلسات گفت‌وگوی زنده مقالات با صدا و تصویر' : 'Participate in live audio/video article workshops'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button variant="outline" onClick={() => navigate('/live')} className="w-full">
+                        {locale === 'fa' ? 'مشاهده لیست جلسات' : 'View Live Sessions'}
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
 
               {/* Slide Manager */}
               {managingSlidesFor && (
@@ -440,7 +493,7 @@ export default function Dashboard() {
                 </Card>
               )}
 
-              {!showForm && !managingSlidesFor && (
+              {(isContributor || canAccessAdmin) && !showForm && !managingSlidesFor && (
                 <Button onClick={() => setShowForm(true)} className="mb-6">
                   <Plus className="w-4 h-4 me-2" />
                   {locale === 'fa' ? 'مقاله جدید' : 'New Article'}
@@ -520,47 +573,49 @@ export default function Dashboard() {
                 </Card>
               )}
 
-              <div className="grid gap-4">
-                <h2 className="text-2xl font-bold font-[IRANSharp]">{locale === 'fa' ? 'مقالات من' : 'My Articles'}</h2>
-                {articles.length === 0 ? (
-                  <Card>
-                    <CardContent className="py-8 text-center text-muted-foreground">
-                      {locale === 'fa' ? 'هنوز مقاله‌ای ایجاد نکرده‌اید' : 'No articles yet'}
-                    </CardContent>
-                  </Card>
-                ) : (
-                  articles.map((article) => (
-                    <Card key={article.id}>
-                      <CardHeader>
-                        <div className="flex justify-between items-start gap-4">
-                          <div className="flex-1">
-                            <CardTitle>{locale === 'fa' ? article.title_fa : article.title_en}</CardTitle>
-                            <CardDescription className="mt-2">
-                              {locale === 'fa' ? article.summary_fa : article.summary_en}
-                            </CardDescription>
-                          </div>
-                          <div className="flex flex-col gap-2 items-end">
-                            <span className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
-                              article.status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                            }`}>
-                              {article.status === 'published' ? (locale === 'fa' ? 'منتشر شده' : 'Published') : (locale === 'fa' ? 'پیش‌نویس' : 'Draft')}
-                            </span>
-                            <div className="flex gap-1">
-                              <Button size="sm" variant="outline" onClick={() => handleEditArticle(article)}>
-                                <Edit className="w-4 h-4 me-1" />
-                                {locale === 'fa' ? 'ویرایش' : 'Edit'}
-                              </Button>
-                              <Button size="sm" variant="secondary" onClick={() => handleManageSlides(article.id)}>
-                                {locale === 'fa' ? 'اسلایدها' : 'Slides'}
-                              </Button>
+              {(isContributor || canAccessAdmin) && (
+                <div className="grid gap-4">
+                  <h2 className="text-2xl font-bold font-[IRANSharp]">{locale === 'fa' ? 'مقالات من' : 'My Articles'}</h2>
+                  {articles.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-8 text-center text-muted-foreground">
+                        {locale === 'fa' ? 'هنوز مقاله‌ای ایجاد نکرده‌اید' : 'No articles yet'}
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    articles.map((article) => (
+                      <Card key={article.id}>
+                        <CardHeader>
+                          <div className="flex justify-between items-start gap-4">
+                            <div className="flex-1">
+                              <CardTitle>{locale === 'fa' ? article.title_fa : article.title_en}</CardTitle>
+                              <CardDescription className="mt-2">
+                                {locale === 'fa' ? article.summary_fa : article.summary_en}
+                              </CardDescription>
+                            </div>
+                            <div className="flex flex-col gap-2 items-end">
+                              <span className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
+                                article.status === 'published' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                              }`}>
+                                {article.status === 'published' ? (locale === 'fa' ? 'منتشر شده' : 'Published') : (locale === 'fa' ? 'پیش‌نویس' : 'Draft')}
+                              </span>
+                              <div className="flex gap-1">
+                                <Button size="sm" variant="outline" onClick={() => handleEditArticle(article)}>
+                                  <Edit className="w-4 h-4 me-1" />
+                                  {locale === 'fa' ? 'ویرایش' : 'Edit'}
+                                </Button>
+                                <Button size="sm" variant="secondary" onClick={() => handleManageSlides(article.id)}>
+                                  {locale === 'fa' ? 'اسلایدها' : 'Slides'}
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  ))
-                )}
-              </div>
+                        </CardHeader>
+                      </Card>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </SidebarInset>
