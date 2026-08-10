@@ -57,7 +57,8 @@ export default function Dashboard() {
   const { toast } = useToast();
 
   const viewParam = searchParams.get('view') as DashboardView | null;
-  const [activeView, setActiveView] = useState<DashboardView>(viewParam || 'articles');
+  const defaultView: DashboardView = canAccessAdmin ? 'all_articles' : 'articles';
+  const [activeView, setActiveView] = useState<DashboardView>(viewParam || defaultView);
 
   const [articles, setArticles] = useState<any[]>([]);
   const [allArticles, setAllArticles] = useState<any[]>([]);
