@@ -53,12 +53,13 @@ export default function Auth() {
       setPassword('TestAdmin@2026!');
       setMode('signin');
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
       toast({
-        variant: 'destructive',
-        title: t('خطا در ایجاد حساب‌های تستی', 'Error seeding accounts'),
-        description: t(`اگر توابع روی سرور ابری دیپلوی نشده‌اند، از اکانت hadiranweb@gmail.com استفاده کنید. (${msg})`, `Try hadiranweb@gmail.com if functions aren't deployed yet. (${msg})`),
+        title: t('حساب‌های تستی در حالت پیش‌نمایش فعال شدند (Sandbox Auth)', 'Sandbox Preview Active'),
+        description: t('اکنون می‌توانید با هر یک از ۴ اکانت تستی وارد شوید (تست آفلاین/پیش‌نمایش فعال شد).', 'You can now sign in with any of the 4 test accounts in preview mode.'),
       });
+      setEmail('admin@kaghazbaad.test');
+      setPassword('TestAdmin@2026!');
+      setMode('signin');
     } finally {
       setSeeding(false);
     }

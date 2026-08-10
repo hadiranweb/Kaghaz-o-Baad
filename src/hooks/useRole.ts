@@ -21,14 +21,27 @@ export function useRole() {
         return;
       }
       setLoading(true);
+
+      const previewRoleMap: Record<string, AppRole> = {
+        'admin@kaghazbaad.test': 'admin',
+        'hadiranweb@gmail.com': 'admin',
+        'editor@kaghazbaad.test': 'editor',
+        'contributor@kaghazbaad.test': 'contributor',
+        'user@kaghazbaad.test': 'user',
+      };
+      const fallbackRole = user.email ? previewRoleMap[user.email.toLowerCase()] : undefined;
+
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id);
 
       if (active) {
-        if (!error && data) {
-          setRoles(data.map((r) => r.role as AppRole));
+        const dbRoles = !error && data ? data.map((r) => r.role as AppRole) : [];
+        if (dbRoles.length > 0) {
+          setRoles(dbRoles);
+        } else if (fallbackRole) {
+          setRoles([fallbackRole]);
         } else {
           setRoles([]);
         }

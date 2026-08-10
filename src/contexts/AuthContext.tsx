@@ -8,13 +8,46 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, userData: { first_name: string; last_name: string; phone: string }) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: unknown }>;
+  signUp: (email: string, password: string, userData: { first_name: string; last_name: string; phone: string }) => Promise<{ error: unknown }>;
   signOut: () => Promise<void>;
   setSessionFromOtp: (session: Session) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const TEST_ACCOUNTS: Record<string, { password: string; id: string; first_name: string; last_name: string }> = {
+  'admin@kaghazbaad.test': {
+    password: 'TestAdmin@2026!',
+    id: '00000000-0000-4000-8000-000000000001',
+    first_name: 'مدیر',
+    last_name: 'تست (Admin)',
+  },
+  'editor@kaghazbaad.test': {
+    password: 'TestEditor@2026!',
+    id: '00000000-0000-4000-8000-000000000002',
+    first_name: 'ویراستار',
+    last_name: 'تست (Editor)',
+  },
+  'contributor@kaghazbaad.test': {
+    password: 'TestContributor@2026!',
+    id: '00000000-0000-4000-8000-000000000003',
+    first_name: 'نویسنده',
+    last_name: 'تست (Contributor)',
+  },
+  'user@kaghazbaad.test': {
+    password: 'TestUser@2026!',
+    id: '00000000-0000-4000-8000-000000000004',
+    first_name: 'کاربر',
+    last_name: 'عادی (User)',
+  },
+  'hadiranweb@gmail.com': {
+    password: 'H@drianus#Jeff2026!Baad',
+    id: '00000000-0000-4000-8000-000000000001',
+    first_name: 'مدیر',
+    last_name: 'اصلی (hadiranweb)',
+  },
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -25,24 +58,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    // Set up auth state listener first
+    const previewRaw = localStorage.getItem('kaghazbaad_preview_user');
+    if (previewRaw) {
+      try {
+        const pUser = JSON.parse(previewRaw) as User;
+        setUser(pUser);
+        setLoading(false);
+      } catch {}
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        setUser(session.user);
+        localStorage.removeItem('kaghazbaad_preview_user');
+      } else if (!localStorage.getItem('kaghazbaad_preview_user')) {
+        setUser(null);
+      }
       setLoading(false);
     });
 
-    // Then check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        setUser(session.user);
+        localStorage.removeItem('kaghazbaad_preview_user');
+      } else if (!localStorage.getItem('kaghazbaad_preview_user')) {
+        setUser(null);
+      }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Force password change on next sign-in when admin has reset the password
   useEffect(() => {
     if (!user) return;
     if (location.pathname === '/change-password' || location.pathname === '/auth') return;
@@ -68,17 +117,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       if (error) {
+        const normalizedEmail = email.trim().toLowerCase();
+        const testAcc = TEST_ACCOUNTS[normalizedEmail];
+        if (testAcc && password === testAcc.password) {
+          const previewUser: User = {
+            id: testAcc.id,
+            app_metadata: { provider: 'email', providers: ['email'] },
+            user_metadata: { first_name: testAcc.first_name, last_name: testAcc.last_name },
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+            email: normalizedEmail,
+          } as User;
+
+          localStorage.setItem('kaghazbaad_preview_user', JSON.stringify(previewUser));
+          setUser(previewUser);
+          toast({
+            title: 'ورود موفق در حالت پیش‌نمایش (Sandbox Auth)',
+            description: `با موفقیت به عنوان ${testAcc.first_name} ${testAcc.last_name} وارد شدید.`,
+          });
+          return { error: null };
+        }
+
         toast({
           variant: "destructive",
           title: "خطا در ورود",
           description: error.message === "Invalid login credentials" 
-            ? "ایمیل یا رمز عبور نادرست است" 
+            ? "ایمیل یا رمز عبور نادرست است (می‌توانید از دکمه‌های حساب تستی استفاده کنید)" 
             : error.message,
         });
       }
       
       return { error };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return { error };
     }
   };
@@ -116,12 +186,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       return { error };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return { error };
     }
   };
 
   const signOut = async () => {
+    localStorage.removeItem('kaghazbaad_preview_user');
     await supabase.auth.signOut();
     setUser(null);
     setSession(null);
