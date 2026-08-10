@@ -1,5 +1,6 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRole } from '@/hooks/useRole';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +8,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { BookOpen, Calendar, Loader2, Search, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { useCallback, useEffect, useState } from 'react';
 
 interface AuthorProfile {
@@ -31,6 +33,7 @@ interface ArticleItem {
   cover_url?: string;
   tags?: string[];
   categories?: string[];
+  status: string;
   author_id?: string;
   published_at: string;
   created_at: string;
@@ -39,6 +42,8 @@ interface ArticleItem {
 export default function Read() {
   const { locale, t } = useLanguage();
   const { user } = useAuth();
+  const { canAccessAdmin } = useRole();
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
@@ -47,26 +52,57 @@ export default function Read() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<'published' | 'draft' | 'all'>('published');
 
   const loadInitial = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('paginate_published_articles', {
-        p_cursor_time: null,
-        p_cursor_id: null,
-        p_limit: 9,
-        p_query: searchQuery.trim() || null,
-      });
-      if (error) throw error;
+      let rows: ArticleItem[] = [];
+      let more = false;
 
-      const rows = (data as ArticleItem[]) || [];
-      const more = rows.length > 9;
-      const pageItems = more ? rows.slice(0, 9) : rows;
+      // اگر تب 'published' است ابتدا تابع RPC مکان‌نما را تلاش کن
+      if (filterStatus === 'published') {
+        const { data, error } = await supabase.rpc('paginate_published_articles', {
+          p_cursor_time: null,
+          p_cursor_id: null,
+          p_limit: 9,
+          p_query: searchQuery.trim() || null,
+        });
+
+        if (!error && data) {
+          const allRows = (data as ArticleItem[]) || [];
+          more = allRows.length > 9;
+          rows = more ? allRows.slice(0, 9) : allRows;
+        } else {
+          // فال‌بک خودکار به کوئری استاندارد جدول (در صورت عدم اجرای مایگریشن RPC روی سرور ابری)
+          let qb = supabase.from('articles').select('*').eq('status', 'published').order('created_at', { ascending: false }).limit(50);
+          if (searchQuery.trim()) {
+            const q = searchQuery.trim();
+            qb = qb.or(`title_fa.ilike.%${q}%,title_en.ilike.%${q}%,summary_fa.ilike.%${q}%,summary_en.ilike.%${q}%`);
+          }
+          const { data: fbData } = await qb;
+          rows = (fbData as ArticleItem[]) || [];
+          more = false;
+        }
+      } else {
+        // برای تب‌های 'draft' یا 'all' توسط مدیران، ویراستاران و نویسندگان
+        let qb = supabase.from('articles').select('*').order('created_at', { ascending: false }).limit(50);
+        if (filterStatus === 'draft') {
+          qb = qb.eq('status', 'draft');
+        }
+        if (searchQuery.trim()) {
+          const q = searchQuery.trim();
+          qb = qb.or(`title_fa.ilike.%${q}%,title_en.ilike.%${q}%,summary_fa.ilike.%${q}%,summary_en.ilike.%${q}%`);
+        }
+        const { data: fbData } = await qb;
+        rows = (fbData as ArticleItem[]) || [];
+        more = false;
+      }
 
       setHasMore(more);
-      setArticles(pageItems);
+      setArticles(rows);
 
-      const authorIds = [...new Set(pageItems.map((a) => a.author_id).filter(Boolean))] as string[];
+      const authorIds = [...new Set(rows.map((a) => a.author_id).filter(Boolean))] as string[];
       if (authorIds.length > 0) {
         const { data: profs } = await supabase
           .from('public_profiles')
@@ -86,7 +122,7 @@ export default function Read() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, filterStatus]);
 
   useEffect(() => {
     loadInitial();
@@ -137,6 +173,26 @@ export default function Read() {
     }
   };
 
+  const handleQuickPublish = async (articleId: string) => {
+    const { error } = await supabase
+      .from('articles')
+      .update({
+        status: 'published',
+        published_at: new Date().toISOString(),
+      })
+      .eq('id', articleId);
+
+    if (error) {
+      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا در انتشار' : 'Publish Error', description: error.message });
+    } else {
+      toast({
+        title: locale === 'fa' ? 'منتشر شد' : 'Published',
+        description: locale === 'fa' ? 'مقاله با موفقیت در وضعیت منتشرشده قرار گرفت.' : 'Article is now published.',
+      });
+      loadInitial();
+    }
+  };
+
   const clearSearch = () => setSearchParams({});
 
   return (
@@ -149,9 +205,46 @@ export default function Read() {
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
             {locale === 'fa' 
-              ? 'مجموعه مقالات آکادمیک به صورت دوزبانه - تجربه مطالعه منحصر به فرد با نمایش اسلایدی (صفحه‌بندی مکان‌نما)'
-              : 'Collection of bilingual academic articles - unique reading experience with slide presentation (Keyset Pagination)'}
+              ? 'مجموعه مقالات آکادمیک به صورت دوزبانه - تجربه مطالعه منحصر به فرد با نمایش اسلایدی (صفحه‌بندی مکان‌نما + فال‌بک خودکار)'
+              : 'Collection of bilingual academic articles - unique reading experience with slide presentation (Keyset Pagination + Fallback)'}
           </p>
+
+          {/* نوار فیلتر وضعیت برای مدیران، ویراستاران و نویسندگان */}
+          {(canAccessAdmin || user) && (
+            <div className="mt-6 flex justify-center">
+              <div className="inline-flex rounded-xl bg-secondary/50 p-1 border border-border/40 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setFilterStatus('published')}
+                  className={`px-4 py-1.5 rounded-lg transition-colors ${
+                    filterStatus === 'published' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {locale === 'fa' ? 'منتشر شده' : 'Published'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterStatus('draft')}
+                  className={`px-4 py-1.5 rounded-lg transition-colors ${
+                    filterStatus === 'draft' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {locale === 'fa' ? 'پیش‌نویس‌ها' : 'Drafts'}
+                </button>
+                {canAccessAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setFilterStatus('all')}
+                    className={`px-4 py-1.5 rounded-lg transition-colors ${
+                      filterStatus === 'all' ? 'bg-primary text-primary-foreground font-medium' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {locale === 'fa' ? 'همه مقالات' : 'All Articles'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Search query indicator */}
           {searchQuery && (
@@ -208,6 +301,13 @@ export default function Read() {
                           </Badge>
                         </div>
                       )}
+                      {article.status === 'draft' && (
+                        <div className="absolute top-2 left-2">
+                          <Badge variant="secondary" className="bg-amber-500/20 text-amber-500 border border-amber-500/30 text-xs">
+                            {locale === 'fa' ? 'پیش‌نویس (Draft)' : 'Draft'}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
                     
                     <CardHeader>
@@ -251,11 +351,24 @@ export default function Read() {
                         </div>
                       </div>
                       
-                      <Button variant="ghost-ios" asChild className="w-full">
-                        <Link to={`/read/${article.slug}`}>
-                          {locale === 'fa' ? 'مطالعه مقاله' : 'Read Article'}
-                        </Link>
-                      </Button>
+                      {article.status === 'draft' && (canAccessAdmin || isUserArticle) ? (
+                        <div className="flex gap-2">
+                          <Button variant="default" size="sm" onClick={() => handleQuickPublish(article.id)} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+                            {locale === 'fa' ? 'انتشار فوری' : 'Publish Now'}
+                          </Button>
+                          <Button variant="ghost-ios" size="sm" asChild className="flex-1">
+                            <Link to={`/read/${article.slug}`}>
+                              {locale === 'fa' ? 'پیش‌نمایش' : 'Preview'}
+                            </Link>
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button variant="ghost-ios" asChild className="w-full">
+                          <Link to={`/read/${article.slug}`}>
+                            {locale === 'fa' ? 'مطالعه مقاله' : 'Read Article'}
+                          </Link>
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 );
@@ -290,7 +403,7 @@ export default function Read() {
           <div className="text-center py-12 text-muted-foreground">
             {searchQuery
               ? (locale === 'fa' ? `نتیجه‌ای برای "${searchQuery}" پیدا نشد` : `No results found for "${searchQuery}"`)
-              : (locale === 'fa' ? 'هنوز مقاله‌ای منتشر نشده است' : 'No articles published yet')
+              : (locale === 'fa' ? 'هنوز مقاله‌ای در این دسته وجود ندارد' : 'No articles in this category yet')
             }
           </div>
         )}

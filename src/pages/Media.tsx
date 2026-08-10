@@ -86,35 +86,45 @@ export default function Media() {
 
   const loadMedia = useCallback(async () => {
     if (!user) {
-      const { data } = await supabase.rpc('paginate_media', {
+      const { data, error } = await supabase.rpc('paginate_media', {
         p_type: activeTab,
         p_scope: 'public',
         p_cursor_time: null,
         p_cursor_id: null,
         p_limit: 12,
       });
-      const rows = (data as MediaItem[]) || [];
-      const more = rows.length > 12;
-      const items = more ? rows.slice(0, 12) : rows;
-      setPublicMedia(items);
-      setHasMorePublic(more);
+      if (!error && data) {
+        const rows = (data as MediaItem[]) || [];
+        const more = rows.length > 12;
+        const items = more ? rows.slice(0, 12) : rows;
+        setPublicMedia(items);
+        setHasMorePublic(more);
+      } else {
+        const { data: fbData } = await supabase.from('media').select('*').eq('visibility', 'public').eq('type', activeTab).order('created_at', { ascending: false }).limit(50);
+        setPublicMedia((fbData as MediaItem[]) || []);
+        setHasMorePublic(false);
+      }
       return;
     }
 
-    // شخصی (با صفحه‌بندی مکان‌نما)
-    const { data: mine } = await supabase.rpc('paginate_media', {
+    // شخصی (با صفحه‌بندی مکان‌نما + فال‌بک)
+    const { data: mine, error: mineErr } = await supabase.rpc('paginate_media', {
       p_type: activeTab,
       p_scope: 'mine',
       p_cursor_time: null,
       p_cursor_id: null,
       p_limit: 12,
     });
-    if (mine) {
+    if (!mineErr && mine) {
       const rows = (mine as MediaItem[]) || [];
       const more = rows.length > 12;
       const items = more ? rows.slice(0, 12) : rows;
       setMyMedia(items);
       setHasMoreMine(more);
+    } else {
+      const { data: fbMine } = await supabase.from('media').select('*').eq('type', activeTab).or(`owner_id.eq.${user.id},created_by.eq.${user.id}`).order('created_at', { ascending: false }).limit(50);
+      setMyMedia((fbMine as MediaItem[]) || []);
+      setHasMoreMine(false);
     }
 
     // خواندن حجم مصرفی دقیق از جدول user_storage (که توسط تریگر خودکار دیتابیس tr_media_storage_quota به‌روز می‌شود)
@@ -128,20 +138,24 @@ export default function Media() {
       setUsedBytes(storageRow.used_bytes);
     }
 
-    // عمومی (با صفحه‌بندی مکان‌نما)
-    const { data: pub } = await supabase.rpc('paginate_media', {
+    // عمومی (با صفحه‌بندی مکان‌نما + فال‌بک)
+    const { data: pub, error: pubErr } = await supabase.rpc('paginate_media', {
       p_type: activeTab,
       p_scope: 'public',
       p_cursor_time: null,
       p_cursor_id: null,
       p_limit: 12,
     });
-    if (pub) {
+    if (!pubErr && pub) {
       const rows = (pub as MediaItem[]) || [];
       const more = rows.length > 12;
       const items = more ? rows.slice(0, 12) : rows;
       setPublicMedia(items);
       setHasMorePublic(more);
+    } else {
+      const { data: fbPub } = await supabase.from('media').select('*').eq('visibility', 'public').eq('type', activeTab).order('created_at', { ascending: false }).limit(50);
+      setPublicMedia((fbPub as MediaItem[]) || []);
+      setHasMorePublic(false);
     }
   }, [user, activeTab]);
 
