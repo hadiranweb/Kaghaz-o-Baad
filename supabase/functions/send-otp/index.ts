@@ -108,6 +108,35 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Step 2: Check Circuit Breaker for 'smsir-api'
+    try {
+      const { data: cbData } = await supabase.rpc('get_circuit_breaker_state', {
+        p_service: 'smsir-api',
+        p_threshold: 3,
+        p_cooldown_seconds: 60,
+      });
+
+      if (cbData && cbData.allowed === false) {
+        const resetSeconds = Number(cbData.retry_after_seconds || 60);
+        return new Response(
+          JSON.stringify({
+            error: 'سرویس پیامک در حال حاضر در حالت وقفه و بازیابی است. لطفاً چند لحظه دیگر تلاش کنید | SMS service temporarily in recovery mode',
+            retryAfter: resetSeconds,
+          }),
+          {
+            status: 503,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+              'Retry-After': String(resetSeconds),
+            },
+          }
+        );
+      }
+    } catch (cbErr) {
+      console.error('[send-otp] CB check warning:', cbErr);
+    }
+
     // Generate cryptographically secure 6-digit OTP for SMS only.
     const randBuf = new Uint32Array(1);
     crypto.getRandomValues(randBuf);
@@ -148,7 +177,7 @@ Deno.serve(async (req) => {
         phoneNumber = '0' + phoneNumber;
       }
 
-      // Step 1: Resolve line number. Prefer cached secret (avoids slow/timeout
+      // Step 3: Resolve line number. Prefer cached secret (avoids slow/timeout
       // GET https://api.sms.ir/v1/line from edge runtime); fall back to API.
       let lineNumber: string | null = null;
       const cachedLine = Deno.env.get("SMSIR_LINE_NUMBER");
@@ -203,7 +232,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Step 2: Send SMS using bulk API
+      // Step 4: Send SMS using bulk API with Circuit Breaker failure/success tracking
       let smsResponse: Response;
       let smsResult: unknown;
       const sendStart = Date.now();
@@ -236,11 +265,22 @@ Deno.serve(async (req) => {
         }));
         smsResult = responseText ? JSON.parse(responseText) : {};
       } catch (e) {
-        console.error('[send-otp] SMS send request failed', JSON.stringify({
+        console.error('[send-otp] SMS send request failed / timeout', JSON.stringify({
           name: (e as Error)?.name,
           message: (e as Error)?.message,
           durationMs: Date.now() - sendStart,
         }));
+
+        // Record Circuit Breaker failure
+        supabase
+          .rpc('record_circuit_breaker_failure', {
+            p_service: 'smsir-api',
+            p_threshold: 3,
+            p_cooldown_seconds: 60,
+          })
+          .then()
+          .catch(() => {});
+
         return new Response(JSON.stringify({ error: 'SMS provider timeout' }), {
           status: 502,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -253,11 +293,26 @@ Deno.serve(async (req) => {
           providerStatus: (smsResult as { status?: number })?.status,
           result: smsResult,
         }));
+
+        // Record Circuit Breaker failure
+        supabase
+          .rpc('record_circuit_breaker_failure', {
+            p_service: 'smsir-api',
+            p_threshold: 3,
+            p_cooldown_seconds: 60,
+          })
+          .then()
+          .catch(() => {});
+
         return new Response(JSON.stringify({ error: 'Failed to send SMS', details: smsResult }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+
+      // Record Circuit Breaker success
+      supabase.rpc('record_circuit_breaker_success', { p_service: 'smsir-api' }).then().catch(() => {});
+
     return new Response(JSON.stringify({ success: true, message: 'OTP sent' }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

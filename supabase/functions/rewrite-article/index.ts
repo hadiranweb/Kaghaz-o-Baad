@@ -68,6 +68,36 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Step 1: Check Circuit Breaker for 'gemini-ai'
+    try {
+      const { data: cbData } = await supabase.rpc('get_circuit_breaker_state', {
+        p_service: 'gemini-ai',
+        p_threshold: 3,
+        p_cooldown_seconds: 45,
+      });
+
+      if (cbData && cbData.allowed === false) {
+        const resetSeconds = Number(cbData.retry_after_seconds || 45);
+        return new Response(
+          JSON.stringify({
+            error: 'سرویس هوش مصنوعی در حال حاضر در حالت وقفه و بازیابی است. لطفاً چند لحظه دیگر تلاش کنید | AI service temporarily in recovery mode',
+            retryAfter: resetSeconds,
+          }),
+          {
+            status: 503,
+            headers: {
+              ...corsHeaders,
+              'Content-Type': 'application/json',
+              'Retry-After': String(resetSeconds),
+              'X-Circuit-Breaker': 'OPEN',
+            },
+          }
+        );
+      }
+    } catch (cbErr) {
+      console.error('[rewrite-article] CB check warning:', cbErr);
+    }
+
     const AI_API_KEY = Deno.env.get('AI_API_KEY');
     if (!AI_API_KEY) {
       return new Response(JSON.stringify({ error: 'AI not configured' }), {
@@ -85,49 +115,83 @@ Deno.serve(async (req) => {
 
     const userPrompt = `${customPrompt ? `${targetLang === 'fa' ? 'دستور اضافی کاربر' : 'Additional user instruction'}: ${customPrompt}\n\n` : ''}${targetLang === 'fa' ? 'متن اصلی' : 'Original article'}:\n\n${source}`;
 
-    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${AI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    if (aiResponse.status === 429) {
-      return new Response(JSON.stringify({ error: 'محدودیت سرعت — لطفاً کمی صبر کنید' }), {
-        status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    try {
+      const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${AI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'google/gemini-3-flash-preview',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.7,
+        }),
+        signal: AbortSignal.timeout(25000),
       });
-    }
-    if (aiResponse.status === 402) {
-      return new Response(JSON.stringify({ error: 'اعتبار هوش مصنوعی تمام شده است' }), {
-        status: 402,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (!aiResponse.ok) {
-      const errText = await aiResponse.text();
-      console.error('[rewrite-article] AI gateway error', aiResponse.status, errText.slice(0, 500));
-      return new Response(JSON.stringify({ error: 'AI request failed' }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
-    const data = await aiResponse.json();
-    const content: string = data.choices?.[0]?.message?.content ?? '';
+      if (aiResponse.status === 429) {
+        return new Response(JSON.stringify({ error: 'محدودیت سرعت — لطفاً کمی صبر کنید' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (aiResponse.status === 402) {
+        return new Response(JSON.stringify({ error: 'اعتبار هوش مصنوعی تمام شده است' }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (!aiResponse.ok) {
+        const errText = await aiResponse.text();
+        console.error('[rewrite-article] AI gateway error', aiResponse.status, errText.slice(0, 500));
+        supabase
+          .rpc('record_circuit_breaker_failure', {
+            p_service: 'gemini-ai',
+            p_threshold: 3,
+            p_cooldown_seconds: 45,
+          })
+          .then()
+          .catch(() => {});
 
-    return new Response(JSON.stringify({ content }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+        return new Response(JSON.stringify({ error: 'AI request failed' }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Circuit-Breaker': 'DEGRADED' },
+        });
+      }
+
+      const data = await aiResponse.json();
+      const content: string = data.choices?.[0]?.message?.content ?? '';
+
+      supabase.rpc('record_circuit_breaker_success', { p_service: 'gemini-ai' }).then().catch(() => {});
+
+      return new Response(JSON.stringify({ content }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Circuit-Breaker': 'CLOSED' },
+      });
+    } catch (aiErr) {
+      console.error('[rewrite-article] AI fetch error / timeout:', aiErr);
+      supabase
+        .rpc('record_circuit_breaker_failure', {
+          p_service: 'gemini-ai',
+          p_threshold: 3,
+          p_cooldown_seconds: 45,
+        })
+        .then()
+        .catch(() => {});
+
+      return new Response(
+        JSON.stringify({
+          error: 'سرویس هوش مصنوعی موقتاً پاسخگو نیست یا درخواست با تایم‌اوت مواجه شد | AI provider timeout',
+        }),
+        {
+          status: 504,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json', 'X-Circuit-Breaker': 'OPEN' },
+        }
+      );
+    }
   } catch (e) {
     console.error('[rewrite-article] error:', e);
     return new Response(
