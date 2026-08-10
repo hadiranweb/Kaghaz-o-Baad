@@ -9,9 +9,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Shield, Trash2, Eye, Save, Plus, FileText, Users, Video, ScrollText, LayoutDashboard } from 'lucide-react';
+import { Shield, Trash2, Eye, Save, Plus, FileText, Users, Video, ScrollText, LayoutDashboard, Activity } from 'lucide-react';
 import UsersManager from '@/components/admin/UsersManager';
 import LiveSessionsManager from '@/components/admin/LiveSessionsManager';
+import CircuitBreakerMonitor from '@/components/admin/CircuitBreakerMonitor';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarSeparator, SidebarTrigger } from '@/components/ui/sidebar';
 import {
   AlertDialog,
@@ -33,7 +34,7 @@ export default function AdminDashboard() {
   const { toast } = useToast();
   const [articles, setArticles] = useState<any[]>([]);
   const [projectSections, setProjectSections] = useState<any[]>([]);
-  const [activeView, setActiveView] = useState<'articles' | 'project' | 'users' | 'live'>('articles');
+  const [activeView, setActiveView] = useState<'articles' | 'project' | 'users' | 'live' | 'resilience'>('articles');
   const isRTL = locale === 'fa';
   const side = isRTL ? 'right' as const : 'left' as const;
 
@@ -268,6 +269,12 @@ export default function AdminDashboard() {
                       <span>{locale === 'fa' ? 'پخش‌های زنده' : 'Live'}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton isActive={activeView === 'resilience'} onClick={() => setActiveView('resilience')}>
+                      <Activity className="h-4 w-4" />
+                      <span>{locale === 'fa' ? 'تاب‌آوری (مدارشکن‌ها)' : 'Resilience & Breakers'}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -306,6 +313,7 @@ export default function AdminDashboard() {
               {activeView === 'project' && (locale === 'fa' ? 'شرح پروژه' : 'Project Description')}
               {activeView === 'users' && (locale === 'fa' ? 'کاربران' : 'Users')}
               {activeView === 'live' && (locale === 'fa' ? 'پخش‌های زنده' : 'Live Sessions')}
+              {activeView === 'resilience' && (locale === 'fa' ? 'تاب‌آوری و مدارشکن‌ها' : 'Resilience & Circuit Breakers')}
             </h1>
           </div>
 
@@ -512,6 +520,8 @@ export default function AdminDashboard() {
             {activeView === 'users' && <UsersManager />}
 
             {activeView === 'live' && <LiveSessionsManager />}
+
+            {activeView === 'resilience' && <CircuitBreakerMonitor />}
           </div>
         </SidebarInset>
       </div>
