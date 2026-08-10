@@ -11,8 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Image as ImageIcon, Video, FileText, Headphones, Upload, HardDrive, Share2, Lock, Globe, Trash2, Eye, UserPlus } from 'lucide-react';
-import { useEffect, useState, useRef } from 'react';
+import { Image as ImageIcon, Video, FileText, Headphones, Upload, HardDrive, Share2, Lock, Globe, Trash2, Eye, UserPlus, Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 type MediaItem = {
@@ -52,7 +52,7 @@ function extractStoragePath(srcUrl: string): string | null {
 }
 
 export default function Media() {
-  const { locale } = useLanguage();
+  const { locale, t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -65,8 +65,14 @@ export default function Media() {
   const [sharingItem, setSharingItem] = useState<MediaItem | null>(null);
   const [shareEmail, setShareEmail] = useState('');
   const [sharingBusy, setSharingBusy] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
+  // مکان‌نمای صفحه‌بندی (Cursor-based Pagination state)
+  const [hasMoreMine, setHasMoreMine] = useState(false);
+  const [hasMorePublic, setHasMorePublic] = useState(false);
+  const [loadingMoreMine, setLoadingMoreMine] = useState(false);
+  const [loadingMorePublic, setLoadingMorePublic] = useState(false);
+
+  const fileRef = useRef<HTMLInputElement>(null);
   const title = locale === 'fa' ? 'چندرسانه‌ای' : 'Media';
 
   useEffect(() => {
@@ -78,17 +84,37 @@ export default function Media() {
     }
   }, [user]);
 
-  const loadMedia = async () => {
+  const loadMedia = useCallback(async () => {
     if (!user) {
-      const { data } = await supabase.from('media').select('*').eq('visibility', 'public').order('created_at', { ascending: false }).limit(50);
-      if (data) setPublicMedia(data as MediaItem[]);
+      const { data } = await supabase.rpc('paginate_media', {
+        p_type: activeTab,
+        p_scope: 'public',
+        p_cursor_time: null,
+        p_cursor_id: null,
+        p_limit: 12,
+      });
+      const rows = (data as MediaItem[]) || [];
+      const more = rows.length > 12;
+      const items = more ? rows.slice(0, 12) : rows;
+      setPublicMedia(items);
+      setHasMorePublic(more);
       return;
     }
 
-    // شخصی
-    const { data: mine } = await supabase.from('media').select('*').or(`owner_id.eq.${user.id},created_by.eq.${user.id}`).order('created_at', { ascending: false });
+    // شخصی (با صفحه‌بندی مکان‌نما)
+    const { data: mine } = await supabase.rpc('paginate_media', {
+      p_type: activeTab,
+      p_scope: 'mine',
+      p_cursor_time: null,
+      p_cursor_id: null,
+      p_limit: 12,
+    });
     if (mine) {
-      setMyMedia(mine as MediaItem[]);
+      const rows = (mine as MediaItem[]) || [];
+      const more = rows.length > 12;
+      const items = more ? rows.slice(0, 12) : rows;
+      setMyMedia(items);
+      setHasMoreMine(more);
     }
 
     // خواندن حجم مصرفی دقیق از جدول user_storage (که توسط تریگر خودکار دیتابیس tr_media_storage_quota به‌روز می‌شود)
@@ -100,19 +126,64 @@ export default function Media() {
 
     if (storageRow && typeof storageRow.used_bytes === 'number') {
       setUsedBytes(storageRow.used_bytes);
-    } else if (mine) {
-      const sum = (mine as MediaItem[]).reduce((s, m) => s + (m.file_size || 0), 0);
-      setUsedBytes(sum);
     }
 
-    // عمومی
-    const { data: pub } = await supabase.from('media').select('*').eq('visibility', 'public').order('created_at', { ascending: false }).limit(50);
-    if (pub) setPublicMedia(pub as MediaItem[]);
-  };
+    // عمومی (با صفحه‌بندی مکان‌نما)
+    const { data: pub } = await supabase.rpc('paginate_media', {
+      p_type: activeTab,
+      p_scope: 'public',
+      p_cursor_time: null,
+      p_cursor_id: null,
+      p_limit: 12,
+    });
+    if (pub) {
+      const rows = (pub as MediaItem[]) || [];
+      const more = rows.length > 12;
+      const items = more ? rows.slice(0, 12) : rows;
+      setPublicMedia(items);
+      setHasMorePublic(more);
+    }
+  }, [user, activeTab]);
 
   useEffect(() => {
     loadMedia();
-  }, [user]);
+  }, [loadMedia]);
+
+  const handleLoadMoreMedia = async (scope: 'mine' | 'public') => {
+    const list = scope === 'mine' ? myMedia : publicMedia;
+    if (list.length === 0) return;
+    const last = list[list.length - 1];
+
+    if (scope === 'mine') setLoadingMoreMine(true);
+    else setLoadingMorePublic(true);
+
+    try {
+      const { data, error } = await supabase.rpc('paginate_media', {
+        p_type: activeTab,
+        p_scope: scope,
+        p_cursor_time: last.created_at,
+        p_cursor_id: last.id,
+        p_limit: 12,
+      });
+      if (error) throw error;
+      const rows = (data as MediaItem[]) || [];
+      const more = rows.length > 12;
+      const items = more ? rows.slice(0, 12) : rows;
+
+      if (scope === 'mine') {
+        setMyMedia((prev) => [...prev, ...items]);
+        setHasMoreMine(more);
+      } else {
+        setPublicMedia((prev) => [...prev, ...items]);
+        setHasMorePublic(more);
+      }
+    } catch (err) {
+      console.error('Error loading more media:', err);
+    } finally {
+      if (scope === 'mine') setLoadingMoreMine(false);
+      else setLoadingMorePublic(false);
+    }
+  };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!user) {
@@ -240,9 +311,6 @@ export default function Media() {
 
   const pct = Math.min(100, Math.round((usedBytes / QUOTA_BYTES) * 100));
 
-  const filteredMine = myMedia.filter(m => m.type === activeTab);
-  const filteredPublic = publicMedia.filter(m => m.type === activeTab);
-
   const tabs = [
     { value: 'image', icon: ImageIcon, label: locale === 'fa' ? 'تصاویر' : 'Images' },
     { value: 'video', icon: Video, label: locale === 'fa' ? 'ویدیوها' : 'Videos' },
@@ -257,8 +325,8 @@ export default function Media() {
           <h1 className="text-4xl md:text-5xl font-bold mb-3 font-[IRANSharp]">{title}</h1>
           <p className="text-muted-foreground max-w-2xl mx-auto leading-7">
             {locale === 'fa'
-              ? 'کتابخانه‌ی چندرسانه‌ای — فضای شخصی ۱۵ گیگابایتی برای هر کاربر، الهام‌گرفته از Google Drive. هر فایل را خصوصی نگه دارید یا با عموم/افرادِ منتخب به اشتراک بگذارید. نمایش عمومیِ همین بخش، فقط محتوای اشتراکیِ «عمومی» است.'
-              : 'Multimedia library — 15GB personal drive per user, inspired by Google Drive. Keep files private or share with everyone/selected people. The public view here shows only “public” shares.'}
+              ? 'کتابخانه‌ی چندرسانه‌ای — فضای شخصی ۱۵ گیگابایتی برای هر کاربر، الهام‌گرفته از Google Drive. هر فایل را خصوصی نگه دارید یا با عموم/افرادِ منتخب به اشتراک بگذارید (به همراه صفحه‌بندی مکان‌نما).'
+              : 'Multimedia library — 15GB personal drive per user, inspired by Google Drive. Keep files private or share with everyone/selected people (with Keyset Pagination).'}
           </p>
         </div>
 
@@ -309,75 +377,97 @@ export default function Media() {
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <Lock className="h-4 w-4 text-muted-foreground" />
                   {locale === 'fa' ? 'فضای من' : 'My drive'}
-                  <span className="text-xs font-normal text-muted-foreground">— {filteredMine.length} {locale === 'fa' ? 'فایل' : 'files'}</span>
+                  <span className="text-xs font-normal text-muted-foreground">— {myMedia.length} {locale === 'fa' ? 'فایل' : 'files'}</span>
                 </h3>
                 {!user ? (
                   <Card className="p-8 text-center">
                     <p className="text-sm text-muted-foreground mb-3">{locale === 'fa' ? 'برای استفاده از فضای شخصی ۱۵ گیگابایتی وارد شوید' : 'Sign in to use your 15GB personal drive'}</p>
                     <Button onClick={() => setShowLoginDialog(true)}>{locale === 'fa' ? 'ورود' : 'Sign In'}</Button>
                   </Card>
-                ) : filteredMine.length === 0 ? (
+                ) : myMedia.length === 0 ? (
                   <Card className="p-8 text-center text-muted-foreground text-sm">
                     {locale === 'fa' ? 'هنوز فایلی در این بخش ندارید — آپلود کنید' : 'No files in this section yet — upload one'}
                   </Card>
                 ) : (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredMine.map(item => (
-                      <Card key={item.id} className="glass-surface overflow-hidden">
-                        <div className="h-36 bg-muted flex items-center justify-center overflow-hidden">
-                          {item.type === 'image' && item.src_url ? (
-                            <img src={item.src_url} alt={item.title_fa} className="h-full w-full object-cover" />
-                          ) : item.type === 'video' ? (
-                            <Video className="h-10 w-10 text-muted-foreground" />
-                          ) : item.type === 'audio' ? (
-                            <Headphones className="h-10 w-10 text-muted-foreground" />
+                  <>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {myMedia.map(item => (
+                        <Card key={item.id} className="glass-surface overflow-hidden">
+                          <div className="h-36 bg-muted flex items-center justify-center overflow-hidden">
+                            {item.type === 'image' && item.src_url ? (
+                              <img src={item.src_url} alt={item.title_fa} className="h-full w-full object-cover" />
+                            ) : item.type === 'video' ? (
+                              <Video className="h-10 w-10 text-muted-foreground" />
+                            ) : item.type === 'audio' ? (
+                              <Headphones className="h-10 w-10 text-muted-foreground" />
+                            ) : (
+                              <FileText className="h-10 w-10 text-muted-foreground" />
+                            )}
+                          </div>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm truncate" title={locale === 'fa' ? item.title_fa : item.title_en}>
+                              {locale === 'fa' ? item.title_fa : item.title_en}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground">
+                              <span>{item.file_size ? fmtBytes(item.file_size) : '—'}</span>
+                              <Badge variant={item.visibility === 'public' ? 'default' : item.visibility === 'shared' ? 'secondary' : 'outline'} className="text-[10px]">
+                                {item.visibility === 'public' ? (locale === 'fa' ? 'عمومی' : 'Public') : item.visibility === 'shared' ? (locale === 'fa' ? 'اشتراکی' : 'Shared') : (locale === 'fa' ? 'خصوصی' : 'Private')}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Select value={item.visibility || 'private'} onValueChange={v => updateVisibility(item.id, v)}>
+                                <SelectTrigger className="h-8 text-xs flex-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="private"><span className="flex items-center gap-1.5"><Lock className="h-3 w-3" />{locale === 'fa' ? 'خصوصی' : 'Private'}</span></SelectItem>
+                                  <SelectItem value="public"><span className="flex items-center gap-1.5"><Globe className="h-3 w-3" />{locale === 'fa' ? 'عمومی' : 'Public'}</span></SelectItem>
+                                  <SelectItem value="shared"><span className="flex items-center gap-1.5"><Share2 className="h-3 w-3" />{locale === 'fa' ? 'اشتراکی' : 'Shared'}</span></SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                title={locale === 'fa' ? 'اشتراک با کاربر (ایمیل)' : 'Share with user'}
+                                onClick={() => setSharingItem(item)}
+                              >
+                                <UserPlus className="h-4 w-4 text-primary" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(item.id, item.src_url)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                                <a href={item.src_url} target="_blank" rel="noreferrer"><Eye className="h-4 w-4" /></a>
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {hasMoreMine && (
+                      <div className="mt-6 flex justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleLoadMoreMedia('mine')}
+                          disabled={loadingMoreMine}
+                        >
+                          {loadingMoreMine ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              {locale === 'fa' ? 'در حال بارگذاری...' : 'Loading more...'}
+                            </>
                           ) : (
-                            <FileText className="h-10 w-10 text-muted-foreground" />
+                            locale === 'fa' ? 'بیشتر...' : 'Load more'
                           )}
-                        </div>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm truncate" title={locale === 'fa' ? item.title_fa : item.title_en}>
-                            {locale === 'fa' ? item.title_fa : item.title_en}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>{item.file_size ? fmtBytes(item.file_size) : '—'}</span>
-                            <Badge variant={item.visibility === 'public' ? 'default' : item.visibility === 'shared' ? 'secondary' : 'outline'} className="text-[10px]">
-                              {item.visibility === 'public' ? (locale === 'fa' ? 'عمومی' : 'Public') : item.visibility === 'shared' ? (locale === 'fa' ? 'اشتراکی' : 'Shared') : (locale === 'fa' ? 'خصوصی' : 'Private')}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Select value={item.visibility || 'private'} onValueChange={v => updateVisibility(item.id, v)}>
-                              <SelectTrigger className="h-8 text-xs flex-1">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="private"><span className="flex items-center gap-1.5"><Lock className="h-3 w-3" />{locale === 'fa' ? 'خصوصی' : 'Private'}</span></SelectItem>
-                                <SelectItem value="public"><span className="flex items-center gap-1.5"><Globe className="h-3 w-3" />{locale === 'fa' ? 'عمومی' : 'Public'}</span></SelectItem>
-                                <SelectItem value="shared"><span className="flex items-center gap-1.5"><Share2 className="h-3 w-3" />{locale === 'fa' ? 'اشتراکی' : 'Shared'}</span></SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              title={locale === 'fa' ? 'اشتراک با کاربر (ایمیل)' : 'Share with user'}
-                              onClick={() => setSharingItem(item)}
-                            >
-                              <UserPlus className="h-4 w-4 text-primary" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(item.id, item.src_url)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                              <a href={item.src_url} target="_blank" rel="noreferrer"><Eye className="h-4 w-4" /></a>
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -388,34 +478,56 @@ export default function Media() {
                   {locale === 'fa' ? 'کتابخانه‌ی عمومی' : 'Public library'}
                   <span className="text-xs font-normal text-muted-foreground">— {locale === 'fa' ? 'نمایشِ همین بخش' : 'shown here'}</span>
                 </h3>
-                {filteredPublic.length === 0 ? (
+                {publicMedia.length === 0 ? (
                   <Card className="p-6 text-center text-sm text-muted-foreground">
                     {locale === 'fa' ? 'هنوز محتوای عمومی در این دسته منتشر نشده' : 'No public content in this category yet'}
                   </Card>
                 ) : (
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredPublic.map(item => (
-                      <Card key={item.id} className="glass-surface overflow-hidden">
-                        <div className="h-36 bg-muted flex items-center justify-center overflow-hidden">
-                          {item.type === 'image' && (
-                            <img src={item.src_url} alt={item.title_fa} className="h-full w-full object-cover" />
+                  <>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {publicMedia.map(item => (
+                        <Card key={item.id} className="glass-surface overflow-hidden">
+                          <div className="h-36 bg-muted flex items-center justify-center overflow-hidden">
+                            {item.type === 'image' && (
+                              <img src={item.src_url} alt={item.title_fa} className="h-full w-full object-cover" />
+                            )}
+                            {item.type === 'video' && <Video className="h-10 w-10 text-muted-foreground" />}
+                            {item.type === 'audio' && <Headphones className="h-10 w-10 text-muted-foreground" />}
+                            {item.type === 'pdf' && <FileText className="h-10 w-10 text-muted-foreground" />}
+                          </div>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm truncate">{locale === 'fa' ? item.title_fa : item.title_en}</CardTitle>
+                          </CardHeader>
+                          <CardContent className="flex justify-between items-center">
+                            <span className="text-xs text-muted-foreground">{item.file_size ? fmtBytes(item.file_size) : ''}</span>
+                            <Button variant="ghost" size="sm" asChild>
+                              <a href={item.src_url} target="_blank" rel="noreferrer">{locale === 'fa' ? 'نمایش' : 'View'}</a>
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {hasMorePublic && (
+                      <div className="mt-6 flex justify-center">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleLoadMoreMedia('public')}
+                          disabled={loadingMorePublic}
+                        >
+                          {loadingMorePublic ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              {locale === 'fa' ? 'در حال بارگذاری...' : 'Loading more...'}
+                            </>
+                          ) : (
+                            locale === 'fa' ? 'بیشتر...' : 'Load more'
                           )}
-                          {item.type === 'video' && <Video className="h-10 w-10 text-muted-foreground" />}
-                          {item.type === 'audio' && <Headphones className="h-10 w-10 text-muted-foreground" />}
-                          {item.type === 'pdf' && <FileText className="h-10 w-10 text-muted-foreground" />}
-                        </div>
-                        <CardHeader className="pb-2">
-                          <CardTitle className="text-sm truncate">{locale === 'fa' ? item.title_fa : item.title_en}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex justify-between items-center">
-                          <span className="text-xs text-muted-foreground">{item.file_size ? fmtBytes(item.file_size) : ''}</span>
-                          <Button variant="ghost" size="sm" asChild>
-                            <a href={item.src_url} target="_blank" rel="noreferrer">{locale === 'fa' ? 'نمایش' : 'View'}</a>
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </TabsContent>

@@ -6,9 +6,35 @@ import { Badge } from '@/components/ui/badge';
 import { Link, useSearchParams } from 'react-router-dom';
 import { BookOpen, Calendar, Loader2, Search, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
+interface AuthorProfile {
+  id: string;
+  first_name?: string;
+  last_name?: string;
+  display_name?: string;
+  avatar_url?: string;
+  bio_en?: string;
+  bio_fa?: string;
+  show_on_cards?: boolean;
+  show_in_community?: boolean;
+}
+
+interface ArticleItem {
+  id: string;
+  title_en: string;
+  title_fa: string;
+  slug: string;
+  summary_en?: string;
+  summary_fa?: string;
+  cover_url?: string;
+  tags?: string[];
+  categories?: string[];
+  author_id?: string;
+  published_at: string;
+  created_at: string;
+}
 
 export default function Read() {
   const { locale, t } = useLanguage();
@@ -16,54 +42,100 @@ export default function Read() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
 
-  const { data: articlesData, isLoading, error } = useQuery({
-    queryKey: ['articles'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('status', 'published')
-        .order('published_at', { ascending: false });
-      
+  const [articles, setArticles] = useState<ArticleItem[]>([]);
+  const [authors, setAuthors] = useState<Record<string, AuthorProfile>>({});
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+
+  const loadInitial = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.rpc('paginate_published_articles', {
+        p_cursor_time: null,
+        p_cursor_id: null,
+        p_limit: 9,
+        p_query: searchQuery.trim() || null,
+      });
       if (error) throw error;
 
-      // Load author profiles
-      const authorIds = [...new Set(data?.map(a => a.author_id).filter(Boolean))];
-      let authors: Record<string, any> = {};
-      
+      const rows = (data as ArticleItem[]) || [];
+      const more = rows.length > 9;
+      const pageItems = more ? rows.slice(0, 9) : rows;
+
+      setHasMore(more);
+      setArticles(pageItems);
+
+      const authorIds = [...new Set(pageItems.map((a) => a.author_id).filter(Boolean))] as string[];
       if (authorIds.length > 0) {
-        const { data: profilesData } = await supabase
+        const { data: profs } = await supabase
           .from('public_profiles')
           .select('id, first_name, last_name, display_name, avatar_url, bio_en, bio_fa, show_on_cards, show_in_community')
           .in('id', authorIds);
-        
-        if (profilesData) {
-          profilesData.forEach(profile => {
-            authors[profile.id] = profile;
+
+        if (profs) {
+          const newAuthors: Record<string, AuthorProfile> = {};
+          profs.forEach((p) => {
+            newAuthors[p.id] = p as AuthorProfile;
+          });
+          setAuthors(newAuthors);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading articles:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    loadInitial();
+  }, [loadInitial]);
+
+  const handleLoadMore = async () => {
+    if (articles.length === 0 || loadingMore) return;
+    const last = articles[articles.length - 1];
+    setLoadingMore(true);
+
+    try {
+      const { data, error } = await supabase.rpc('paginate_published_articles', {
+        p_cursor_time: last.published_at || last.created_at,
+        p_cursor_id: last.id,
+        p_limit: 9,
+        p_query: searchQuery.trim() || null,
+      });
+      if (error) throw error;
+
+      const rows = (data as ArticleItem[]) || [];
+      const more = rows.length > 9;
+      const pageItems = more ? rows.slice(0, 9) : rows;
+
+      setHasMore(more);
+      setArticles((prev) => [...prev, ...pageItems]);
+
+      const authorIds = [...new Set(pageItems.map((a) => a.author_id).filter(Boolean))] as string[];
+      if (authorIds.length > 0) {
+        const { data: profs } = await supabase
+          .from('public_profiles')
+          .select('id, first_name, last_name, display_name, avatar_url, bio_en, bio_fa, show_on_cards, show_in_community')
+          .in('id', authorIds);
+
+        if (profs) {
+          setAuthors((prev) => {
+            const updated = { ...prev };
+            profs.forEach((p) => {
+              updated[p.id] = p as AuthorProfile;
+            });
+            return updated;
           });
         }
       }
-      
-      return { articles: data, authors };
-    },
-  });
-
-  const allArticles = articlesData?.articles ?? [];
-  const authors = articlesData?.authors || {};
-
-  // Client-side filter based on search query
-  const articles = useMemo(() => {
-    if (!searchQuery.trim()) return allArticles;
-    const q = searchQuery.toLowerCase();
-    return allArticles.filter(a =>
-      a.title_fa?.toLowerCase().includes(q) ||
-      a.title_en?.toLowerCase().includes(q) ||
-      a.summary_fa?.toLowerCase().includes(q) ||
-      a.summary_en?.toLowerCase().includes(q) ||
-      a.tags?.some(tag => tag.toLowerCase().includes(q)) ||
-      a.categories?.some(cat => cat.toLowerCase().includes(q))
-    );
-  }, [allArticles, searchQuery]);
+    } catch (err) {
+      console.error('Error loading more articles:', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const clearSearch = () => setSearchParams({});
 
@@ -77,8 +149,8 @@ export default function Read() {
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
             {locale === 'fa' 
-              ? 'مجموعه مقالات آکادمیک به صورت دوزبانه - تجربه مطالعه منحصر به فرد با نمایش اسلایدی'
-              : 'Collection of bilingual academic articles - unique reading experience with slide presentation'}
+              ? 'مجموعه مقالات آکادمیک به صورت دوزبانه - تجربه مطالعه منحصر به فرد با نمایش اسلایدی (صفحه‌بندی مکان‌نما)'
+              : 'Collection of bilingual academic articles - unique reading experience with slide presentation (Keyset Pagination)'}
           </p>
 
           {/* Search query indicator */}
@@ -101,103 +173,120 @@ export default function Read() {
         </div>
 
         {/* Loading State */}
-        {isLoading && (
+        {loading && (
           <div className="flex justify-center items-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         )}
 
-        {/* Error State */}
-        {error && (
-          <div className="text-center py-12 text-muted-foreground">
-            {locale === 'fa' ? 'خطا در بارگذاری مقالات' : 'Error loading articles'}
-          </div>
-        )}
-
         {/* Articles Grid */}
-        {articles && articles.length > 0 && (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {articles.map((article) => {
-              const isUserArticle = user && article.author_id === user.id;
-              return (
-              <Card 
-                key={article.id} 
-                className={`group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
-                  isUserArticle ? 'ring-1 ring-accent/30' : ''
-                }`}
-              >
-                <div className={`h-48 bg-gradient-to-br relative overflow-hidden ${
-                  isUserArticle 
-                    ? 'from-accent/15 via-secondary to-card' 
-                    : 'from-secondary via-card to-background'
-                }`}>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <BookOpen className="h-16 w-16 text-primary/20 group-hover:scale-110 transition-transform" />
-                  </div>
-                  {isUserArticle && (
-                    <div className="absolute top-2 right-2">
-                      <Badge variant="default" className="bg-accent text-accent-foreground">
-                        {locale === 'fa' ? 'مقاله شما' : 'Your Article'}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-                
-                <CardHeader>
-                  <div className="flex gap-2 flex-wrap mb-2">
-                    {article.tags?.slice(0, 3).map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-                    {locale === 'fa' ? article.title_fa : article.title_en}
-                  </CardTitle>
-                  
-                  <CardDescription className="line-clamp-3" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-                    {locale === 'fa' ? article.summary_fa : article.summary_en}
-                  </CardDescription>
-                  
-                  {article.author_id && authors[article.author_id] && authors[article.author_id].show_on_cards && (
-                    <div className="mt-4 flex items-center gap-3 rounded-xl bg-muted/40 p-2.5">
-                      <Avatar className="h-9 w-9 border border-border/50">
-                        <AvatarImage src={authors[article.author_id].avatar_url || undefined} alt={authors[article.author_id].display_name || `${authors[article.author_id].first_name} ${authors[article.author_id].last_name}`} />
-                        <AvatarFallback className="text-xs">{(authors[article.author_id].display_name || authors[article.author_id].first_name || '?').slice(0,2)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-medium truncate">{authors[article.author_id].display_name || `${authors[article.author_id].first_name} ${authors[article.author_id].last_name}`}</span>
-                        {(locale === 'fa' ? authors[article.author_id].bio_fa : authors[article.author_id].bio_en) && (
-                          <span className="text-xs text-muted-foreground/80 truncate max-w-[18ch]">{locale === 'fa' ? authors[article.author_id].bio_fa : authors[article.author_id].bio_en}</span>
-                        )}
+        {!loading && articles && articles.length > 0 && (
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {articles.map((article) => {
+                const isUserArticle = user && article.author_id === user.id;
+                const authProfile = article.author_id ? authors[article.author_id] : undefined;
+                return (
+                  <Card 
+                    key={article.id} 
+                    className={`group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
+                      isUserArticle ? 'ring-1 ring-accent/30' : ''
+                    }`}
+                  >
+                    <div className={`h-48 bg-gradient-to-br relative overflow-hidden ${
+                      isUserArticle 
+                        ? 'from-accent/15 via-secondary to-card' 
+                        : 'from-secondary via-card to-background'
+                    }`}>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <BookOpen className="h-16 w-16 text-primary/20 group-hover:scale-110 transition-transform" />
                       </div>
+                      {isUserArticle && (
+                        <div className="absolute top-2 right-2">
+                          <Badge variant="default" className="bg-accent text-accent-foreground">
+                            {locale === 'fa' ? 'مقاله شما' : 'Your Article'}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
+                    
+                    <CardHeader>
+                      <div className="flex gap-2 flex-wrap mb-2">
+                        {article.tags?.slice(0, 3).map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      
+                      <CardTitle className="text-xl group-hover:text-primary transition-colors" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
+                        {locale === 'fa' ? article.title_fa : article.title_en}
+                      </CardTitle>
+                      
+                      <CardDescription className="line-clamp-3" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
+                        {locale === 'fa' ? article.summary_fa : article.summary_en}
+                      </CardDescription>
+                      
+                      {authProfile && authProfile.show_on_cards && (
+                        <div className="mt-4 flex items-center gap-3 rounded-xl bg-muted/40 p-2.5">
+                          <Avatar className="h-9 w-9 border border-border/50">
+                            <AvatarImage src={authProfile.avatar_url || undefined} alt={authProfile.display_name || `${authProfile.first_name || ''} ${authProfile.last_name || ''}`} />
+                            <AvatarFallback className="text-xs">{(authProfile.display_name || authProfile.first_name || '?').slice(0,2)}</AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-medium truncate">{authProfile.display_name || `${authProfile.first_name || ''} ${authProfile.last_name || ''}`}</span>
+                            {(locale === 'fa' ? authProfile.bio_fa : authProfile.bio_en) && (
+                              <span className="text-xs text-muted-foreground/80 truncate max-w-[18ch]">{locale === 'fa' ? authProfile.bio_fa : authProfile.bio_en}</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </CardHeader>
+                    
+                    <CardContent>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>{new Date(article.published_at || article.created_at).toLocaleDateString(locale)}</span>
+                        </div>
+                      </div>
+                      
+                      <Button variant="ghost-ios" asChild className="w-full">
+                        <Link to={`/read/${article.slug}`}>
+                          {locale === 'fa' ? 'مطالعه مقاله' : 'Read Article'}
+                        </Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {hasMore && (
+              <div className="mt-10 flex justify-center">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="px-8"
+                >
+                  {loadingMore ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {locale === 'fa' ? 'در حال بارگذاری...' : 'Loading more...'}
+                    </>
+                  ) : (
+                    locale === 'fa' ? 'بارگذاری مقالات بیشتر' : 'Load More Articles'
                   )}
-                </CardHeader>
-                
-                <CardContent>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>{new Date(article.published_at).toLocaleDateString(locale)}</span>
-                    </div>
-                  </div>
-                  
-                  <Button variant="ghost-ios" asChild className="w-full">
-                    <Link to={`/read/${article.slug}`}>
-                      {locale === 'fa' ? 'مطالعه مقاله' : 'Read Article'}
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-            })}
-          </div>
+                </Button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Empty State */}
-        {articles && articles.length === 0 && (
+        {!loading && articles && articles.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             {searchQuery
               ? (locale === 'fa' ? `نتیجه‌ای برای "${searchQuery}" پیدا نشد` : `No results found for "${searchQuery}"`)
