@@ -609,7 +609,7 @@ export default function Dashboard() {
                     <Card key={s.id} className="glass-surface">
                       <CardHeader>
                         <div className="space-y-1">
-                          <label className="text-xs text-muted-foreground">Section Key</label>
+                          <label className="text-xs text-muted-foreground">{t('شناسه بخش (Key)', 'Section Key')}</label>
                           <Input
                             value={s.section_key}
                             className="font-mono text-sm"
@@ -620,14 +620,14 @@ export default function Dashboard() {
                       <CardContent className="space-y-3">
                         <div className="grid md:grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">Title (EN)</label>
+                            <label className="text-xs text-muted-foreground">{t('عنوان انگلیسی (EN)', 'Title (EN)')}</label>
                             <Input
                               value={s.title_en}
                               onChange={(e) => updateSectionField(s.id, 'title_en', e.target.value)}
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">عنوان (FA)</label>
+                            <label className="text-xs text-muted-foreground">{t('عنوان فارسی (FA)', 'Title (FA)')}</label>
                             <Input
                               value={s.title_fa}
                               dir="rtl"
@@ -637,7 +637,7 @@ export default function Dashboard() {
                         </div>
                         <div className="grid md:grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">Body (EN) — Markdown</label>
+                            <label className="text-xs text-muted-foreground">{t('متن انگلیسی (Markdown)', 'Body (EN) — Markdown')}</label>
                             <Textarea
                               value={s.body_en}
                               rows={6}
@@ -645,7 +645,7 @@ export default function Dashboard() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">متن (FA) — Markdown</label>
+                            <label className="text-xs text-muted-foreground">{t('متن فارسی (Markdown)', 'Body (FA) — Markdown')}</label>
                             <Textarea
                               value={s.body_fa}
                               rows={6}

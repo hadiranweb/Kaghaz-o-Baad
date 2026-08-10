@@ -140,21 +140,21 @@ export default function LiveSessionsManager() {
             <CardContent className="space-y-3">
               <div className="grid md:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Title (EN)</label>
+                  <label className="text-xs text-muted-foreground">{locale === 'fa' ? 'عنوان انگلیسی (EN)' : 'Title (EN)'}</label>
                   <Input value={s.title_en ?? ''} onChange={(e) => setField(s.id, 'title_en', e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">عنوان (FA)</label>
+                  <label className="text-xs text-muted-foreground">{locale === 'fa' ? 'عنوان فارسی (FA)' : 'Title (FA)'}</label>
                   <Input dir="rtl" value={s.title_fa ?? ''} onChange={(e) => setField(s.id, 'title_fa', e.target.value)} />
                 </div>
               </div>
               <div className="grid md:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Description (EN)</label>
+                  <label className="text-xs text-muted-foreground">{locale === 'fa' ? 'توضیحات انگلیسی (EN)' : 'Description (EN)'}</label>
                   <Textarea rows={3} value={s.description_en ?? ''} onChange={(e) => setField(s.id, 'description_en', e.target.value)} />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">توضیحات (FA)</label>
+                  <label className="text-xs text-muted-foreground">{locale === 'fa' ? 'توضیحات فارسی (FA)' : 'Description (FA)'}</label>
                   <Textarea rows={3} dir="rtl" value={s.description_fa ?? ''} onChange={(e) => setField(s.id, 'description_fa', e.target.value)} />
                 </div>
               </div>

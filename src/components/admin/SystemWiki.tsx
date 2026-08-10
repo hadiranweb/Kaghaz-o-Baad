@@ -75,19 +75,19 @@ export default function SystemWiki() {
           <CardContent className="space-y-3 text-xs">
             <div className="space-y-1.5 font-mono text-[11px]">
               <div className="p-2 rounded bg-secondary/30 flex justify-between items-center" dir="ltr">
-                <span><b>Admin:</b> admin@kaghazbaad.test</span>
+                <span><b>{t('مدیر (Admin):', 'Admin:')}</b> admin@kaghazbaad.test</span>
                 <span className="text-muted-foreground">TestAdmin@2026!</span>
               </div>
               <div className="p-2 rounded bg-secondary/30 flex justify-between items-center" dir="ltr">
-                <span><b>Editor:</b> editor@kaghazbaad.test</span>
+                <span><b>{t('ویرایشگر (Editor):', 'Editor:')}</b> editor@kaghazbaad.test</span>
                 <span className="text-muted-foreground">TestEditor@2026!</span>
               </div>
               <div className="p-2 rounded bg-secondary/30 flex justify-between items-center" dir="ltr">
-                <span><b>Contributor:</b> contributor@kaghazbaad.test</span>
+                <span><b>{t('نویسنده (Contributor):', 'Contributor:')}</b> contributor@kaghazbaad.test</span>
                 <span className="text-muted-foreground">TestContributor@2026!</span>
               </div>
               <div className="p-2 rounded bg-secondary/30 flex justify-between items-center" dir="ltr">
-                <span><b>User:</b> user@kaghazbaad.test</span>
+                <span><b>{t('کاربر (User):', 'User:')}</b> user@kaghazbaad.test</span>
                 <span className="text-muted-foreground">TestUser@2026!</span>
               </div>
             </div>

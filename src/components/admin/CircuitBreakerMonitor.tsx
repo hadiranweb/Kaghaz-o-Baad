@@ -208,7 +208,7 @@ export default function CircuitBreakerMonitor() {
                     </div>
                     <div>
                       <span className="text-muted-foreground block">{t('زمان وقفه (تنفس):', 'Cooldown Period:')}</span>
-                      <span className="font-semibold text-foreground text-sm">{item.cooldown_seconds}s</span>
+                      <span className="font-semibold text-foreground text-sm">{item.cooldown_seconds} {t('ثانیه', 's')}</span>
                     </div>
                     <div className="col-span-2 pt-1 border-t border-border/30 text-[11px] text-muted-foreground flex justify-between">
                       <span>{t('آخرین خطا:', 'Last Failure:')}</span>
