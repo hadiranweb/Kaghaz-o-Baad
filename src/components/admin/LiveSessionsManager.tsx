@@ -113,14 +113,8 @@ export default function LiveSessionsManager() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-thin">
-          {locale === 'fa' ? 'پخش‌های زنده' : 'Live Sessions'} ({sessions.length})
+          {locale === 'fa' ? 'پخش‌های زنده (پایش ادمین)' : 'Live Sessions (Admin Monitor)'} ({sessions.length})
         </h2>
-        <Button asChild size="sm" variant="outline">
-          <Link to="/live/new">
-            <Radio className="w-4 h-4" />
-            {locale === 'fa' ? 'ایجاد جلسه' : 'New session'}
-          </Link>
-        </Button>
       </div>
 
       {sessions.length === 0 ? (
