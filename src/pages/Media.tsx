@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Image as ImageIcon, Video, FileText, Headphones, Upload, HardDrive, Share2, Lock, Globe, Trash2, Eye } from 'lucide-react';
+import { Image as ImageIcon, Video, FileText, Headphones, Upload, HardDrive, Share2, Lock, Globe, Trash2, Eye, UserPlus } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,12 +24,14 @@ type MediaItem = {
   thumb_url: string | null;
   file_size: number | null;
   visibility: string | null;
+  shared_with?: string[];
   created_at: string;
   owner_id: string | null;
   created_by: string | null;
 };
 
 const QUOTA_BYTES = 15 * 1024 * 1024 * 1024; // 15GB
+
 const fmtBytes = (n: number) => {
   if (n < 1024) return `${n} B`;
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
@@ -37,8 +39,20 @@ const fmtBytes = (n: number) => {
   return `${(n / (1024 * 1024 * 1024)).toFixed(2)} GB`;
 };
 
+function extractStoragePath(srcUrl: string): string | null {
+  try {
+    const match = srcUrl.match(/\/media\/(.+)$/);
+    if (match && match[1]) {
+      return decodeURIComponent(match[1].split('?')[0]);
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Media() {
-  const { locale, t } = useLanguage();
+  const { locale } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -48,11 +62,13 @@ export default function Media() {
   const [usedBytes, setUsedBytes] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [sharingItem, setSharingItem] = useState<MediaItem | null>(null);
+  const [shareEmail, setShareEmail] = useState('');
+  const [sharingBusy, setSharingBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const title = locale === 'fa' ? 'چندرسانه‌ای' : 'Media';
 
-  // اگر کاربر لاگین نیست و وارد صفحه شد، پاپ‌آپ نمایش ده
   useEffect(() => {
     if (!user) {
       const timer = setTimeout(() => setShowLoginDialog(true), 400);
@@ -64,21 +80,34 @@ export default function Media() {
 
   const loadMedia = async () => {
     if (!user) {
-      // فقط عمومی
       const { data } = await supabase.from('media').select('*').eq('visibility', 'public').order('created_at', { ascending: false }).limit(50);
-      if (data) setPublicMedia(data as any);
+      if (data) setPublicMedia(data as MediaItem[]);
       return;
     }
+
     // شخصی
     const { data: mine } = await supabase.from('media').select('*').or(`owner_id.eq.${user.id},created_by.eq.${user.id}`).order('created_at', { ascending: false });
     if (mine) {
-      setMyMedia(mine as any);
-      const sum = (mine as any[]).reduce((s, m) => s + (m.file_size || 0), 0);
+      setMyMedia(mine as MediaItem[]);
+    }
+
+    // خواندن حجم مصرفی دقیق از جدول user_storage (که توسط تریگر خودکار دیتابیس tr_media_storage_quota به‌روز می‌شود)
+    const { data: storageRow } = await supabase
+      .from('user_storage')
+      .select('used_bytes')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (storageRow && typeof storageRow.used_bytes === 'number') {
+      setUsedBytes(storageRow.used_bytes);
+    } else if (mine) {
+      const sum = (mine as MediaItem[]).reduce((s, m) => s + (m.file_size || 0), 0);
       setUsedBytes(sum);
     }
+
     // عمومی
     const { data: pub } = await supabase.from('media').select('*').eq('visibility', 'public').order('created_at', { ascending: false }).limit(50);
-    if (pub) setPublicMedia(pub as any);
+    if (pub) setPublicMedia(pub as MediaItem[]);
   };
 
   useEffect(() => {
@@ -93,25 +122,24 @@ export default function Media() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // بررسی 4 نوع
-    const typeMap: Record<string, 'image' | 'video' | 'audio' | 'pdf'> = {
-      'image/': 'image',
-      'video/': 'video',
-      'audio/': 'audio',
-      'application/pdf': 'pdf',
-    };
-    let detected: typeof activeTab = activeTab;
-    if (file.type.startsWith('image/')) detected = 'image';
-    else if (file.type.startsWith('video/')) detected = 'video';
-    else if (file.type.startsWith('audio/')) detected = 'audio';
-    else if (file.type === 'application/pdf') detected = 'pdf';
-    else {
+    const detectedTab: typeof activeTab =
+      file.type.startsWith('image/')
+        ? 'image'
+        : file.type.startsWith('video/')
+        ? 'video'
+        : file.type.startsWith('audio/')
+        ? 'audio'
+        : file.type === 'application/pdf'
+        ? 'pdf'
+        : 'image';
+
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/') && !file.type.startsWith('audio/') && file.type !== 'application/pdf') {
       toast({ variant: 'destructive', title: locale === 'fa' ? 'فرمت ناشناخته' : 'Unknown type' });
       return;
     }
 
-    if (detected !== activeTab) {
-      setActiveTab(detected);
+    if (detectedTab !== activeTab) {
+      setActiveTab(detectedTab);
     }
 
     if (usedBytes + file.size > QUOTA_BYTES) {
@@ -126,9 +154,9 @@ export default function Media() {
     setUploading(true);
     try {
       const profile = await supabase.from('profiles').select('id').eq('user_id', user.id).maybeSingle();
-      const profileId = (profile.data as any)?.id || null;
+      const profileId = (profile.data as { id?: string })?.id || null;
 
-      const filePath = `${user.id}/${detected}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
+      const filePath = `${user.id}/${detectedTab}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
       const { error: upErr } = await supabase.storage.from('media').upload(filePath, file, { upsert: false });
       if (upErr) throw upErr;
 
@@ -137,19 +165,20 @@ export default function Media() {
       const { error: dbErr } = await supabase.from('media').insert({
         title_en: file.name,
         title_fa: file.name,
-        type: detected,
+        type: detectedTab,
         src_url: urlData.publicUrl,
         file_size: file.size,
         owner_id: user.id,
         created_by: profileId,
         visibility: 'private',
-      } as any);
+      });
       if (dbErr) throw dbErr;
 
       toast({ title: locale === 'fa' ? 'آپلود شد' : 'Uploaded' });
       loadMedia();
-    } catch (err: any) {
-      toast({ variant: 'destructive', title: 'خطا', description: err.message });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast({ variant: 'destructive', title: 'خطا', description: message });
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = '';
@@ -157,7 +186,7 @@ export default function Media() {
   };
 
   const updateVisibility = async (id: string, visibility: string) => {
-    const { error } = await supabase.from('media').update({ visibility } as any).eq('id', id);
+    const { error } = await supabase.from('media').update({ visibility }).eq('id', id);
     if (!error) {
       toast({ title: locale === 'fa' ? 'اشتراک به‌روزرسانی شد' : 'Sharing updated' });
       loadMedia();
@@ -167,12 +196,45 @@ export default function Media() {
   const handleDelete = async (id: string, src: string) => {
     const { error } = await supabase.from('media').delete().eq('id', id);
     if (!error) {
-      // حذف از storage هم تلاش کن
       try {
-        const path = src.split('/media/')[1];
-        if (path) await supabase.storage.from('media').remove([decodeURIComponent(path.split('?')[0])]);
-      } catch {}
+        const path = extractStoragePath(src);
+        if (path) {
+          await supabase.storage.from('media').remove([path]);
+        }
+      } catch (err) {
+        console.error('Error removing storage object:', err);
+      }
+      toast({ title: locale === 'fa' ? 'حذف شد' : 'Deleted' });
       loadMedia();
+    } else {
+      toast({
+        variant: 'destructive',
+        title: locale === 'fa' ? 'خطا در حذف' : 'Delete error',
+        description: error.message,
+      });
+    }
+  };
+
+  const handleShareWithEmail = async () => {
+    if (!sharingItem || !shareEmail.trim()) return;
+    setSharingBusy(true);
+    const { data, error } = await supabase.rpc('share_media_with_email', {
+      p_media_id: sharingItem.id,
+      p_email: shareEmail.trim(),
+    });
+    setSharingBusy(false);
+
+    if (error || (data as Record<string, unknown>)?.ok === false) {
+      const msg = error?.message || String((data as Record<string, unknown>)?.error || 'Error sharing file');
+      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا در اشتراک‌گذاری' : 'Sharing Error', description: msg });
+    } else {
+      toast({
+        title: locale === 'fa' ? 'به اشتراک گذاشته شد' : 'File Shared',
+        description: locale === 'fa' ? `فایل با موفقیت با ${shareEmail} به اشتراک گذاشته شد.` : `File shared with ${shareEmail}.`,
+      });
+      setShareEmail('');
+      loadMedia();
+      setSharingItem(null);
     }
   };
 
@@ -228,7 +290,7 @@ export default function Media() {
           </Card>
         )}
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)} className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'image' | 'video' | 'audio' | 'pdf')} className="w-full">
           <TabsList className="grid grid-cols-4 w-full max-w-xl mx-auto mb-6">
             {tabs.map(t => {
               const Icon = t.icon;
@@ -296,6 +358,15 @@ export default function Media() {
                                 <SelectItem value="shared"><span className="flex items-center gap-1.5"><Share2 className="h-3 w-3" />{locale === 'fa' ? 'اشتراکی' : 'Shared'}</span></SelectItem>
                               </SelectContent>
                             </Select>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              title={locale === 'fa' ? 'اشتراک با کاربر (ایمیل)' : 'Share with user'}
+                              onClick={() => setSharingItem(item)}
+                            >
+                              <UserPlus className="h-4 w-4 text-primary" />
+                            </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(item.id, item.src_url)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -350,6 +421,60 @@ export default function Media() {
             </TabsContent>
           ))}
         </Tabs>
+
+        {/* پاپ‌آپ اشتراک‌گذاری رسانه با کاربر */}
+        <Dialog open={!!sharingItem} onOpenChange={(o) => !o && setSharingItem(null)}>
+          <DialogContent className="glass-surface max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Share2 className="h-5 w-5 text-primary" />
+                <span>{locale === 'fa' ? 'اشتراک‌گذاری رسانه با کاربر' : 'Share Media with User'}</span>
+              </DialogTitle>
+              <DialogDescription>
+                {locale === 'fa'
+                  ? 'ایمیل کاربری که می‌خواهید این فایل با او به اشتراک گذاشته شود را وارد کنید. سطح دسترسی به طور خودکار روی «اشتراکی» تنظیم می‌شود.'
+                  : 'Enter the user email to share this file with. Visibility will automatically switch to “Shared”.'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label>{locale === 'fa' ? 'ایمیل کاربر هدف' : 'Target User Email'}</Label>
+                <Input
+                  dir="ltr"
+                  type="email"
+                  placeholder="user@kaghazbaad.test"
+                  value={shareEmail}
+                  onChange={(e) => setShareEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleShareWithEmail()}
+                />
+              </div>
+              {sharingItem?.shared_with && sharingItem.shared_with.length > 0 && (
+                <div className="space-y-2 text-xs">
+                  <span className="text-muted-foreground font-medium">
+                    {locale === 'fa' ? 'کاربران دارای دسترسی:' : 'Users with access:'}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sharingItem.shared_with.map((uid) => (
+                      <Badge key={uid} variant="secondary" className="font-mono text-[10px]">
+                        {uid.slice(0, 8)}...
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setSharingItem(null)}>
+                {locale === 'fa' ? 'لغو' : 'Cancel'}
+              </Button>
+              <Button onClick={handleShareWithEmail} disabled={sharingBusy || !shareEmail.trim()}>
+                {sharingBusy
+                  ? (locale === 'fa' ? 'در حال اشتراک...' : 'Sharing...')
+                  : (locale === 'fa' ? 'اشتراک‌گذاری' : 'Share')}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* پاپ‌آپ اجباری ورود */}
         <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
