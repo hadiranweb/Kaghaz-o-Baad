@@ -5,9 +5,12 @@ export interface LiveKitTokenResponse {
   token: string;
   url: string;
   room: string;
-  role: 'host' | 'viewer';
+  role: 'host' | 'speaker' | 'viewer';
   identity: string;
   name: string;
+  e2ee_enabled?: boolean;
+  article_id?: string | null;
+  presentation_enabled?: boolean;
 }
 
 export function useLiveKitToken(sessionId: string | null) {

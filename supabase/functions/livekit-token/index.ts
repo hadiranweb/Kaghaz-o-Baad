@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     )
     const { data: session, error: sErr } = await admin
       .from('live_sessions')
-      .select('id, host_user_id, room_name, status, max_participants')
+      .select('id, host_user_id, room_name, status, max_participants, e2ee_enabled, article_id, presentation_enabled')
       .eq('id', sessionId)
       .maybeSingle()
 
@@ -125,6 +125,9 @@ Deno.serve(async (req) => {
         role,
         identity: userId,
         name: displayName,
+        e2ee_enabled: !!(session as Record<string, unknown>).e2ee_enabled,
+        article_id: ((session as Record<string, unknown>).article_id as string) || null,
+        presentation_enabled: (session as Record<string, unknown>).presentation_enabled !== false,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
