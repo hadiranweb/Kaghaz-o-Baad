@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { rpc } from '@/integrations/supabase/rpc';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,9 +30,9 @@ export default function CircuitBreakerMonitor() {
   const loadBreakers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('list_circuit_breakers');
+      const { data, error } = await rpc<CircuitBreakerItem[]>('list_circuit_breakers');
       if (error) throw error;
-      setItems((data as CircuitBreakerItem[]) || []);
+      setItems(data || []);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast({
@@ -51,12 +52,12 @@ export default function CircuitBreakerMonitor() {
   const handleReset = async (serviceName: string) => {
     setBusyService(serviceName);
     try {
-      const { data, error } = await supabase.rpc('reset_circuit_breaker', {
+      const { data, error } = await rpc<{ ok?: boolean; error?: string }>('reset_circuit_breaker', {
         p_service: serviceName,
       });
       if (error) throw error;
-      if ((data as Record<string, unknown>)?.ok === false) {
-        throw new Error(String((data as Record<string, unknown>)?.error || 'Error'));
+      if (data?.ok === false) {
+        throw new Error(String(data?.error || 'Error'));
       }
       toast({
         title: t('مدارشکن بازنشانی شد', 'Circuit Breaker Reset'),
@@ -78,12 +79,12 @@ export default function CircuitBreakerMonitor() {
   const handleTripTest = async (serviceName: string) => {
     setBusyService(serviceName);
     try {
-      const { data, error } = await supabase.rpc('trip_circuit_breaker_test', {
+      const { data, error } = await rpc<{ ok?: boolean; error?: string }>('trip_circuit_breaker_test', {
         p_service: serviceName,
       });
       if (error) throw error;
-      if ((data as Record<string, unknown>)?.ok === false) {
-        throw new Error(String((data as Record<string, unknown>)?.error || 'Error'));
+      if (data?.ok === false) {
+        throw new Error(String(data?.error || 'Error'));
       }
       toast({
         variant: 'destructive',

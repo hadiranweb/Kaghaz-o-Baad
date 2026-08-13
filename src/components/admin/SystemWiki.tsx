@@ -174,6 +174,79 @@ export default function SystemWiki() {
             </div>
           </CardContent>
         </Card>
+
+        {/* کارت ۵: معماری پخش زنده */}
+        <Card className="glass-surface md:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base font-[IRANSharp]">
+              <Video className="h-4 w-4 text-red-500" />
+              <span>{t('۵. معماری پخش زنده: سرعت ← امنیت ← کیفیت', '5. Live Architecture: Speed ← Security ← Quality')}</span>
+            </CardTitle>
+            <CardDescription className="text-xs">
+              {t('اجماع پس از بررسی پروتکل‌ها: LiveKit SFU + Dynacast + E2EE + ارائهٔ همگام بومی', 'Consensus after protocol review: LiveKit SFU + Dynacast + E2EE + native synced presentation')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-xs leading-6 text-muted-foreground">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 space-y-1">
+                <div className="font-medium text-foreground flex items-center gap-1.5">
+                  <Zap className="h-3.5 w-3.5 text-amber-500" />
+                  {t('سرعت و بهینگی', 'Speed')}
+                </div>
+                <p>
+                  {t(
+                    'SFU: هر فرستنده فقط یک استریم به سرور می‌فرستد و سرور به همه توزیع می‌کند. Dynacast فقط لایه‌های ویدیوییِ موردنیاز هر بیننده را ارسال می‌کند و AdaptiveStream ویدیوی پنهان را خودکار می‌بندد. بینندگان در حالت اسلاید/ارائه می‌توانند ویدیو را کامل خاموش کنند.',
+                    'SFU: one upstream per publisher, server fan-out. Dynacast sends only needed layers; AdaptiveStream pauses hidden video. Viewers can fully disable video in slide/presentation mode.'
+                  )}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 space-y-1">
+                <div className="font-medium text-foreground flex items-center gap-1.5">
+                  <Shield className="h-3.5 w-3.5 text-emerald-500" />
+                  {t('امنیت و رمزنگاری', 'Security')}
+                </div>
+                <p>
+                  {t(
+                    'E2EE واقعی با ExternalE2EEKeyProvider + Insertable Streams: فریم‌ها و کانال داده پیش از خروج از مرورگر رمز می‌شوند. کلید (عبارت عبور) در مرورگر میزبان ساخته می‌شود و هرگز روی سرور ذخیره نمی‌شود؛ شرکت‌کنندگان آن را از راهِ امن می‌گیرند. بدون E2EE، اتصال همچنان DTLS/SRTP است.',
+                    'Real E2EE via ExternalE2EEKeyProvider + Insertable Streams: frames & data are encrypted pre-egress. The passphrase is generated in the host browser, never stored server-side; participants get it out-of-band. Without E2EE, transport stays DTLS/SRTP.'
+                  )}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-secondary/30 border border-border/40 space-y-1">
+                <div className="font-medium text-foreground flex items-center gap-1.5">
+                  <FileText className="h-3.5 w-3.5 text-primary" />
+                  {t('کیفیت ارائه', 'Presentation quality')}
+                </div>
+                <p>
+                  {t(
+                    'دو حالت: (۱) عرشه اسلاید مقاله — رندر بومی Markdown؛ (۲) فایل ارائهٔ آپلودشده (PDF با pdf.js صفحه‌به‌صفحه و با DPI بالا رندر می‌شود؛ تصویر مستقیم؛ PPTX دانلود). همگام‌سازی از کانال دادهٔ درون‌اتاقی LiveKit است نه ویدیوی اشتراک‌صفحه.',
+                    'Two modes: (1) article slide deck — native Markdown; (2) uploaded presentation (PDF rendered page-by-page at high DPI via pdf.js; images direct; PPTX downloadable). Sync rides the in-room LiveKit data channel, not screen-share video.'
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-background/60 border border-border/40 font-mono text-[11px] space-y-1" dir="ltr">
+              <div className="font-sans font-medium text-foreground">
+                {t('راه‌اندازی سرور زنده (یک‌بار):', 'LiveKit setup (one-time):')}
+              </div>
+              <div>supabase secrets set LIVEKIT_URL=wss://… LIVEKIT_API_KEY=… LIVEKIT_API_SECRET=…</div>
+              <div>supabase functions deploy livekit-token</div>
+              <div>supabase db push</div>
+            </div>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <Badge variant="outline">SFU (no MCU)</Badge>
+              <Badge variant="outline">Dynacast</Badge>
+              <Badge variant="outline">AdaptiveStream</Badge>
+              <Badge variant="outline" className="text-emerald-500 border-emerald-500/30">E2EE: Insertable Streams</Badge>
+              <Badge variant="outline">DataChannel: kb-slide / kb-chat / kb-ctrl</Badge>
+              <Badge variant="outline">PDF: pdf.js native render</Badge>
+              <Badge variant="outline">Waiting room</Badge>
+              <Badge variant="outline">Invite link + key sharing</Badge>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

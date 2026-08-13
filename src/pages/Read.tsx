@@ -8,6 +8,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { BookOpen, Calendar, Loader2, Search, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
+import { rpc } from '@/integrations/supabase/rpc';
 import { useToast } from '@/hooks/use-toast';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -62,7 +63,7 @@ export default function Read() {
 
       // اگر تب 'published' است ابتدا تابع RPC مکان‌نما را تلاش کن
       if (filterStatus === 'published') {
-        const { data, error } = await supabase.rpc('paginate_published_articles', {
+        const { data, error } = await rpc<ArticleItem[]>('paginate_published_articles', {
           p_cursor_time: null,
           p_cursor_id: null,
           p_limit: 9,
@@ -70,7 +71,7 @@ export default function Read() {
         });
 
         if (!error && data) {
-          const allRows = (data as ArticleItem[]) || [];
+          const allRows = data || [];
           more = allRows.length > 9;
           rows = more ? allRows.slice(0, 9) : allRows;
         } else {
@@ -134,7 +135,7 @@ export default function Read() {
     setLoadingMore(true);
 
     try {
-      const { data, error } = await supabase.rpc('paginate_published_articles', {
+      const { data, error } = await rpc<ArticleItem[]>('paginate_published_articles', {
         p_cursor_time: last.published_at || last.created_at,
         p_cursor_id: last.id,
         p_limit: 9,
@@ -142,7 +143,7 @@ export default function Read() {
       });
       if (error) throw error;
 
-      const rows = (data as ArticleItem[]) || [];
+      const rows = data || [];
       const more = rows.length > 9;
       const pageItems = more ? rows.slice(0, 9) : rows;
 

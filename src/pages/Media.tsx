@@ -1,6 +1,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { rpc } from '@/integrations/supabase/rpc';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -86,7 +87,7 @@ export default function Media() {
 
   const loadMedia = useCallback(async () => {
     if (!user) {
-      const { data, error } = await supabase.rpc('paginate_media', {
+      const { data, error } = await rpc<MediaItem[]>('paginate_media', {
         p_type: activeTab,
         p_scope: 'public',
         p_cursor_time: null,
@@ -94,7 +95,7 @@ export default function Media() {
         p_limit: 12,
       });
       if (!error && data) {
-        const rows = (data as MediaItem[]) || [];
+        const rows = data || [];
         const more = rows.length > 12;
         const items = more ? rows.slice(0, 12) : rows;
         setPublicMedia(items);
@@ -108,7 +109,7 @@ export default function Media() {
     }
 
     // شخصی (با صفحه‌بندی مکان‌نما + فال‌بک)
-    const { data: mine, error: mineErr } = await supabase.rpc('paginate_media', {
+    const { data: mine, error: mineErr } = await rpc<MediaItem[]>('paginate_media', {
       p_type: activeTab,
       p_scope: 'mine',
       p_cursor_time: null,
@@ -116,7 +117,7 @@ export default function Media() {
       p_limit: 12,
     });
     if (!mineErr && mine) {
-      const rows = (mine as MediaItem[]) || [];
+      const rows = mine || [];
       const more = rows.length > 12;
       const items = more ? rows.slice(0, 12) : rows;
       setMyMedia(items);
@@ -139,7 +140,7 @@ export default function Media() {
     }
 
     // عمومی (با صفحه‌بندی مکان‌نما + فال‌بک)
-    const { data: pub, error: pubErr } = await supabase.rpc('paginate_media', {
+    const { data: pub, error: pubErr } = await rpc<MediaItem[]>('paginate_media', {
       p_type: activeTab,
       p_scope: 'public',
       p_cursor_time: null,
@@ -147,7 +148,7 @@ export default function Media() {
       p_limit: 12,
     });
     if (!pubErr && pub) {
-      const rows = (pub as MediaItem[]) || [];
+      const rows = pub || [];
       const more = rows.length > 12;
       const items = more ? rows.slice(0, 12) : rows;
       setPublicMedia(items);
@@ -172,7 +173,7 @@ export default function Media() {
     else setLoadingMorePublic(true);
 
     try {
-      const { data, error } = await supabase.rpc('paginate_media', {
+      const { data, error } = await rpc<MediaItem[]>('paginate_media', {
         p_type: activeTab,
         p_scope: scope,
         p_cursor_time: last.created_at,
@@ -180,7 +181,7 @@ export default function Media() {
         p_limit: 12,
       });
       if (error) throw error;
-      const rows = (data as MediaItem[]) || [];
+      const rows = data || [];
       const more = rows.length > 12;
       const items = more ? rows.slice(0, 12) : rows;
 
@@ -303,14 +304,14 @@ export default function Media() {
   const handleShareWithEmail = async () => {
     if (!sharingItem || !shareEmail.trim()) return;
     setSharingBusy(true);
-    const { data, error } = await supabase.rpc('share_media_with_email', {
+    const { data, error } = await rpc<{ ok?: boolean; error?: string }>('share_media_with_email', {
       p_media_id: sharingItem.id,
       p_email: shareEmail.trim(),
     });
     setSharingBusy(false);
 
-    if (error || (data as Record<string, unknown>)?.ok === false) {
-      const msg = error?.message || String((data as Record<string, unknown>)?.error || 'Error sharing file');
+    if (error || data?.ok === false) {
+      const msg = error?.message || String(data?.error || 'Error sharing file');
       toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا در اشتراک‌گذاری' : 'Sharing Error', description: msg });
     } else {
       toast({
