@@ -1,11 +1,32 @@
-import { supabase } from '@/integrations/supabase/client';
 import type { ArticleStatus } from '@/lib/content-workflow';
 
+const API_BASE_URL = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
+const SESSION_STORAGE_KEY = 'kaghazbaad_session_token';
+
+function getSessionToken() {
+  return window.localStorage.getItem(SESSION_STORAGE_KEY);
+}
+
+async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const token = getSessionToken();
+  const headers = new Headers(init.headers);
+  headers.set('Content-Type', 'application/json');
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+
+  const response = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(typeof payload?.error === 'string' ? payload.error : 'api_request_failed');
+  }
+  return payload as T;
+}
+
 export type WorkflowTransitionResult = {
-  article_id: string;
-  from_status: ArticleStatus;
-  to_status: ArticleStatus;
-  actor_id: string;
+  articleId: string;
+  fromStatus: ArticleStatus;
+  toStatus: ArticleStatus;
+  eventId: string;
+  actorId: string;
 };
 
 export async function transitionArticle(input: {
@@ -14,12 +35,11 @@ export async function transitionArticle(input: {
   note?: string;
   metadata?: Record<string, unknown>;
 }) {
-  const { data, error } = await supabase.functions.invoke('article-workflow', {
-    body: input,
-  });
-  if (error) throw error;
-  if (!data?.ok) throw new Error(data?.error ?? 'Article workflow failed');
-  return data.transition as WorkflowTransitionResult;
+  const data = await apiRequest<{ ok: true; transition: WorkflowTransitionResult }>(
+    `/articles/${input.articleId}/workflow`,
+    { method: 'POST', body: JSON.stringify(input) },
+  );
+  return data.transition;
 }
 
 export type ArticleComment = {
@@ -43,22 +63,25 @@ export async function createArticleComment(input: {
   suggestedText?: string;
   anchor?: Record<string, unknown>;
 }) {
-  const { data, error } = await supabase.functions.invoke('article-comment', {
-    body: { action: 'create', ...input },
-  });
-  if (error) throw error;
-  if (!data?.ok) throw new Error(data?.error ?? 'Comment creation failed');
-  return data.comment as ArticleComment;
+  const data = await apiRequest<{ ok: true; comment: ArticleComment }>(
+    `/articles/${input.articleId}/comments`,
+    { method: 'POST', body: JSON.stringify(input) },
+  );
+  return data.comment;
 }
 
 export async function resolveArticleComment(input: {
   commentId: string;
   status: ArticleComment['status'];
 }) {
-  const { data, error } = await supabase.functions.invoke('article-comment', {
-    body: { action: 'resolve', ...input },
-  });
-  if (error) throw error;
-  if (!data?.ok) throw new Error(data?.error ?? 'Comment resolution failed');
-  return data.comment as ArticleComment;
+  const data = await apiRequest<{ ok: true; comment: ArticleComment }>(
+    `/comments/${input.commentId}`,
+    { method: 'PATCH', body: JSON.stringify({ status: input.status }) },
+  );
+  return data.comment;
+}
+
+export function setBackendSessionToken(token: string | null) {
+  if (token) window.localStorage.setItem(SESSION_STORAGE_KEY, token);
+  else window.localStorage.removeItem(SESSION_STORAGE_KEY);
 }
