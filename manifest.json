@@ -1,0 +1,22 @@
+{
+  "name": "کاغذ و باد | KaghazBaad",
+  "short_name": "KaghazBaad",
+  "description": "پلتفرم دو زبانه مقالات آکادمیک و جلسات زنده",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020208",
+  "theme_color": "#020208",
+  "icons": [
+    {
+      "src": "/brain-character.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
