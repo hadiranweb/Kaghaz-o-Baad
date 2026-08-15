@@ -379,22 +379,22 @@ export default function UsersManager() {
             <div className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-1">
               <div className="font-semibold text-primary">1. Admin (مدیر)</div>
               <div className="font-mono text-xs" dir="ltr">email: admin@kaghazbaad.test</div>
-              <div className="font-mono text-xs" dir="ltr">password: TestAdmin@2026!</div>
+              <div className="font-mono text-xs" dir="ltr">password: [hidden; set through backend]</div>
             </div>
             <div className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-1">
               <div className="font-semibold text-primary">2. Editor (ویرایشگر)</div>
               <div className="font-mono text-xs" dir="ltr">email: editor@kaghazbaad.test</div>
-              <div className="font-mono text-xs" dir="ltr">password: TestEditor@2026!</div>
+              <div className="font-mono text-xs" dir="ltr">password: [hidden; set through backend]</div>
             </div>
             <div className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-1">
               <div className="font-semibold text-primary">3. Contributor (نویسنده)</div>
               <div className="font-mono text-xs" dir="ltr">email: contributor@kaghazbaad.test</div>
-              <div className="font-mono text-xs" dir="ltr">password: TestContributor@2026!</div>
+              <div className="font-mono text-xs" dir="ltr">password: [hidden; set through backend]</div>
             </div>
             <div className="p-3 rounded-lg border border-border/40 bg-secondary/20 space-y-1">
               <div className="font-semibold text-primary">4. User (کاربر عادی)</div>
               <div className="font-mono text-xs" dir="ltr">email: user@kaghazbaad.test</div>
-              <div className="font-mono text-xs" dir="ltr">password: TestUser@2026!</div>
+              <div className="font-mono text-xs" dir="ltr">password: [hidden; set through backend]</div>
             </div>
           </div>
           <DialogFooter>

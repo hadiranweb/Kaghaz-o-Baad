@@ -131,8 +131,8 @@ At launch the platform is a **small, invite-only community** — quality of ties
     body_fa: `معماری، عمداً **خلوت و خوانا** انتخاب شده است:
 
 - **فرانت‌اند:** React 18 + TypeScript + Vite 5 + Tailwind CSS 3 + shadcn/ui — تمِ روشنِ کاغذی (‎#FBF6EA) و تمِ تیره‌ی سرمه‌ای (‎#0F1E2E) برگرفته از پروفایلِ کاشانِ کتابچه‌ی هویت بصری؛ فونتِ فارسی **IRANSharp** (۳ وزن) و فونتِ لاتین **Cormorant Garamond / Inter**.
-- **بک‌اند:** Supabase — Postgres (هسته‌ی داده)، Auth (نشست)، Storage (رسانه)، Edge Functions (Deno) برای کارهایِ حساس
-- **زنده:** LiveKit Cloud برای صدا و تصویر؛ توکنِ کوتاه‌عمر از Edge Function صادر می‌شود و هرگز از کلاینت نشت نمی‌کند
+- **بک‌اند:** Backend مستقل کاغذ و باد روی Liara PaaS — PostgreSQL روی Liara DBaaS، Object Storage و APIهای server-side برای کارهای حساس
+- **زنده:** LiveKit روی سرور مجزای Liara یا سرویس اختصاصی؛ توکن کوتاه‌عمر فقط از Backend کاغذ و باد صادر می‌شود و هرگز از کلاینت تولید نمی‌شود
 - **حالت:** Context (Auth, Language) + TanStack Query — بدونِ Reduxِ افزوده
 
 **سطوح دسترسی و نقش‌ها (RBAC Matrix):**
@@ -144,18 +144,18 @@ At launch the platform is a **small, invite-only community** — quality of ties
 - **admin (مدیر):** + دسترسی کامل به کاربر، نقش‌ها، حذف آثار و تنظیمات پروژه.
 
 **حساب‌های تستی ۴ نقش رسمی (جهت تست و اعتبارسنجی):**
-- **Admin:** \`admin@kaghazbaad.test\` / \`TestAdmin@2026!\`
-- **Editor:** \`editor@kaghazbaad.test\` / \`TestEditor@2026!\`
-- **Contributor:** \`contributor@kaghazbaad.test\` / \`TestContributor@2026!\`
-- **User:** \`user@kaghazbaad.test\` / \`TestUser@2026!\`
+- **Admin:** \`admin@kaghazbaad.test\` / [password managed by backend]
+- **Editor:** \`editor@kaghazbaad.test\` / [password managed by backend]
+- **Contributor:** \`contributor@kaghazbaad.test\` / [password managed by backend]
+- **User:** \`user@kaghazbaad.test\` / [password managed by backend]
 
 **طرحواره‌ی کلیدی:**
 \`profiles ↔ user_roles\`، \`articles ↔ slides\`، \`live_sessions ↔ live_participants\`، و \`otp_codes\` برای ورودِ بی‌گذر. تمامِ سطرها با **RLS** محافظت می‌شوند؛ کلاینت هرگز بیش از حقِ نقشِ خود نمی‌بیند.`,
     body_en: `The architecture is deliberately **spare and legible**:
 
 - **Frontend:** React 18 + TypeScript + Vite 5 + Tailwind 3 + shadcn/ui — light parchment theme (#FBF6EA) and dark navy theme (#0F1E2E) from the Kashan profile of the visual identity; Persian **IRANSharp** (3 weights) and Latin **Cormorant Garamond / Inter**.
-- **Backend:** Supabase — Postgres (core), Auth (session), Storage (media), Edge Functions (Deno) for sensitive work
-- **Live:** LiveKit Cloud for audio/video; short-lived tokens are minted by an Edge Function and never leak from the client
+- **Backend:** Independent KaghazBaad backend on Liara PaaS — PostgreSQL on Liara DBaaS, Object Storage, and server-side APIs for sensitive work
+- **Live:** LiveKit on a separate Liara server or dedicated service; short-lived tokens are minted only by the KaghazBaad backend and never generated in the client
 - **State:** Context (Auth, Language) + TanStack Query — no extra Redux
 
 **Access Levels & Roles (RBAC Matrix):**
@@ -167,10 +167,10 @@ The platform features **4 official roles (admin, editor, contributor, user)** + 
 - **admin:** + Full administrative control over users, roles, deletions, and project config.
 
 **Test Accounts (4 Official Roles):**
-- **Admin:** \`admin@kaghazbaad.test\` / \`TestAdmin@2026!\`
-- **Editor:** \`editor@kaghazbaad.test\` / \`TestEditor@2026!\`
-- **Contributor:** \`contributor@kaghazbaad.test\` / \`TestContributor@2026!\`
-- **User:** \`user@kaghazbaad.test\` / \`TestUser@2026!\`
+- **Admin:** \`admin@kaghazbaad.test\` / [password managed by backend]
+- **Editor:** \`editor@kaghazbaad.test\` / [password managed by backend]
+- **Contributor:** \`contributor@kaghazbaad.test\` / [password managed by backend]
+- **User:** \`user@kaghazbaad.test\` / [password managed by backend]
 
 **Key schema:**
 \`profiles ↔ user_roles\`, \`articles ↔ slides\`, \`live_sessions ↔ live_participants\`, and \`otp_codes\` for passwordless entry. Every row is guarded by **RLS** — the client never sees beyond its role.`,
