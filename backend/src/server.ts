@@ -1,6 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { loadEnv } from './config/env.js';
+import { registerAuthRoutes } from './auth/routes.js';
+import { closeDatabase } from './db/pool.js';
 
 const env = loadEnv();
 const app = Fastify({ logger: true });
@@ -9,6 +11,8 @@ await app.register(cors, {
   origin: env.CORS_ORIGIN.split(',').map((origin) => origin.trim()),
   credentials: true,
 });
+
+await registerAuthRoutes(app);
 
 app.get('/health', async () => ({
   ok: true,
@@ -28,6 +32,14 @@ app.setErrorHandler((error, _request, reply) => {
   app.log.error(error);
   return reply.status(500).send({ error: 'internal_server_error' });
 });
+
+const shutdown = async () => {
+  await app.close();
+  await closeDatabase();
+};
+
+process.once('SIGTERM', shutdown);
+process.once('SIGINT', shutdown);
 
 try {
   await app.listen({ host: env.HOST, port: env.PORT });
