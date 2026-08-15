@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>نصب‌کنندهٔ کاغذ و باد</title>
+    <style>
+      :root { color-scheme: light; font-family: Tahoma, Arial, sans-serif; background: #f7f1e5; color: #243442; }
+      body { margin: 0; min-height: 100vh; background: linear-gradient(135deg, #fbf6ea, #e8f0ee); }
+      main { max-width: 940px; margin: 0 auto; padding: 42px 24px 64px; }
+      header { margin-bottom: 28px; } h1 { margin: 0 0 8px; font-size: 30px; } p { line-height: 1.8; }
+      .card { background: rgba(255,255,255,.86); border: 1px solid #d8d2c6; border-radius: 16px; padding: 22px; margin: 16px 0; box-shadow: 0 10px 25px rgba(28,45,52,.08); }
+      label { display: block; font-weight: 700; margin: 15px 0 7px; } input, select { box-sizing: border-box; width: 100%; border: 1px solid #b9c3c3; border-radius: 9px; padding: 11px 12px; font: inherit; background: #fff; } button { border: 0; border-radius: 9px; padding: 11px 17px; font: inherit; cursor: pointer; background: #244f5a; color: white; margin: 8px 0 0 8px; } button.secondary { background: #e2ebe9; color: #244f5a; } button:disabled { opacity: .55; cursor: not-allowed; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; } .hint { color: #5b6a6e; font-size: 13px; } .status { border-right: 4px solid #244f5a; padding: 10px 14px; background: #eef6f3; white-space: pre-wrap; } .danger { border-color: #bd5a4c; color: #8e2d23; background: #fff2f0; }
+      @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } main { padding: 24px 15px; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>نصب‌کنندهٔ کاغذ و باد</h1>
+        <p>این ابزار یک کپی امن از repository می‌سازد و آن را برای استقرار آماده می‌کند. secretها در repository عمومی ذخیره نمی‌شوند.</p>
+      </header>
+      <section class="card">
+        <label for="source">فایل ZIP یا پوشهٔ repository</label>
+        <input id="source" placeholder="هنوز انتخاب نشده است" readonly />
+        <button class="secondary" id="selectSource">انتخاب repository</button>
+        <label for="workspace">مسیر workspace جدید</label>
+        <input id="workspace" placeholder="مثلاً C:\\KaghazBaad\\deployment" />
+        <button class="secondary" id="selectWorkspace">انتخاب مسیر</button>
+      </section>
+      <section class="card">
+        <label for="mode">نوع استقرار</label>
+        <select id="mode"><option value="liara">زیرساخت Liara — PaaS + DBaaS + Object Storage</option><option value="single-server">همه‌چیز روی یک سرور</option></select>
+        <div class="grid">
+          <div><label for="apiUrl">نشانی عمومی API</label><input id="apiUrl" placeholder="https://api.example.ir" /></div>
+          <div><label for="frontendUrl">نشانی عمومی سایت</label><input id="frontendUrl" placeholder="https://example.ir" /></div>
+        </div>
+        <label for="databaseUrl">DATABASE_URL PostgreSQL</label>
+        <input id="databaseUrl" type="password" autocomplete="off" placeholder="این مقدار در log یا manifest نمایش داده نمی‌شود" />
+        <label for="jwtSecret">AUTH_JWT_SECRET (حداقل ۳۲ کاراکتر)</label>
+        <input id="jwtSecret" type="password" autocomplete="new-password" placeholder="یک secret طولانی و خصوصی" />
+        <div class="grid">
+          <div><label for="storageEndpoint">Object Storage endpoint (اختیاری)</label><input id="storageEndpoint" placeholder="https://..." /></div>
+          <div><label for="storageBucket">نام bucket (اختیاری)</label><input id="storageBucket" placeholder="media" /></div>
+        </div>
+        <label for="livekitUrl">نشانی LiveKit (اختیاری)</label><input id="livekitUrl" placeholder="wss://live.example.ir" />
+        <p class="hint">در مسیر Liara، installer اطلاعات را برای PaaS، DBaaS، Object Storage و سرور جداگانهٔ LiveKit در workspace ثبت می‌کند. اجرای واقعی deployment بعد از بررسی و تأیید انجام می‌شود.</p>
+        <button id="prepare">ساخت workspace و پیکربندی</button>
+      </section>
+      <section id="status" class="status">وضعیت: آمادهٔ شروع</section>
+    </main>
+    <script>
+      const api = window.kaghazbaadInstaller;
+      const $ = (id) => document.getElementById(id);
+      const status = (message, danger = false) => { $('status').textContent = message; $('status').className = danger ? 'status danger' : 'status'; };
+      $('selectSource').onclick = async () => { const value = await api.selectSource(); if (value) $('source').value = value; };
+      $('selectWorkspace').onclick = async () => { const value = await api.selectWorkspace(); if (value) $('workspace').value = value; };
+      $('prepare').onclick = async () => {
+        const input = { sourcePath: $('source').value, workspacePath: $('workspace').value, mode: $('mode').value, databaseUrl: $('databaseUrl').value, authJwtSecret: $('jwtSecret').value, apiPublicUrl: $('apiUrl').value, frontendPublicUrl: $('frontendUrl').value, objectStorageEndpoint: $('storageEndpoint').value || undefined, objectStorageBucket: $('storageBucket').value || undefined, livekitUrl: $('livekitUrl').value || undefined };
+        status('در حال اعتبارسنجی و ساخت workspace...');
+        try { const result = await api.prepareDeployment(input); $('databaseUrl').value = ''; $('jwtSecret').value = ''; status('workspace با موفقیت ساخته شد. manifest و فایل‌های env تولید شدند؛ secretها از فرم پاک شدند.'); console.log('prepared', result); } catch (error) { status('خطا: ' + (error?.message || 'عملیات انجام نشد'), true); }
+      };
+    </script>
+  </body>
+</html>
