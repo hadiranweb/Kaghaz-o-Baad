@@ -3,6 +3,8 @@ import cors from '@fastify/cors';
 import { loadEnv } from './config/env.js';
 import { registerAuthRoutes } from './auth/routes.js';
 import { closeDatabase } from './db/pool.js';
+import { registerWorkflowRoutes } from './modules/workflow/routes.js';
+import { registerCommentRoutes } from './modules/workflow/comment-routes.js';
 
 const env = loadEnv();
 const app = Fastify({ logger: true });
@@ -13,6 +15,8 @@ await app.register(cors, {
 });
 
 await registerAuthRoutes(app);
+await registerWorkflowRoutes(app);
+await registerCommentRoutes(app);
 
 app.get('/health', async () => ({
   ok: true,
