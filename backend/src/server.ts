@@ -5,6 +5,7 @@ import { registerAuthRoutes } from './auth/routes.js';
 import { closeDatabase } from './db/pool.js';
 import { registerWorkflowRoutes } from './modules/workflow/routes.js';
 import { registerCommentRoutes } from './modules/workflow/comment-routes.js';
+import { registerPasswordRoute } from './auth/password-route.js';
 
 const env = loadEnv();
 const app = Fastify({ logger: true });
@@ -17,6 +18,7 @@ await app.register(cors, {
 await registerAuthRoutes(app);
 await registerWorkflowRoutes(app);
 await registerCommentRoutes(app);
+await registerPasswordRoute(app);
 
 app.get('/health', async () => ({
   ok: true,

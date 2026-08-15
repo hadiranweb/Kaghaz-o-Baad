@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { changePassword } from '@/lib/auth-api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -33,14 +33,12 @@ export default function ChangePassword() {
       return;
     }
     setBusy(true);
-    const { error } = await supabase.auth.updateUser({ password: pw });
-    if (error) {
+    try {
+      await changePassword(pw);
+    } catch (error: unknown) {
       setBusy(false);
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error.message });
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : t('خطای ناشناخته', 'Unknown error') });
       return;
-    }
-    if (user) {
-      await supabase.from('profiles').update({ must_change_password: false }).eq('user_id', user.id);
     }
     setBusy(false);
     toast({ title: t('رمز به‌روز شد', 'Password updated') });

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +13,7 @@ type Mode = 'signin' | 'signup';
 export default function Auth() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, loading } = useAuth();
+  const { user, loading, signIn, signUp } = useAuth();
   const { locale } = useLanguage();
   const { toast } = useToast();
 
@@ -24,7 +23,6 @@ export default function Auth() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [seeding, setSeeding] = useState(false);
 
   const rawNext = searchParams.get('next') ?? '';
   const nextPath = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '';
@@ -34,36 +32,6 @@ export default function Auth() {
   }, [user, loading, navigate, nextPath]);
 
   const t = (fa: string, en: string) => (locale === 'fa' ? fa : en);
-
-  const handleSeedTestUsers = async () => {
-    setSeeding(true);
-    try {
-      const resTest = await supabase.functions.invoke('create-test-users');
-      if (resTest.error) {
-        const resAdmin = await supabase.functions.invoke('create-admin');
-        if (resAdmin.error) {
-          throw new Error(resTest.error.message || resAdmin.error.message);
-        }
-      }
-      toast({
-        title: t('۴ حساب تستی آماده شد', 'Test accounts seeded'),
-        description: t('حساب‌های تستی با موفقیت در دیتابیس ایجاد/به‌روزرسانی شدند.', 'Test accounts created successfully in database.'),
-      });
-      setEmail('admin@kaghazbaad.test');
-      setPassword('TestAdmin@2026!');
-      setMode('signin');
-    } catch (err: unknown) {
-      toast({
-        title: t('حساب‌های تستی در حالت پیش‌نمایش فعال شدند (Sandbox Auth)', 'Sandbox Preview Active'),
-        description: t('اکنون می‌توانید با هر یک از ۴ اکانت تستی وارد شوید (تست آفلاین/پیش‌نمایش فعال شد).', 'You can now sign in with any of the 4 test accounts in preview mode.'),
-      });
-      setEmail('admin@kaghazbaad.test');
-      setPassword('TestAdmin@2026!');
-      setMode('signin');
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   const handleSubmit = async () => {
     if (!email.includes('@')) {
@@ -78,46 +46,16 @@ export default function Auth() {
     setSubmitting(true);
     try {
       if (mode === 'signup') {
-        const redirectUrl = `${window.location.origin}${nextPath || '/dashboard'}`;
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: { first_name: firstName, last_name: lastName, phone: '' },
-          },
+        const result = await signUp(email, password, {
+          first_name: firstName,
+          last_name: lastName,
+          phone: '',
         });
-        if (error) {
-          const msg = error.message.toLowerCase();
-          if (msg.includes('already') || msg.includes('registered')) {
-            toast({ variant: 'destructive', title: t('این ایمیل قبلاً ثبت شده', 'Email already registered'), description: t('لطفاً وارد شوید', 'Please sign in instead') });
-            setMode('signin');
-          } else {
-            throw error;
-          }
-          return;
-        }
-        if (data.session) {
-          toast({ title: t('ثبت‌نام موفق', 'Account created'), description: t('خوش آمدید', 'Welcome') });
-          navigate(nextPath || '/complete-profile');
-        } else {
-          const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
-          if (signInErr) throw signInErr;
-          navigate(nextPath || '/complete-profile');
-        }
+        if (result.error) return;
+        navigate(nextPath || '/complete-profile');
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          toast({
-            variant: 'destructive',
-            title: t('خطا در ورود', 'Sign-in error'),
-            description: error.message === 'Invalid login credentials'
-              ? t('ایمیل یا رمز عبور نادرست است (در صورت لزوم روی دکمه ایجاد ۴ حساب تستی کلیک کنید)', 'Invalid email or password (click Seed Test Users below if needed)')
-              : error.message,
-          });
-          return;
-        }
-        toast({ title: t('ورود موفق', 'Signed in'), description: t('خوش آمدید', 'Welcome back') });
+        const result = await signIn(email, password);
+        if (result.error) return;
         navigate(nextPath || '/dashboard');
       }
     } catch (error: unknown) {
@@ -232,95 +170,6 @@ export default function Auth() {
             </button>
           </div>
 
-          {/* نوار دسترسی سریع و ایجاد خودکار حساب‌های تستی */}
-          <div className="pt-4 border-t border-border/40 space-y-3">
-            <div className="text-center text-xs text-muted-foreground font-light">
-              {t('انتخاب سریع ۴ نقش رسمی جهت تست (RBAC):', 'Quick fill 4 official roles (RBAC):')}
-            </div>
-            <div className="flex flex-wrap gap-1.5 justify-center">
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                className="text-xs h-8"
-                onClick={() => {
-                  setEmail('admin@kaghazbaad.test');
-                  setPassword('TestAdmin@2026!');
-                  setMode('signin');
-                }}
-              >
-                1. Admin
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                className="text-xs h-8"
-                onClick={() => {
-                  setEmail('editor@kaghazbaad.test');
-                  setPassword('TestEditor@2026!');
-                  setMode('signin');
-                }}
-              >
-                2. Editor
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                className="text-xs h-8"
-                onClick={() => {
-                  setEmail('contributor@kaghazbaad.test');
-                  setPassword('TestContributor@2026!');
-                  setMode('signin');
-                }}
-              >
-                3. Contributor
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                className="text-xs h-8"
-                onClick={() => {
-                  setEmail('user@kaghazbaad.test');
-                  setPassword('TestUser@2026!');
-                  setMode('signin');
-                }}
-              >
-                4. User
-              </Button>
-            </div>
-
-            <div className="flex flex-col gap-2 pt-1">
-              <Button
-                variant="secondary"
-                size="sm"
-                type="button"
-                disabled={seeding}
-                onClick={handleSeedTestUsers}
-                className="w-full text-xs h-9 bg-primary/15 hover:bg-primary/25 text-primary"
-              >
-                {seeding
-                  ? t('در حال ایجاد ۴ حساب تستی در دیتابیس...', 'Seeding 4 test accounts...')
-                  : t('🚀 ساخت / فعال‌سازی ۴ حساب تستی (Seed Test Users)', '🚀 Seed 4 Test Users in DB (Click if login fails)')}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                type="button"
-                className="w-full text-[11px] text-muted-foreground h-7"
-                onClick={() => {
-                  setEmail('hadiranweb@gmail.com');
-                  setPassword('H@drianus#Jeff2026!Baad');
-                  setMode('signin');
-                }}
-              >
-                {t('ورود با اکانت مدیر اصلی (hadiranweb@gmail.com)', 'Use main admin (hadiranweb@gmail.com)')}
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

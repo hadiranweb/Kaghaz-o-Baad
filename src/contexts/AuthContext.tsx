@@ -1,212 +1,142 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate, useLocation } from 'react-router-dom';
+import {
+  BackendSession,
+  BackendUser,
+  currentUser,
+  login,
+  logout,
+  register,
+  setToken,
+} from '@/lib/auth-api';
+
+export type FrontendUser = BackendUser & {
+  user_metadata?: {
+    first_name?: string | null;
+    last_name?: string | null;
+  };
+};
+
+export type FrontendSession = BackendSession & {
+  access_token: string;
+  user: FrontendUser;
+};
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: FrontendUser | null;
+  session: FrontendSession | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: unknown }>;
-  signUp: (email: string, password: string, userData: { first_name: string; last_name: string; phone: string }) => Promise<{ error: unknown }>;
+  signIn: (email: string, password: string) => Promise<{ error: unknown | null }>;
+  signUp: (email: string, password: string, userData: { first_name: string; last_name: string; phone: string }) => Promise<{ error: unknown | null }>;
   signOut: () => Promise<void>;
-  setSessionFromOtp: (session: Session) => Promise<void>;
+  setSessionFromOtp: (session: FrontendSession) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TEST_ACCOUNTS: Record<string, { password: string; id: string; first_name: string; last_name: string }> = {
-  'admin@kaghazbaad.test': {
-    password: 'TestAdmin@2026!',
-    id: '00000000-0000-4000-8000-000000000001',
-    first_name: 'مدیر',
-    last_name: 'تست (Admin)',
-  },
-  'editor@kaghazbaad.test': {
-    password: 'TestEditor@2026!',
-    id: '00000000-0000-4000-8000-000000000002',
-    first_name: 'ویراستار',
-    last_name: 'تست (Editor)',
-  },
-  'contributor@kaghazbaad.test': {
-    password: 'TestContributor@2026!',
-    id: '00000000-0000-4000-8000-000000000003',
-    first_name: 'نویسنده',
-    last_name: 'تست (Contributor)',
-  },
-  'user@kaghazbaad.test': {
-    password: 'TestUser@2026!',
-    id: '00000000-0000-4000-8000-000000000004',
-    first_name: 'کاربر',
-    last_name: 'عادی (User)',
-  },
-  'hadiranweb@gmail.com': {
-    password: 'H@drianus#Jeff2026!Baad',
-    id: '00000000-0000-4000-8000-000000000001',
-    first_name: 'مدیر',
-    last_name: 'اصلی (hadiranweb)',
-  },
-};
+function toFrontendUser(user: BackendUser): FrontendUser {
+  return {
+    ...user,
+    user_metadata: {
+      first_name: user.first_name,
+      last_name: user.last_name,
+    },
+  };
+}
+
+function toSession(response: BackendSession): FrontendSession {
+  const user = toFrontendUser(response.user);
+  return { ...response, access_token: response.token, user };
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<FrontendUser | null>(null);
+  const [session, setSession] = useState<FrontendSession | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
-    const previewRaw = localStorage.getItem('kaghazbaad_preview_user');
-    if (previewRaw) {
-      try {
-        const pUser = JSON.parse(previewRaw) as User;
-        setUser(pUser);
-        setLoading(false);
-      } catch {}
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      if (session?.user) {
-        setUser(session.user);
-        localStorage.removeItem('kaghazbaad_preview_user');
-      } else if (!localStorage.getItem('kaghazbaad_preview_user')) {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        setUser(session.user);
-        localStorage.removeItem('kaghazbaad_preview_user');
-      } else if (!localStorage.getItem('kaghazbaad_preview_user')) {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
-    if (location.pathname === '/change-password' || location.pathname === '/auth') return;
     let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('must_change_password')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (!cancelled && data?.must_change_password) {
-        navigate('/change-password', { replace: true });
-      }
-    })();
+    currentUser()
+      .then((backendUser) => {
+        if (cancelled) return;
+        const frontendUser = toFrontendUser(backendUser);
+        const token = window.localStorage.getItem('kaghazbaad_backend_session_token');
+        if (token) {
+          setUser(frontendUser);
+          setSession({ token, access_token: token, user: frontendUser });
+        }
+      })
+      .catch(() => {
+        setToken(null);
+        if (!cancelled) {
+          setUser(null);
+          setSession(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => { cancelled = true; };
-  }, [user, location.pathname, navigate]);
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) {
-        const normalizedEmail = email.trim().toLowerCase();
-        const testAcc = TEST_ACCOUNTS[normalizedEmail];
-        if (testAcc && password === testAcc.password) {
-          const previewUser: User = {
-            id: testAcc.id,
-            app_metadata: { provider: 'email', providers: ['email'] },
-            user_metadata: { first_name: testAcc.first_name, last_name: testAcc.last_name },
-            aud: 'authenticated',
-            created_at: new Date().toISOString(),
-            email: normalizedEmail,
-          } as User;
-
-          localStorage.setItem('kaghazbaad_preview_user', JSON.stringify(previewUser));
-          setUser(previewUser);
-          toast({
-            title: 'ورود موفق در حالت پیش‌نمایش (Sandbox Auth)',
-            description: `با موفقیت به عنوان ${testAcc.first_name} ${testAcc.last_name} وارد شدید.`,
-          });
-          return { error: null };
-        }
-
-        toast({
-          variant: "destructive",
-          title: "خطا در ورود",
-          description: error.message === "Invalid login credentials" 
-            ? "ایمیل یا رمز عبور نادرست است (می‌توانید از دکمه‌های حساب تستی استفاده کنید)" 
-            : error.message,
-        });
-      }
-      
-      return { error };
+      const response = await login(email, password);
+      const nextSession = toSession(response);
+      setUser(nextSession.user);
+      setSession(nextSession);
+      toast({ title: 'ورود موفق', description: 'خوش آمدید' });
+      return { error: null };
     } catch (error: unknown) {
+      toast({
+        variant: 'destructive',
+        title: 'خطا در ورود',
+        description: error instanceof Error && error.message === 'invalid_email_or_password'
+          ? 'ایمیل یا رمز عبور نادرست است'
+          : error instanceof Error ? error.message : 'خطای ناشناخته',
+      });
       return { error };
     }
   };
 
-  const signUp = async (email: string, password: string, userData: { first_name: string; last_name: string; phone: string }) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    userData: { first_name: string; last_name: string; phone: string },
+  ) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-      
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            first_name: userData.first_name,
-            last_name: userData.last_name,
-            phone: userData.phone,
-          }
-        }
-      });
-      
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "خطا در ثبت نام",
-          description: error.message === "User already registered" 
-            ? "این ایمیل قبلاً ثبت شده است" 
-            : error.message,
-        });
-      } else {
-        toast({
-          title: "ثبت نام موفق",
-          description: "حساب کاربری شما ایجاد شد",
-        });
-      }
-      
-      return { error };
+      const response = await register({ email, password, ...userData });
+      const nextSession = toSession(response);
+      setUser(nextSession.user);
+      setSession(nextSession);
+      toast({ title: 'ثبت‌نام موفق', description: 'حساب کاربری شما ایجاد شد' });
+      return { error: null };
     } catch (error: unknown) {
+      toast({
+        variant: 'destructive',
+        title: 'خطا در ثبت‌نام',
+        description: error instanceof Error && error.message === 'email_already_registered'
+          ? 'این ایمیل قبلاً ثبت شده است'
+          : error instanceof Error ? error.message : 'خطای ناشناخته',
+      });
       return { error };
     }
   };
 
   const signOut = async () => {
-    localStorage.removeItem('kaghazbaad_preview_user');
-    await supabase.auth.signOut();
+    await logout();
     setUser(null);
     setSession(null);
+    navigate('/');
   };
 
-  const setSessionFromOtp = async (newSession: Session) => {
-    const { data } = await supabase.auth.setSession({
-      access_token: newSession.access_token,
-      refresh_token: newSession.refresh_token,
-    });
-    if (data.session) {
-      setSession(data.session);
-      setUser(data.session.user);
-    }
+  const setSessionFromOtp = async (newSession: FrontendSession) => {
+    setToken(newSession.token);
+    setSession(newSession);
+    setUser(newSession.user);
   };
 
   return (
@@ -218,8 +148,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
   return context;
 }

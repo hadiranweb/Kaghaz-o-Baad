@@ -8,16 +8,22 @@ const credentialsSchema = z.object({
   password: z.string().min(8).max(200),
 });
 
+const registerSchema = credentialsSchema.extend({
+  first_name: z.string().trim().max(100).optional(),
+  last_name: z.string().trim().max(100).optional(),
+  phone: z.string().trim().max(40).optional(),
+});
+
 export async function registerAuthRoutes(app: FastifyInstance) {
   app.post('/api/v1/auth/register', async (request, reply) => {
-    const parsed = credentialsSchema.safeParse(request.body);
+    const parsed = registerSchema.safeParse(request.body);
     if (!parsed.success) return reply.status(400).send({ error: 'invalid_credentials' });
 
     const passwordHash = await hashPassword(parsed.data.password);
     try {
       const result = await db.query<{ id: string; email: string }>(
-        `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email`,
-        [parsed.data.email, passwordHash],
+        `INSERT INTO users (email, password_hash, first_name, last_name) VALUES ($1, $2, $3, $4) RETURNING id, email, first_name, last_name`,
+        [parsed.data.email, passwordHash, parsed.data.first_name ?? null, parsed.data.last_name ?? null],
       );
       const user = result.rows[0];
       if (!user) return reply.status(500).send({ error: 'registration_failed' });
