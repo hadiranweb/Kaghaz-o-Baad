@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,24 +10,30 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import Home from "./pages/Home";
-import Read from "./pages/Read";
-import ArticleSlides from "./pages/ArticleSlides";
-import Media from "./pages/Media";
-import About from "./pages/About";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import CompleteProfile from "./pages/CompleteProfile";
-import AboutProject from "./pages/AboutProject";
-import Community from "./pages/Community";
-import NotFound from "./pages/NotFound";
-import LiveSessions from "./pages/LiveSessions";
-import LiveRoomPage from "./pages/LiveRoomPage";
-import LiveSessionNew from "./pages/LiveSessionNew";
-import Rewrite from "./pages/Rewrite";
-import ChangePassword from "./pages/ChangePassword";
-import OAuthConsent from "./pages/OAuthConsent";
+const Home = lazy(() => import("./pages/Home"));
+const Read = lazy(() => import("./pages/Read"));
+const ArticleSlides = lazy(() => import("./pages/ArticleSlides"));
+const Media = lazy(() => import("./pages/Media"));
+const About = lazy(() => import("./pages/About"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
+const AboutProject = lazy(() => import("./pages/AboutProject"));
+const Community = lazy(() => import("./pages/Community"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const LiveSessions = lazy(() => import("./pages/LiveSessions"));
+const LiveRoomPage = lazy(() => import("./pages/LiveRoomPage"));
+const LiveSessionNew = lazy(() => import("./pages/LiveSessionNew"));
+const Rewrite = lazy(() => import("./pages/Rewrite"));
+const ChangePassword = lazy(() => import("./pages/ChangePassword"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
+
+const RouteFallback = () => (
+  <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+    در حال بارگذاری…
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -43,7 +50,8 @@ const App = () => (
               <Header />
               <main className="flex-1">
                 <ErrorBoundary>
-                  <Routes>
+                  <Suspense fallback={<RouteFallback />}>
+                    <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/read" element={<Read />} />
                     <Route path="/read/:slug" element={<ArticleSlides />} />
@@ -63,7 +71,8 @@ const App = () => (
                     <Route path="/oauth/consent" element={<OAuthConsent />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
-                  </Routes>
+                    </Routes>
+                  </Suspense>
                 </ErrorBoundary>
               </main>
                 <Footer />
