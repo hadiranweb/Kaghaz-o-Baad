@@ -63,6 +63,6 @@ export async function getAuthUser(request: FastifyRequest): Promise<AuthUser | n
   return user;
 }
 
-export function hasRole(user: AuthUser, ...roles: string[]) {
+export function hasRole(user: Pick<AuthUser, 'roles'>, ...roles: string[]) {
   return roles.some((role) => user.roles.includes(role));
 }

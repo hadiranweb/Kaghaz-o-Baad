@@ -30,6 +30,7 @@ import UsersManager from '@/components/admin/UsersManager';
 import LiveSessionsManager from '@/components/admin/LiveSessionsManager';
 import CircuitBreakerMonitor from '@/components/admin/CircuitBreakerMonitor';
 import SystemWiki from '@/components/admin/SystemWiki';
+import UsageCostReport from '@/components/admin/UsageCostReport';
 
 type DashboardView =
   | 'articles'
@@ -38,7 +39,8 @@ type DashboardView =
   | 'resilience'
   | 'all_live'
   | 'project'
-  | 'wiki';
+  | 'wiki'
+  | 'usage_report';
 
 const articleSchema = z.object({
   title_fa: z.string().trim().min(3, { message: "عنوان فارسی باید حداقل ۳ کاراکتر باشد" }).max(200),
@@ -519,6 +521,17 @@ export default function Dashboard() {
                       {isAdmin && (
                         <SidebarMenuItem>
                           <SidebarMenuButton
+                            isActive={activeView === 'usage_report'}
+                            onClick={() => handleSelectView('usage_report')}
+                          >
+                            <Activity className="h-4 w-4 text-cyan-500" />
+                            <span>{t('گزارش هزینه و کش AI', 'AI Cost & Cache Report')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
+                      {isAdmin && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
                             isActive={activeView === 'project'}
                             onClick={() => handleSelectView('project')}
                           >
@@ -592,6 +605,8 @@ export default function Dashboard() {
 
               {/* VIEW: 'resilience' (مدارشکن‌ها و تاب‌آوری) */}
               {activeView === 'resilience' && canAccessAdmin && <CircuitBreakerMonitor />}
+
+              {activeView === 'usage_report' && isAdmin && <UsageCostReport />}
 
               {/* VIEW: 'all_live' (پایش پخش‌های زنده — بدون دکمه ایجاد جلسه مدیریتی) */}
               {activeView === 'all_live' && canAccessAdmin && <LiveSessionsManager />}

@@ -19,12 +19,12 @@
     <main>
       <header>
         <h1>نصب‌کنندهٔ کاغذ و باد</h1>
-        <p>این ابزار یک کپی امن از repository می‌سازد و آن را برای استقرار آماده می‌کند. secretها در repository عمومی ذخیره نمی‌شوند.</p>
+        <p>این ابزار یک کپی محلی از repository می‌سازد و آن را برای استقرار آماده می‌کند. secretهایی که شما وارد می‌کنید در فایل‌های server-side همین workspace نوشته می‌شوند؛ در repository عمومی، frontend، log و manifest ذخیره نمی‌شوند.</p>
       </header>
       <section class="card">
-        <label for="source">فایل ZIP یا پوشهٔ repository</label>
-        <input id="source" placeholder="هنوز انتخاب نشده است" readonly />
-        <button class="secondary" id="selectSource">انتخاب repository</button>
+        <label for="source">repository تشخیص‌داده‌شده</label>
+        <input id="source" placeholder="در حال تشخیص مسیر EXE..." readonly />
+        <p class="hint">این EXE باید داخل پوشهٔ repository اجرا شود یا در یکی از زیرپوشه‌های آن قرار داشته باشد. انتخاب دستی فایل یا ZIP لازم نیست.</p>
         <label for="workspace">مسیر workspace جدید</label>
         <input id="workspace" placeholder="مثلاً C:\\KaghazBaad\\deployment" />
         <button class="secondary" id="selectWorkspace">انتخاب مسیر</button>
@@ -45,21 +45,67 @@
           <div><label for="storageBucket">نام bucket (اختیاری)</label><input id="storageBucket" placeholder="media" /></div>
         </div>
         <label for="livekitUrl">نشانی LiveKit (اختیاری)</label><input id="livekitUrl" placeholder="wss://live.example.ir" />
-        <p class="hint">در مسیر Liara، installer اطلاعات را برای PaaS، DBaaS، Object Storage و سرور جداگانهٔ LiveKit در workspace ثبت می‌کند. اجرای واقعی deployment بعد از بررسی و تأیید انجام می‌شود.</p>
+        <details><summary>تنظیمات پیشرفتهٔ سرویس‌ها و tokenها</summary>
+          <div class="grid">
+            <div><label for="objectAccess">Object Storage access key</label><input id="objectAccess" type="password" autocomplete="off" /></div>
+            <div><label for="objectSecret">Object Storage secret key</label><input id="objectSecret" type="password" autocomplete="off" /></div>
+            <div><label for="livekitKey">LiveKit API key</label><input id="livekitKey" type="password" autocomplete="off" /></div>
+            <div><label for="livekitSecret">LiveKit API secret</label><input id="livekitSecret" type="password" autocomplete="off" /></div>
+            <div><label for="aiBaseUrl">AI provider base URL</label><input id="aiBaseUrl" placeholder="https://..." /></div>
+            <div><label for="aiProvider">AI provider</label><input id="aiProvider" value="openai" /></div>
+            <div><label for="aiModel">AI model</label><input id="aiModel" value="gpt-5-mini" /></div>
+            <div><label for="aiKey">AI API key</label><input id="aiKey" type="password" autocomplete="off" /></div>
+            <div><label for="aiTimeout">AI timeout (ms)</label><input id="aiTimeout" type="number" value="30000" /></div>
+            <div><label for="rateAi">AI requests per minute</label><input id="rateAi" type="number" value="10" /></div>
+            <div><label for="cacheTtl">AI cache TTL (seconds)</label><input id="cacheTtl" type="number" value="86400" /></div>
+            <div><label for="smsKey">SMS API key</label><input id="smsKey" type="password" autocomplete="off" /></div>
+            <div><label for="paymentProvider">درگاه پرداخت</label><select id="paymentProvider"><option value="none">فعلاً بدون درگاه</option><option value="zarinpal">زرین‌پال</option><option value="idpay">IDPay</option></select></div>
+            <div><label for="zarinpalMerchant">ZarinPal merchant ID</label><input id="zarinpalMerchant" type="password" autocomplete="off" /></div>
+            <div><label for="zarinpalSandbox">زرین‌پال sandbox</label><input id="zarinpalSandbox" type="checkbox" checked /></div>
+            <div><label for="paymentCallback">نشانی پایهٔ callback پرداخت</label><input id="paymentCallback" placeholder="https://api.example.ir" /></div>
+            <div><label for="idpayKey">IDPay API key</label><input id="idpayKey" type="password" autocomplete="off" /></div>
+            <div><label for="subscriptionGrace">Grace period (روز)</label><input id="subscriptionGrace" type="number" value="3" /></div>
+            <div><label for="subscriptionBatch">Subscription job batch</label><input id="subscriptionBatch" type="number" value="500" /></div>
+            <div><label for="mailHost">Mail host</label><input id="mailHost" /></div>
+            <div><label for="mailUser">Mail user</label><input id="mailUser" /></div>
+            <div><label for="mailPassword">Mail password</label><input id="mailPassword" type="password" autocomplete="off" /></div>
+          </div>
+        </details>
+        <p class="hint">در مسیر Liara، installer اطلاعات را برای PaaS، DBaaS، Object Storage و سرور جداگانهٔ LiveKit در workspace محلی ثبت می‌کند. secretها در backend/.env نوشته می‌شوند و نباید این workspaceٔ مقداردهی‌شده را عمومی یا در Git منتشر کنید. اجرای واقعی deployment بعد از بررسی و تأیید انجام می‌شود.</p>
         <button id="prepare">ساخت workspace و پیکربندی</button>
       </section>
+      <section id="preview" class="card" hidden><h2>پیش‌نمایش تغییرات</h2><pre id="previewText" class="status"></pre></section>
       <section id="status" class="status">وضعیت: آمادهٔ شروع</section>
     </main>
     <script>
       const api = window.kaghazbaadInstaller;
       const $ = (id) => document.getElementById(id);
       const status = (message, danger = false) => { $('status').textContent = message; $('status').className = danger ? 'status danger' : 'status'; };
-      $('selectSource').onclick = async () => { const value = await api.selectSource(); if (value) $('source').value = value; };
+      api.repositoryRoot().then((value) => { $('source').value = value; }).catch((error) => { status('خطا در تشخیص repository: ' + (error?.message || 'EXE را داخل repository قرار دهید'), true); });
       $('selectWorkspace').onclick = async () => { const value = await api.selectWorkspace(); if (value) $('workspace').value = value; };
+      let pendingInput = null;
+      let previewed = false;
       $('prepare').onclick = async () => {
-        const input = { sourcePath: $('source').value, workspacePath: $('workspace').value, mode: $('mode').value, databaseUrl: $('databaseUrl').value, authJwtSecret: $('jwtSecret').value, apiPublicUrl: $('apiUrl').value, frontendPublicUrl: $('frontendUrl').value, objectStorageEndpoint: $('storageEndpoint').value || undefined, objectStorageBucket: $('storageBucket').value || undefined, livekitUrl: $('livekitUrl').value || undefined };
-        status('در حال اعتبارسنجی و ساخت workspace...');
-        try { const result = await api.prepareDeployment(input); $('databaseUrl').value = ''; $('jwtSecret').value = ''; status('workspace با موفقیت ساخته شد. manifest و فایل‌های env تولید شدند؛ secretها از فرم پاک شدند.'); console.log('prepared', result); } catch (error) { status('خطا: ' + (error?.message || 'عملیات انجام نشد'), true); }
+        const input = { sourcePath: $('source').value, workspacePath: $('workspace').value, mode: $('mode').value, databaseUrl: $('databaseUrl').value, authJwtSecret: $('jwtSecret').value, apiPublicUrl: $('apiUrl').value, frontendPublicUrl: $('frontendUrl').value, objectStorageEndpoint: $('storageEndpoint').value || undefined, objectStorageBucket: $('storageBucket').value || undefined, livekitUrl: $('livekitUrl').value || undefined, objectStorageAccessKey: $('objectAccess').value || undefined, objectStorageSecretKey: $('objectSecret').value || undefined, livekitApiKey: $('livekitKey').value || undefined, livekitApiSecret: $('livekitSecret').value || undefined, aiProvider: $('aiProvider').value || 'openai', aiModel: $('aiModel').value || 'gpt-5-mini', aiProviderBaseUrl: $('aiBaseUrl').value || undefined, aiApiKey: $('aiKey').value || undefined, aiTimeoutMs: Number($('aiTimeout').value || 30000), rateLimitAiPerMinute: Number($('rateAi').value || 10), aiTitleCacheTtlSeconds: Number($('cacheTtl').value || 86400), smsApiKey: $('smsKey').value || undefined, paymentProvider: $('paymentProvider').value, zarinpalMerchantId: $('zarinpalMerchant').value || undefined, zarinpalSandbox: $('zarinpalSandbox').checked, paymentCallbackBaseUrl: $('paymentCallback').value || $('apiUrl').value || undefined, idpayApiKey: $('idpayKey').value || undefined, subscriptionGraceDays: Number($('subscriptionGrace').value || 3), subscriptionJobBatchSize: Number($('subscriptionBatch').value || 500), mailHost: $('mailHost').value || undefined, mailUser: $('mailUser').value || undefined, mailPassword: $('mailPassword').value || undefined };
+        status(previewed ? 'در حال ساخت کپی نهایی در پوشهٔ جدا...' : 'در حال اعتبارسنجی و ساخت پیش‌نمایش...');
+        try {
+          if (!previewed) {
+            const preview = await api.previewDeployment(input);
+            pendingInput = input;
+            $('previewText').textContent = JSON.stringify(preview, null, 2);
+            $('preview').hidden = false;
+            previewed = true;
+            $('prepare').textContent = 'تأیید و ساخت کپی نهایی';
+            status('پیش‌نمایش آماده است. هیچ فایلی هنوز نوشته نشده؛ پس از بررسی، دوباره روی دکمه کلیک کنید.');
+            return;
+          }
+          const result = await api.prepareDeployment(pendingInput);
+          pendingInput = null;
+          ['databaseUrl','jwtSecret','objectAccess','objectSecret','livekitKey','livekitSecret','aiKey','smsKey','zarinpalMerchant','idpayKey','mailPassword'].forEach((id) => { $(id).value = ''; });
+          $('prepare').disabled = true;
+          status('کپی نهایی با موفقیت در workspace ساخته شد. installer هیچ deployment، migration یا uploadی انجام نداده است.');
+          $('previewText').textContent += '\\n\\nنتیجه: ' + JSON.stringify(result, null, 2);
+        } catch (error) { status('خطا: ' + (error?.message || 'عملیات انجام نشد'), true); }
       };
     </script>
   </body>

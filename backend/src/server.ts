@@ -3,12 +3,23 @@ import cors from '@fastify/cors';
 import { loadEnv } from './config/env.js';
 import { registerAuthRoutes } from './auth/routes.js';
 import { closeDatabase } from './db/pool.js';
+import { registerArticleRoutes } from './modules/workflow/article-routes.js';
 import { registerWorkflowRoutes } from './modules/workflow/routes.js';
 import { registerCommentRoutes } from './modules/workflow/comment-routes.js';
 import { registerPasswordRoute } from './auth/password-route.js';
+import { registerTitleSuggestionRoutes } from './modules/ai/title-routes.js';
+import { registerQuotaRoutes } from './modules/quota/routes.js';
+import { registerUsageReportRoutes } from './modules/admin/usage-report-routes.js';
+import { registerBillingRoutes } from './modules/billing/routes.js';
 
 const env = loadEnv();
 const app = Fastify({ logger: true });
+
+app.addHook('onRequest', async (request, reply) => {
+  const requestId = request.headers['x-request-id'];
+  const resolvedRequestId = typeof requestId === 'string' && requestId.length <= 200 ? requestId : request.id;
+  reply.header('x-request-id', resolvedRequestId);
+});
 
 await app.register(cors, {
   origin: env.CORS_ORIGIN.split(',').map((origin) => origin.trim()),
@@ -16,8 +27,13 @@ await app.register(cors, {
 });
 
 await registerAuthRoutes(app);
+await registerArticleRoutes(app);
 await registerWorkflowRoutes(app);
 await registerCommentRoutes(app);
+await registerTitleSuggestionRoutes(app, env);
+await registerQuotaRoutes(app);
+await registerUsageReportRoutes(app);
+await registerBillingRoutes(app, env);
 await registerPasswordRoute(app);
 
 app.get('/health', async () => ({

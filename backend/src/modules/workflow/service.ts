@@ -25,17 +25,23 @@ const transitions: Record<WorkflowAction, readonly [ArticleStatus, ArticleStatus
   restore_draft: [['archived', 'draft'], ['changes_requested', 'draft']],
 };
 
-function hasRole(user: AuthUser, role: string) {
-  return user.roles.includes(role);
+function hasRole(user: AuthUser, ...roles: string[]) {
+  return roles.some((role) => user.roles.includes(role));
+}
+
+function canManageWorkflow(user: AuthUser) {
+  return hasRole(user, 'editor', 'admin', 'senior_manager', 'technical_manager');
 }
 
 function allowed(user: AuthUser, action: WorkflowAction, article: { author_id: string | null; status: ArticleStatus }) {
   const owner = article.author_id === user.id;
-  const editor = hasRole(user, 'editor') || hasRole(user, 'admin');
+  const manager = canManageWorkflow(user);
+  const contributor = hasRole(user, 'author', 'contributor');
   const validTransition = transitions[action].some(([from]) => from === article.status);
   if (!validTransition) return false;
-  if (action === 'submit_for_review' || action === 'restore_draft') return owner || editor;
-  return editor;
+  if (action === 'submit_for_review') return (owner && contributor) || manager;
+  if (action === 'restore_draft') return (owner && contributor) || manager;
+  return manager;
 }
 
 export async function transitionArticle(input: {

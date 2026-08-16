@@ -11,6 +11,10 @@
     "migrate": "tsx src/db/migrate.ts",
     "migrate:dry-run": "tsx src/db/migrate.ts --dry-run",
     "db:check": "tsx src/db/check.ts",
+    "jobs:cleanup-ai-cache": "tsx src/jobs/cleanup-ai-cache.ts",
+    "jobs:subscription-lifecycle": "tsx src/jobs/subscription-lifecycle.ts",
+    "test:integration": "node ../tests/integration/api-smoke.mjs",
+    "test:k6": "k6 run ../tests/k6/kaghazbaad-api.js",
     "check": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

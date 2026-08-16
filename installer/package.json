@@ -9,7 +9,7 @@
     "dev": "tsx src/main.ts",
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
-    "package:win": "npm run build && electron-builder --win nsis"
+    "package:exe": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
     "extract-zip": "^2.0.1",
@@ -25,9 +25,26 @@
   "build": {
     "appId": "ir.kaghazbaad.installer",
     "productName": "نصب‌کنندهٔ کاغذ و باد",
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "src/renderer/**/*", "package.json"],
-    "win": { "target": "nsis", "artifactName": "KaghazBaad-Installer-${version}.${ext}" },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true }
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "src/renderer/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "artifactName": "KaghazBaad-Installer-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "extraMetadata": {
+      "description": "Windows repository configuration installer"
+    },
+    "publish": null
   }
 }

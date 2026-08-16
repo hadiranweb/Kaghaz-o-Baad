@@ -7,6 +7,22 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   AUTH_JWT_SECRET: z.string().min(32, 'AUTH_JWT_SECRET must be at least 32 characters'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  AI_PROVIDER: z.string().default('openai'),
+  AI_API_KEY: z.string().optional(),
+  AI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
+  AI_MODEL: z.string().default('gpt-5-mini'),
+  AI_TIMEOUT_MS: z.coerce.number().int().positive().max(120_000).default(30_000),
+  RATE_LIMIT_ENABLED: z.coerce.boolean().default(true),
+  RATE_LIMIT_IP_PER_MINUTE: z.coerce.number().int().positive().default(120),
+  RATE_LIMIT_USER_PER_MINUTE: z.coerce.number().int().positive().default(60),
+  RATE_LIMIT_AI_PER_MINUTE: z.coerce.number().int().positive().default(10),
+  AI_CACHE_ENABLED: z.coerce.boolean().default(true),
+  AI_TITLE_CACHE_TTL_SECONDS: z.coerce.number().int().positive().max(604800).default(86400),
+  AI_TITLE_PROMPT_VERSION: z.string().default('title-v1'),
+  ZARINPAL_MERCHANT_ID: z.string().uuid().optional(),
+  ZARINPAL_SANDBOX: z.coerce.boolean().default(false),
+  PAYMENT_CALLBACK_BASE_URL: z.string().url().optional(),
+  PAYMENT_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().max(120_000).default(30_000),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
