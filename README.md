@@ -136,14 +136,16 @@ npm run build      # خروجی در پوشه dist/ تولید می‌شود
 ```
 
 ### 🧪 ابزارهای خط فرمان و اسکریپت‌ها
-- **ایجاد/بازنشانی حساب‌های تستی از CLI:**  
+- **بررسی متغیرهای محیطی محلی:**
   ```bash
-  bash scripts/seed-test-users.sh
+  bash scripts/ensure-env.sh
   ```
-- **بازسازی ساختار پوشه‌ها در صورت اختلال:**  
+- **راه‌اندازی PostgreSQL محلی و اجرای migrationهای backend مستقل:**
   ```bash
-  bash scripts/restore-structure.sh
+  bash scripts/local-db.sh up
   ```
+
+اسکریپت‌های وابسته به Supabase حذف شده‌اند. پوشهٔ `supabase/` فعلاً فقط به‌عنوان میراث انتقالی نگه داشته می‌شود، چون بخشی از frontend موجود هنوز از کلاینت Supabase استفاده می‌کند؛ حذف کامل آن پس از انتقال این importها به API مستقل انجام خواهد شد.
 
 ---
 
@@ -161,18 +163,16 @@ Kaghaz-o-Baad/
 │   │   └── LiveRoom.tsx       # LiveKit VideoConference & PreJoin Lobby
 │   ├── contexts/              # AuthContext (Sandbox Auth Fallback), LanguageContext (FA/EN Dicts)
 │   ├── hooks/                 # useRole (RBAC check), useLiveKitToken, use-toast
-│   ├── integrations/supabase/ # client.ts (Resilient fallback URL), types.ts
+│   ├── integrations/supabase/ # میراث انتقالی؛ تا پایان مهاجرت frontend حذف نمی‌شود
 │   ├── pages/                 # Home, Read (Keyset Pagination), Dashboard (Unified Console), Media, ...
 │   └── main.tsx, App.tsx      # Entry point wrapped in ErrorBoundary
-├── supabase/
-│   ├── functions/             # Deno Edge Functions:
-│   │   ├── create-test-users/ # Seed 4 RBAC accounts in auth.users
-│   │   ├── send-otp/          # SMS.ir OTP with Rate Limiting (Sliding Window) & Circuit Breaker
-│   │   ├── search-suggest/    # Gemini AI with 2-Tier Caching & Graceful Degradation
-│   │   ├── rewrite-article/   # Gemini AI Rewriter with Circuit Breaker & Timeout
-│   │   └── livekit-token/     # Mint LiveKit tokens with waterfall role mapping (host/speaker/viewer)
-│   └── migrations/            # 18 PostgreSQL Migrations (RBAC, Quotas, Keyset Pagination, Circuit Breakers)
-├── scripts/                   # seed-test-users.sh, ensure-env.sh, restore-structure.sh
+├── backend/
+│   ├── migrations/            # migrationهای مستقل PostgreSQL، از 001 تا 007
+│   ├── src/modules/           # auth، workflow، usage، quota، rate-limit، cache، billing
+│   └── src/jobs/              # پاک‌سازی cache و lifecycle اشتراک
+├── supabase/                  # میراث انتقالی frontend؛ مسیر production مستقل نیست
+├── installer/                 # Windows EXE برای آماده‌سازی workspace استقرار
+├── scripts/                   # ensure-env.sh و local-db.sh
 ├── public/                    # SVG assets (brain-character.svg), robots.txt
 ├── vite.config.ts             # Vite Dev Server config (0.0.0.0:8080, allowedHosts)
 └── package.json
