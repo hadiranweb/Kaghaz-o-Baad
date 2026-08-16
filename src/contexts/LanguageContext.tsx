@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { listTranslations } from '@/lib/backend-api';
 
 type Locale = 'en' | 'fa';
 type Direction = 'ltr' | 'rtl';
@@ -66,10 +66,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     let active = true;
     async function loadDbTranslations() {
       try {
-        const { data, error } = await supabase.from('translations').select('key, en, fa');
-        if (!error && data && active) {
+        const { translations } = await listTranslations();
+        if (active) {
           const map: Record<string, { en: string; fa: string }> = {};
-          data.forEach((r) => {
+          translations.forEach((r) => {
             map[r.key] = { en: r.en, fa: r.fa };
           });
           setDbTranslations(map);

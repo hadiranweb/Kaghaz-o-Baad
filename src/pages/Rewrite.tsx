@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { listPublicArticles, rewriteArticle, backendRequest } from '@/lib/backend-api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
@@ -53,15 +53,9 @@ export default function Rewrite() {
   }, [authLoading, user, navigate]);
 
   useEffect(() => {
-    supabase
-      .from('articles')
-      .select('id, title_fa, title_en, summary_fa, summary_en')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(50)
-      .then(({ data, error }) => {
-        if (!error && data) setArticles(data as ArticleOption[]);
-      });
+    listPublicArticles({ limit: 50 })
+      .then(({ articles: data }) => setArticles(data as ArticleOption[]))
+      .catch((error) => console.error('Error loading rewrite sources:', error));
   }, []);
 
   const sourceText = useMemo(() => {
@@ -85,18 +79,8 @@ export default function Rewrite() {
     setGenerating(true);
     setResult('');
     try {
-      const { data, error } = await supabase.functions.invoke('rewrite-article', {
-        body: {
-          source: sourceText,
-          tone,
-          targetLang,
-          length,
-          customPrompt,
-        },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      setResult(data?.content ?? '');
+      const data = await rewriteArticle({ source: sourceText, tone, targetLang, length, customPrompt });
+      setResult(data.content);
     } catch (e: any) {
       toast({
         variant: 'destructive',
@@ -119,17 +103,16 @@ export default function Rewrite() {
     try {
       const slug = `rewrite-${Date.now()}`;
       const firstLine = result.split('\n').find((l) => l.trim())?.replace(/^#+\s*/, '').slice(0, 120) ?? 'Untitled';
-      const payload = {
-        author_id: user.id,
-        slug,
-        status: 'draft',
-        title_fa: targetLang === 'fa' ? firstLine : firstLine,
-        title_en: targetLang === 'en' ? firstLine : firstLine,
-        summary_fa: targetLang === 'fa' ? result.slice(0, 500) : null,
-        summary_en: targetLang === 'en' ? result.slice(0, 500) : null,
-      };
-      const { error } = await supabase.from('articles').insert(payload);
-      if (error) throw error;
+      await backendRequest('/articles', {
+        method: 'POST',
+        body: JSON.stringify({
+          slug,
+          titleFa: firstLine,
+          titleEn: firstLine,
+          contentFa: targetLang === 'fa' ? result : '',
+          contentEn: targetLang === 'en' ? result : '',
+        }),
+      });
       toast({
         title: isFa ? 'ذخیره شد' : 'Saved',
         description: isFa ? 'به عنوان پیش‌نویس ذخیره شد' : 'Saved as draft',

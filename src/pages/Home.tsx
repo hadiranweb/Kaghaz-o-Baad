@@ -3,7 +3,7 @@ import { BrainAnimation } from '@/components/BrainAnimation';
 import { Search } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { backendRequest } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
@@ -26,11 +26,10 @@ export default function Home() {
     }
     setIsLoadingSuggestions(true);
     try {
-      const { data, error } = await supabase.functions.invoke('search-suggest', {
-        body: { query: q.trim(), locale },
-      });
-      if (error) throw error;
-      if (data?.suggestions?.length > 0) {
+      const data = await backendRequest<{ ok: true; suggestions: string[] }>(
+        `/search/suggestions?q=${encodeURIComponent(q.trim())}&locale=${locale}`,
+      );
+      if (data.suggestions?.length > 0) {
         setSuggestions(data.suggestions);
         setShowDropdown(true);
       } else {

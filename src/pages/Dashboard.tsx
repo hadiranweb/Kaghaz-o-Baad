@@ -3,7 +3,8 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useRole } from '@/hooks/useRole';
-import { supabase } from '@/integrations/supabase/client';
+import { createArticle, createSlide, deleteArticle, deleteSlide, getProfile, listArticles, listArticleSlides, listProjectDescriptions, publishArticle, updateArticle, updateSlide, updateProjectDescription } from '@/lib/backend-api';
+import { transitionArticle } from '@/lib/article-workflow-api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -106,26 +107,19 @@ export default function Dashboard() {
 
   const checkProfileCompletion = async () => {
     if (!user?.id) return;
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('first_name, last_name, phone')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (error) {
+    try {
+      const { profile } = await getProfile();
+      if (!profile?.first_name || !profile?.last_name) {
+        navigate('/complete-profile');
+        return;
+      }
+      loadMyArticles();
+      if (canAccessAdmin) {
+        loadAllArticles();
+        loadProjectSections();
+      }
+    } catch (error) {
       console.error('Error checking profile:', error);
-      return;
-    }
-
-    if (!data?.first_name || !data?.last_name) {
-      navigate('/complete-profile');
-      return;
-    }
-
-    loadMyArticles();
-    if (canAccessAdmin) {
-      loadAllArticles();
-      loadProjectSections();
     }
   };
 
@@ -138,48 +132,58 @@ export default function Dashboard() {
     if (view === 'project') loadProjectSections();
   };
 
-  const loadMyArticles = async () => {
+    const loadMyArticles = async () => {
     if (!user?.id) return;
-    const { data, error } = await supabase
-      .from('articles')
-      .select('*')
-      .eq('author_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (!error) setArticles(data || []);
+    try {
+      const { articles: data } = await listArticles();
+      setArticles(data.filter((article) => article.author_id === user.id));
+    } catch (error) {
+      console.error('Error loading articles:', error);
+    }
   };
 
   const loadAllArticles = async () => {
-    const { data, error } = await supabase
-      .from('articles')
-      .select(`
-        *,
-        profiles:author_id (
-          first_name,
-          last_name
-        )
-      `)
-      .order('created_at', { ascending: false });
-
-    if (!error) setAllArticles(data || []);
+    try {
+      const { articles: data } = await listArticles();
+      setAllArticles(data);
+    } catch (error) {
+      console.error('Error loading all articles:', error);
+    }
   };
 
   const loadProjectSections = async () => {
-    const { data } = await supabase
-      .from('project_description')
-      .select('*')
-      .order('order_num', { ascending: true });
-    setProjectSections(data || []);
+    try {
+      const { descriptions } = await listProjectDescriptions();
+      setProjectSections(descriptions.map((description) => {
+        const metadata = description.metadata || {};
+        return {
+          ...description,
+          section_key: typeof metadata.section_key === 'string' ? metadata.section_key : description.id,
+          title_en: typeof metadata.title_en === 'string' ? metadata.title_en : description.title,
+          title_fa: typeof metadata.title_fa === 'string' ? metadata.title_fa : description.title,
+          body_en: typeof metadata.body_en === 'string' ? metadata.body_en : description.description,
+          body_fa: typeof metadata.body_fa === 'string' ? metadata.body_fa : description.description,
+          order_num: typeof metadata.order_num === 'number' ? metadata.order_num : 0,
+        };
+      }));
+    } catch (error) {
+      console.error('Error loading project descriptions:', error);
+    }
   };
 
   const loadSlides = async (articleId: string) => {
-    const { data, error } = await supabase
-      .from('slides')
-      .select('*')
-      .eq('article_id', articleId)
-      .order('order_num', { ascending: true });
-
-    if (!error) setSlides(data || []);
+    try {
+      const { slides: data } = await listArticleSlides(articleId);
+      setSlides(data.map((slide) => ({
+        ...slide,
+        title_en: slide.title,
+        title_fa: slide.title,
+        body_en: typeof slide.content.body_en === 'string' ? slide.content.body_en : '',
+        body_fa: typeof slide.content.body_fa === 'string' ? slide.content.body_fa : '',
+      })));
+    } catch (error) {
+      console.error('Error loading slides:', error);
+    }
   };
 
   const handleCreateArticle = async (e: React.FormEvent) => {
@@ -189,33 +193,18 @@ export default function Dashboard() {
     try {
       articleSchema.parse(newArticle);
 
+      const input = {
+        slug: newArticle.slug,
+        titleFa: newArticle.title_fa,
+        titleEn: newArticle.title_en,
+        contentFa: newArticle.summary_fa,
+        contentEn: newArticle.summary_en,
+      };
       if (editingArticle) {
-        const { error } = await supabase
-          .from('articles')
-          .update({
-            ...newArticle,
-            published_at: newArticle.status === 'published' ? new Date().toISOString() : null,
-          })
-          .eq('id', editingArticle.id);
-
-        if (error) throw error;
+        await updateArticle(editingArticle.id, input);
         toast({ title: t('موفق', 'Success'), description: t('مقاله ویرایش شد', 'Article updated') });
       } else {
-        const { error } = await supabase
-          .from('articles')
-          .insert({
-            ...newArticle,
-            author_id: user?.id,
-            published_at: newArticle.status === 'published' ? new Date().toISOString() : null,
-          });
-
-        if (error) {
-          if (error.code === '23505') {
-            toast({ variant: 'destructive', title: t('خطا', 'Error'), description: t('این اسلاگ قبلاً استفاده شده', 'Slug already used') });
-            return;
-          }
-          throw error;
-        }
+        await createArticle(input);
         toast({ title: t('موفق', 'Success'), description: t('مقاله ایجاد شد', 'Article created') });
       }
 
@@ -267,11 +256,8 @@ export default function Dashboard() {
 
   const handleAddSlide = async () => {
     if (!managingSlidesFor) return;
-    const orderNum = slides.length + 1;
-    const { error } = await supabase
-      .from('slides')
-      .insert({ article_id: managingSlidesFor, order_num: orderNum, title_en: '', title_fa: '', body_en: '', body_fa: '' });
-    if (!error) await loadSlides(managingSlidesFor);
+    await createSlide(managingSlidesFor, { sortOrder: slides.length + 1, title: '', content: { title_en: '', title_fa: '', body_en: '', body_fa: '' } });
+    await loadSlides(managingSlidesFor);
   };
 
   const handleUpdateSlide = async (slideId: string, field: string, value: string) => {
@@ -279,53 +265,43 @@ export default function Dashboard() {
   };
 
   const handleSaveSlide = async (slide: any) => {
-    const { error } = await supabase
-      .from('slides')
-      .update({
-        title_en: slide.title_en,
-        title_fa: slide.title_fa,
-        body_en: slide.body_en,
-        body_fa: slide.body_fa,
-      })
-      .eq('id', slide.id);
-
-    if (error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: t('خطا در ذخیره اسلاید', 'Error saving slide') });
-    } else {
+    try {
+      await updateSlide(slide.id, {
+        title: slide.title_fa || slide.title_en || '',
+        content: { title_en: slide.title_en, title_fa: slide.title_fa, body_en: slide.body_en, body_fa: slide.body_fa },
+        sortOrder: slide.sort_order,
+      });
       toast({ title: t('موفق', 'Success'), description: t('اسلاید ذخیره شد', 'Slide saved') });
+    } catch (error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : t('خطا در ذخیره اسلاید', 'Error saving slide') });
     }
   };
 
   const handleDeleteSlide = async (slideId: string) => {
-    const { error } = await supabase.from('slides').delete().eq('id', slideId);
-    if (!error && managingSlidesFor) {
-      await loadSlides(managingSlidesFor);
-    }
+    await deleteSlide(slideId);
+    if (managingSlidesFor) await loadSlides(managingSlidesFor);
   };
 
   const handleDeleteArticle = async (articleId: string) => {
-    const { error } = await supabase.from('articles').delete().eq('id', articleId);
-    if (!error) {
+    try {
+      await deleteArticle(articleId);
       toast({ title: t('موفق', 'Success'), description: t('مقاله حذف شد', 'Article deleted') });
       loadMyArticles();
       if (canAccessAdmin) loadAllArticles();
+    } catch (error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : t('خطا در حذف مقاله', 'Delete failed') });
     }
   };
 
   const toggleArticleStatus = async (articleId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-    const { error } = await supabase
-      .from('articles')
-      .update({
-        status: newStatus,
-        published_at: newStatus === 'published' ? new Date().toISOString() : null,
-      })
-      .eq('id', articleId);
-
-    if (!error) {
+    try {
+      if (currentStatus === 'published') await transitionArticle({ articleId, action: 'archive' });
+      else await publishArticle(articleId);
       toast({ title: t('موفق', 'Success'), description: t('وضعیت مقاله تغییر کرد', 'Article status updated') });
       loadMyArticles();
       if (canAccessAdmin) loadAllArticles();
+    } catch (error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : t('خطا در تغییر وضعیت', 'Status update failed') });
     }
   };
 
@@ -336,46 +312,47 @@ export default function Dashboard() {
   };
 
   const saveSection = async (section: any) => {
-    const { error } = await supabase
-      .from('project_description')
-      .update({
-        section_key: section.section_key,
-        title_en: section.title_en,
-        title_fa: section.title_fa,
-        body_en: section.body_en,
-        body_fa: section.body_fa,
-      })
-      .eq('id', section.id);
-    if (!error) {
+    try {
+      await updateProjectDescription(section.id, {
+        title: section.title_fa || section.title_en || '',
+        description: section.body_fa || section.body_en || '',
+        metadata: {
+          section_key: section.section_key,
+          title_en: section.title_en,
+          title_fa: section.title_fa,
+          body_en: section.body_en,
+          body_fa: section.body_fa,
+          order_num: section.order_num,
+        },
+      });
       toast({ title: t('ذخیره شد', 'Saved'), description: t('بخش شرح پروژه به‌روزرسانی شد', 'Section updated') });
+    } catch (error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : t('خطا در ذخیره', 'Save failed') });
     }
   };
 
   const addSection = async () => {
     const nextOrder = projectSections.reduce((max, s) => Math.max(max, s.order_num || 0), 0) + 1;
     const baseKey = `section_${nextOrder}`;
-    const { data, error } = await supabase
-      .from('project_description')
-      .insert({
-        section_key: baseKey,
-        title_en: 'New Section',
-        title_fa: 'بخش جدید',
-        body_en: '',
-        body_fa: '',
-        order_num: nextOrder,
-      })
-      .select()
-      .single();
-    if (!error && data) {
-      setProjectSections((prev) => [...prev, data]);
+    try {
+      const { description } = await createProjectDescription({
+        title: 'بخش جدید',
+        description: '',
+        metadata: { section_key: baseKey, title_en: 'New Section', title_fa: 'بخش جدید', body_en: '', body_fa: '', order_num: nextOrder },
+      });
+      setProjectSections((prev) => [...prev, { ...description, section_key: baseKey, title_en: 'New Section', title_fa: 'بخش جدید', body_en: '', body_fa: '', order_num: nextOrder }]);
       toast({ title: t('اضافه شد', 'Added') });
+    } catch (error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : t('خطا در افزودن', 'Add failed') });
     }
   };
 
   const deleteSection = async (id: string) => {
-    const { error } = await supabase.from('project_description').delete().eq('id', id);
-    if (!error) {
+    try {
+      await deleteProjectDescription(id);
       setProjectSections((prev) => prev.filter((s) => s.id !== id));
+    } catch (error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : t('خطا در حذف', 'Delete failed') });
     }
   };
 

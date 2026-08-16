@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, BookOpen, Target, Users, Layers, Cpu, ScrollText, Eye } from 'lucide-react';
@@ -221,19 +220,9 @@ export default function AboutProject() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from('project_description')
-        .select('*')
-        .order('order_num', { ascending: true });
-      // اگر جدول خالی بود، از شرح ادبیِ دسته‌بندی‌شده‌ی بالا استفاده کن
-      if (data && data.length > 0) {
-        setSections(data as Section[]);
-      } else {
-        setSections(FALLBACK_SECTIONS);
-      }
-      setLoading(false);
-    })();
+    // شرح پروژه بخشی از blueprint نسخهٔ محصول است و به دیتابیس runtime وابسته نیست.
+    setSections(FALLBACK_SECTIONS);
+    setLoading(false);
   }, []);
 
   const pageTitle = locale === 'fa' ? 'شرح پروژه — کاغذ و باد' : 'Project Description — KaghazBaad';

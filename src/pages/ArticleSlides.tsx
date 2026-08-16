@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { getPublicArticleBySlug, listArticleSlides, listPublicProfiles } from '@/lib/backend-api';
 import ArticleComments from '@/components/ArticleComments';
 import MDEditor from '@uiw/react-md-editor';
 
@@ -19,39 +19,33 @@ export default function ArticleSlides() {
     queryFn: async () => {
       if (!slug) throw new Error('No slug provided');
       
-      const { data: article, error: articleError } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('slug', slug)
-        .eq('status', 'published')
-        .maybeSingle();
-      
-      if (articleError) throw articleError;
-      if (!article) return null;
-
-      const { data: slides, error: slidesError } = await supabase
-        .from('slides')
-        .select('*')
-        .eq('article_id', article.id)
-        .order('order_num', { ascending: true });
-      
-      if (slidesError) throw slidesError;
-
+      const { article } = await getPublicArticleBySlug(slug);
+      const { slides: backendSlides } = await listArticleSlides(article.id);
       let author = null;
       if (article.author_id) {
-        const { data: profileData } = await supabase
-          .from('public_profiles')
-          .select('first_name, last_name, bio_en, bio_fa')
-          .eq('id', article.author_id)
-          .maybeSingle();
-        author = profileData;
+        const { profiles } = await listPublicProfiles([article.author_id]);
+        const profile = profiles[0];
+        if (profile) {
+          const metadata = profile.metadata || {};
+          author = {
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            bio_en: typeof metadata.bio_en === 'string' ? metadata.bio_en : '',
+            bio_fa: typeof metadata.bio_fa === 'string' ? metadata.bio_fa : profile.bio || '',
+          };
+        }
       }
-
       return {
         id: article.id,
         title_en: article.title_en,
         title_fa: article.title_fa,
-        slides: slides || [],
+        slides: backendSlides.map((slide) => ({
+          ...slide,
+          title_en: slide.title,
+          title_fa: slide.title,
+          body_en: typeof slide.content.body_en === 'string' ? slide.content.body_en : '',
+          body_fa: typeof slide.content.body_fa === 'string' ? slide.content.body_fa : '',
+        })),
         author,
       };
     },

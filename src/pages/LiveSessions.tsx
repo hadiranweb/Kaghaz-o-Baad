@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { listLiveSessions } from '@/lib/backend-api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -79,15 +79,21 @@ export default function LiveSessions() {
 
   useEffect(() => {
     document.title = locale === 'fa' ? 'جلسات زنده | کاغذ و باد' : 'Live Sessions | KaghazBaad';
-    supabase
-      .from('live_sessions')
-      .select('id, host_user_id, article_id, title_en, title_fa, description_en, description_fa, status, scheduled_at, started_at, ended_at, max_participants, recording_enabled, recording_url, created_at, updated_at')
-      .in('status', ['scheduled', 'live'])
-      .order('scheduled_at', { ascending: false })
-      .then(({ data }) => {
-        setSessions((data as LiveSession[]) ?? []);
-        setLoading(false);
-      });
+    listLiveSessions()
+      .then(({ sessions: rows }) => {
+        setSessions(rows.filter((row) => ['scheduled', 'live'].includes(row.status)).map((row) => ({
+          id: row.id,
+          title_fa: typeof row.metadata.title_fa === 'string' ? row.metadata.title_fa : row.title,
+          title_en: typeof row.metadata.title_en === 'string' ? row.metadata.title_en : row.title,
+          description_fa: typeof row.metadata.description_fa === 'string' ? row.metadata.description_fa : row.description,
+          description_en: typeof row.metadata.description_en === 'string' ? row.metadata.description_en : row.description,
+          status: row.status,
+          scheduled_at: row.starts_at ?? null,
+          host_user_id: row.host_id ?? '',
+        })));
+      })
+      .catch((error) => console.error('Error loading live sessions:', error))
+      .finally(() => setLoading(false));
   }, [locale]);
 
   return (

@@ -1,10 +1,10 @@
 import type { ArticleStatus } from '@/lib/content-workflow';
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
-const SESSION_STORAGE_KEY = 'kaghazbaad_session_token';
+import { getToken } from './auth-api';
 
 function getSessionToken() {
-  return window.localStorage.getItem(SESSION_STORAGE_KEY);
+  return getToken();
 }
 
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -216,6 +216,6 @@ export async function resolveArticleComment(input: {
 }
 
 export function setBackendSessionToken(token: string | null) {
-  if (token) window.localStorage.setItem(SESSION_STORAGE_KEY, token);
-  else window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  if (token) window.localStorage.setItem('kaghazbaad_backend_session_token', token);
+  else window.localStorage.removeItem('kaghazbaad_backend_session_token');
 }

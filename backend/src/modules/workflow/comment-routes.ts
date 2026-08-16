@@ -20,6 +20,20 @@ function canReview(user: AuthUser, authorId: string | null) {
 }
 
 export async function registerCommentRoutes(app: FastifyInstance) {
+  app.get('/api/v1/articles/:articleId/comments', async (request, reply) => {
+    const params = z.object({ articleId: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    const result = await db.query(
+      `SELECT c.*, u.first_name, u.last_name
+       FROM article_comments c
+       LEFT JOIN users u ON u.id = c.author_id
+       WHERE c.article_id = $1
+       ORDER BY c.created_at ASC`,
+      [params.data.articleId],
+    );
+    return reply.send({ ok: true, comments: result.rows });
+  });
+
   app.post('/api/v1/articles/:articleId/comments', async (request, reply) => {
     const user = await getAuthUser(request);
     if (!user) return reply.status(401).send({ error: 'unauthorized' });
@@ -48,6 +62,19 @@ export async function registerCommentRoutes(app: FastifyInstance) {
       [user.id, params.data.articleId, { source: body.data.source }],
     );
     return reply.status(201).send({ ok: true, comment: result.rows[0] });
+  });
+
+  app.delete('/api/v1/comments/:commentId', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = z.object({ commentId: z.string().uuid() }).safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    const result = await db.query<{ id: string; author_id: string | null; article_id: string }>('SELECT id, author_id, article_id FROM article_comments WHERE id = $1', [params.data.commentId]);
+    const comment = result.rows[0];
+    if (!comment) return reply.status(404).send({ error: 'comment_not_found' });
+    if (comment.author_id !== user.id && !user.roles.some((role) => ['editor', 'admin'].includes(role))) return reply.status(403).send({ error: 'forbidden' });
+    await db.query('DELETE FROM article_comments WHERE id = $1', [params.data.commentId]);
+    return reply.status(204).send();
   });
 
   app.patch('/api/v1/comments/:commentId', async (request, reply) => {

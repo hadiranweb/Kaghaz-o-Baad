@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
+import { createArticleComment, deleteArticleComment, listArticleComments } from '@/lib/backend-api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -24,41 +24,18 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
   const { data: commentsData, isLoading } = useQuery({
     queryKey: ['comments', articleId],
     queryFn: async () => {
-      const { data: comments, error } = await supabase
-        .from('comments')
-        .select('*')
-        .eq('article_id', articleId)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-
-      // Load commenter profiles
-      const userIds = [...new Set(comments?.map(c => c.user_id).filter(Boolean))];
-      let profiles: Record<string, any> = {};
-
-      if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, first_name, last_name')
-          .in('user_id', userIds);
-
-        if (profilesData) {
-          profilesData.forEach(p => {
-            profiles[p.user_id!] = p;
-          });
-        }
-      }
-
-      return { comments: comments || [], profiles };
+      const response = await listArticleComments(articleId);
+      const profiles: Record<string, { first_name?: string | null; last_name?: string | null }> = {};
+      response.comments.forEach((comment) => {
+        if (comment.author_id) profiles[comment.author_id] = { first_name: comment.first_name, last_name: comment.last_name };
+      });
+      return { comments: response.comments, profiles };
     },
   });
 
   const addComment = useMutation({
     mutationFn: async (body: string) => {
-      const { error } = await supabase
-        .from('comments')
-        .insert({ article_id: articleId, user_id: user!.id, body });
-      if (error) throw error;
+      await createArticleComment(articleId, body);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', articleId] });
@@ -79,11 +56,7 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
 
   const deleteComment = useMutation({
     mutationFn: async (commentId: string) => {
-      const { error } = await supabase
-        .from('comments')
-        .delete()
-        .eq('id', commentId);
-      if (error) throw error;
+      await deleteArticleComment(commentId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', articleId] });
@@ -118,7 +91,7 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
       ) : (
         <div className="space-y-3">
           {comments.map((comment) => {
-            const profile = profiles[comment.user_id];
+            const profile = comment.author_id ? profiles[comment.author_id] : undefined;
             return (
               <Card key={comment.id}>
                 <CardContent className="py-3 px-4">
@@ -136,7 +109,7 @@ export default function ArticleComments({ articleId }: ArticleCommentsProps) {
                       </div>
                       <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
                     </div>
-                    {user && user.id === comment.user_id && (
+                    {user && user.id === comment.author_id && (
                       <Button
                         variant="ghost"
                         size="icon"

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
+import { listCommunityProfiles } from '@/lib/backend-api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Handshake, Network, GraduationCap, Heart } from 'lucide-react';
@@ -22,15 +22,21 @@ export default function Community() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from('public_profiles')
-        .select('id, display_name, first_name, last_name, avatar_url, bio_en, bio_fa')
-        .eq('show_in_community', true)
-        .order('display_name', { ascending: true });
-      if (data) setCollaborators(data as any);
-      setLoading(false);
-    })();
+    listCommunityProfiles()
+      .then(({ profiles }) => setCollaborators(profiles.map((profile) => {
+        const metadata = profile.metadata || {};
+        return {
+          id: profile.id,
+          display_name: typeof metadata.display_name === 'string' ? metadata.display_name : null,
+          first_name: profile.first_name || null,
+          last_name: profile.last_name || null,
+          avatar_url: profile.avatar_url || null,
+          bio_en: typeof metadata.bio_en === 'string' ? metadata.bio_en : null,
+          bio_fa: typeof metadata.bio_fa === 'string' ? metadata.bio_fa : profile.bio || null,
+        };
+      })))
+      .catch((error) => console.error('Error loading community profiles:', error))
+      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {

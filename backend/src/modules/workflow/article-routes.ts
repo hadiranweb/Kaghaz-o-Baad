@@ -68,6 +68,19 @@ export async function registerArticleRoutes(app: FastifyInstance) {
     return reply.send({ ok: true, articles: result.rows });
   });
 
+  app.delete('/api/v1/articles/:articleId', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = idSchema.safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    const result = await db.query<{ author_id: string | null }>('SELECT author_id FROM articles WHERE id = $1', [params.data.articleId]);
+    const article = result.rows[0];
+    if (!article) return reply.status(404).send({ error: 'article_not_found' });
+    if (!canManageAll(user) && article.author_id !== user.id) return reply.status(403).send({ error: 'forbidden' });
+    await db.query('DELETE FROM articles WHERE id = $1', [params.data.articleId]);
+    return reply.status(204).send();
+  });
+
   app.get('/api/v1/articles/:articleId', async (request, reply) => {
     const user = await getAuthUser(request);
     if (!user) return reply.status(401).send({ error: 'unauthorized' });

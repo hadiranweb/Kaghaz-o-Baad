@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 export type AppRole = 'admin' | 'editor' | 'contributor' | 'user';
 
@@ -22,29 +21,11 @@ export function useRole() {
       }
       setLoading(true);
 
-      const previewRoleMap: Record<string, AppRole> = {
-        'admin@kaghazbaad.test': 'admin',
-        'hadiranweb@gmail.com': 'admin',
-        'editor@kaghazbaad.test': 'editor',
-        'contributor@kaghazbaad.test': 'contributor',
-        'user@kaghazbaad.test': 'user',
-      };
-      const fallbackRole = user.email ? previewRoleMap[user.email.toLowerCase()] : undefined;
-
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
-
       if (active) {
-        const dbRoles = !error && data ? data.map((r) => r.role as AppRole) : [];
-        if (dbRoles.length > 0) {
-          setRoles(dbRoles);
-        } else if (fallbackRole) {
-          setRoles([fallbackRole]);
-        } else {
-          setRoles([]);
-        }
+        const backendRoles = (user.roles ?? []).map((role) => role === 'author' ? 'contributor' : role).filter(
+          (role): role is AppRole => ['admin', 'editor', 'contributor', 'user'].includes(role),
+        );
+        setRoles(backendRoles);
         setLoading(false);
       }
     }

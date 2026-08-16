@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
+import { getProfile, saveProfile } from '@/lib/backend-api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -56,26 +56,21 @@ export default function CompleteProfile() {
         last_name: meta.last_name || prev.last_name,
         phone: meta.phone || prev.phone,
       }));
-      supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data) {
-            setProfileData({
-              first_name: data.first_name || meta.first_name || '',
-              last_name: data.last_name || meta.last_name || '',
-              phone: data.phone || meta.phone || '',
-              bio_en: data.bio_en || '',
-              bio_fa: data.bio_fa || '',
-              display_name: (data as any).display_name || '',
-              avatar_url: (data as any).avatar_url || '',
-              show_on_cards: (data as any).show_on_cards || false,
-              show_in_community: (data as any).show_in_community || false,
-            });
-          }
+      getProfile().then(({ profile }) => {
+        if (!profile) return;
+        const metadata = profile.metadata || {};
+        setProfileData({
+          first_name: profile.first_name || meta.first_name || '',
+          last_name: profile.last_name || meta.last_name || '',
+          phone: profile.phone || meta.phone || '',
+          bio_en: typeof metadata.bio_en === 'string' ? metadata.bio_en : '',
+          bio_fa: typeof metadata.bio_fa === 'string' ? metadata.bio_fa : profile.bio || '',
+          display_name: typeof metadata.display_name === 'string' ? metadata.display_name : '',
+          avatar_url: profile.avatar_url || '',
+          show_on_cards: metadata.show_on_cards === true,
+          show_in_community: metadata.show_in_community === true,
         });
+      }).catch((error) => console.error('Error loading profile:', error));
     }
   }, [user, loading, navigate]);
 
@@ -87,33 +82,20 @@ export default function CompleteProfile() {
     try {
       profileSchema.parse(profileData);
 
-      const payload: any = {
+      await saveProfile({
         first_name: profileData.first_name,
         last_name: profileData.last_name,
         phone: profileData.phone,
-        bio_en: profileData.bio_en || null,
-        bio_fa: profileData.bio_fa || null,
-        display_name: profileData.display_name?.trim() || null,
+        bio: profileData.bio_fa || profileData.bio_en || null,
         avatar_url: profileData.avatar_url?.trim() || null,
-        show_on_cards: profileData.show_on_cards,
-        show_in_community: profileData.show_in_community,
-      };
-
-      const { data: existing } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user?.id)
-        .maybeSingle();
-
-      let error;
-      if (existing) {
-        const res = await supabase.from('profiles').update(payload).eq('user_id', user?.id);
-        error = res.error;
-      } else {
-        const res = await supabase.from('profiles').insert({ ...payload, user_id: user?.id });
-        error = res.error;
-      }
-      if (error) throw error;
+        metadata: {
+          bio_en: profileData.bio_en || '',
+          bio_fa: profileData.bio_fa || '',
+          display_name: profileData.display_name?.trim() || '',
+          show_on_cards: profileData.show_on_cards,
+          show_in_community: profileData.show_in_community,
+        },
+      });
 
       toast({
         title: locale === 'fa' ? 'موفق' : 'Success',

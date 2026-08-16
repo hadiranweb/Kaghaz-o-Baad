@@ -8,9 +8,12 @@ import { registerWorkflowRoutes } from './modules/workflow/routes.js';
 import { registerCommentRoutes } from './modules/workflow/comment-routes.js';
 import { registerPasswordRoute } from './auth/password-route.js';
 import { registerTitleSuggestionRoutes } from './modules/ai/title-routes.js';
+import { registerRewriteRoutes } from './modules/ai/rewrite-routes.js';
 import { registerQuotaRoutes } from './modules/quota/routes.js';
 import { registerUsageReportRoutes } from './modules/admin/usage-report-routes.js';
 import { registerBillingRoutes } from './modules/billing/routes.js';
+import { registerContentRoutes } from './modules/content/routes.js';
+import { registerSearchRoutes } from './modules/search/routes.js';
 
 const env = loadEnv();
 const app = Fastify({ logger: true });
@@ -31,9 +34,12 @@ await registerArticleRoutes(app);
 await registerWorkflowRoutes(app);
 await registerCommentRoutes(app);
 await registerTitleSuggestionRoutes(app, env);
+await registerRewriteRoutes(app, env);
 await registerQuotaRoutes(app);
 await registerUsageReportRoutes(app);
 await registerBillingRoutes(app, env);
+await registerContentRoutes(app);
+await registerSearchRoutes(app);
 await registerPasswordRoute(app);
 
 app.get('/health', async () => ({
