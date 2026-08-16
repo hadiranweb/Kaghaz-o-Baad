@@ -23,6 +23,14 @@ const envSchema = z.object({
   ZARINPAL_SANDBOX: z.coerce.boolean().default(false),
   PAYMENT_CALLBACK_BASE_URL: z.string().url().optional(),
   PAYMENT_PROVIDER_TIMEOUT_MS: z.coerce.number().int().positive().max(120_000).default(30_000),
+  LIVEKIT_URL: z.string().url().optional(),
+  LIVEKIT_API_KEY: z.string().optional(),
+  LIVEKIT_API_SECRET: z.string().optional(),
+  S3_ENDPOINT: z.string().url().optional(),
+  S3_REGION: z.string().default('us-east-1'),
+  S3_BUCKET: z.string().optional(),
+  S3_ACCESS_KEY_ID: z.string().optional(),
+  S3_SECRET_ACCESS_KEY: z.string().optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

@@ -2,6 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { getAuthUser, hasRole } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
+import type { AppEnv } from '../../config/env.js';
+import { createUploadUrl, deleteObject, storageConfigured } from '../storage/service.js';
 
 const uuidParams = z.object({ id: z.string().uuid() });
 const articleParams = z.object({ articleId: z.string().uuid() });
@@ -21,6 +23,7 @@ const mediaSchema = z.object({
   publicUrl: z.string().url().max(2000).optional().nullable(),
   visibility: z.enum(['private', 'public']).optional().default('private'),
   metadata: z.record(z.unknown()).optional().default({}),
+  fileSize: z.number().int().nonnegative().max(10_000_000_000).optional().default(0),
 });
 const projectSchema = z.object({
   title: z.string().max(300).optional().default(''),
@@ -46,7 +49,19 @@ function canManageAll(user: { roles: string[] }) {
   return hasRole(user, 'editor', 'admin', 'senior_manager', 'technical_manager');
 }
 
-export async function registerContentRoutes(app: FastifyInstance) {
+export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) {
+  app.post('/api/v1/media/upload-url', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    if (!env || !storageConfigured(env)) return reply.status(503).send({ error: 'storage_not_configured' });
+    const body = z.object({ fileName: z.string().trim().min(1).max(255), contentType: z.string().trim().min(1).max(200), type: z.string().trim().min(1).max(80) }).safeParse(request.body);
+    if (!body.success) return reply.status(400).send({ error: 'invalid_input' });
+    const safeName = body.data.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const key = `${user.id}/${body.data.type}/${Date.now()}-${safeName}`;
+    const upload = await createUploadUrl(env, { key, contentType: body.data.contentType });
+    return reply.send({ ok: true, ...upload });
+  });
+
   app.get('/api/v1/me/profile', async (request, reply) => {
     const user = await getAuthUser(request);
     if (!user) return reply.status(401).send({ error: 'unauthorized' });
@@ -110,6 +125,13 @@ export async function registerContentRoutes(app: FastifyInstance) {
     return reply.send({ ok: true, translations: result.rows });
   });
 
+  app.get('/api/v1/me/storage', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const result = await db.query<{ used_bytes: string }>('SELECT COALESCE(SUM(file_size), 0)::text AS used_bytes FROM media WHERE owner_id = $1', [user.id]);
+    return reply.send({ ok: true, usedBytes: Number(result.rows[0]?.used_bytes ?? 0) });
+  });
+
   app.get('/api/v1/media', async (request, reply) => {
     const user = await getAuthUser(request);
     const query = request.query as { type?: string; visibility?: string; mine?: string };
@@ -134,9 +156,9 @@ export async function registerContentRoutes(app: FastifyInstance) {
     if (!body.success) return reply.status(400).send({ error: 'invalid_input', details: body.error.flatten() });
     const d = body.data;
     const result = await db.query(
-      `INSERT INTO media (owner_id, created_by, type, title, description, file_path, public_url, visibility, metadata)
-       VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [user.id, d.type, d.title, d.description, d.filePath ?? null, d.publicUrl ?? null, d.visibility, d.metadata],
+      `INSERT INTO media (owner_id, created_by, type, title, description, file_path, public_url, visibility, metadata, file_size)
+       VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [user.id, d.type, d.title, d.description, d.filePath ?? null, d.publicUrl ?? null, d.visibility, d.metadata, d.fileSize],
     );
     return reply.status(201).send({ ok: true, media: result.rows[0] });
   });
@@ -150,7 +172,7 @@ export async function registerContentRoutes(app: FastifyInstance) {
     const current = await db.query('SELECT * FROM media WHERE id = $1', [params.data.id]);
     if (!current.rows[0]) return reply.status(404).send({ error: 'media_not_found' });
     if (!canManageAll(user) && current.rows[0].owner_id !== user.id) return reply.status(403).send({ error: 'forbidden' });
-    const map: Record<string, string> = { type: 'type', title: 'title', description: 'description', filePath: 'file_path', publicUrl: 'public_url', visibility: 'visibility', metadata: 'metadata' };
+    const map: Record<string, string> = { type: 'type', title: 'title', description: 'description', filePath: 'file_path', publicUrl: 'public_url', visibility: 'visibility', metadata: 'metadata', fileSize: 'file_size' };
     const values: unknown[] = [];
     const fields = Object.entries(body.data).map(([key, value]) => { values.push(value ?? null); return `${map[key]} = $${values.length}`; });
     values.push(params.data.id);
@@ -163,8 +185,9 @@ export async function registerContentRoutes(app: FastifyInstance) {
     if (!user) return reply.status(401).send({ error: 'unauthorized' });
     const params = uuidParams.safeParse(request.params);
     if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
-    const result = await db.query('DELETE FROM media WHERE id = $1 AND (owner_id = $2 OR $3 = TRUE) RETURNING id', [params.data.id, user.id, canManageAll(user)]);
+    const result = await db.query<{ id: string; file_path: string | null }>('DELETE FROM media WHERE id = $1 AND (owner_id = $2 OR $3 = TRUE) RETURNING id, file_path', [params.data.id, user.id, canManageAll(user)]);
     if (!result.rows[0]) return reply.status(404).send({ error: 'media_not_found' });
+    if (env && result.rows[0].file_path && storageConfigured(env)) await deleteObject(env, result.rows[0].file_path).catch(() => undefined);
     return reply.status(204).send();
   });
 

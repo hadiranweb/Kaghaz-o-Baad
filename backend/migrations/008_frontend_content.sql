@@ -83,3 +83,6 @@ ALTER TABLE articles
   ADD COLUMN IF NOT EXISTS categories TEXT[] NOT NULL DEFAULT '{}';
 
 CREATE INDEX IF NOT EXISTS articles_public_search_idx ON articles(status, published_at DESC, updated_at DESC);
+
+ALTER TABLE media ADD COLUMN IF NOT EXISTS file_size BIGINT NOT NULL DEFAULT 0;
+CREATE INDEX IF NOT EXISTS media_owner_size_idx ON media(owner_id, file_size);

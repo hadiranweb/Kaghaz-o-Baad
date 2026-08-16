@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { getLiveKitToken } from '@/lib/backend-api';
 
 export type LiveRole = 'host' | 'speaker' | 'viewer';
 export type PresentationKind = 'pdf' | 'image' | 'pptx' | 'other' | null;
@@ -53,10 +53,9 @@ export function useLiveKitToken(sessionId: string | null) {
     setLoading(true);
     setError(null);
 
-    supabase.functions
-      .invoke<LiveKitTokenResponse>('livekit-token', { body: { sessionId } })
-      .then(({ data: res }) => {
-        if (!cancelled) setData(res ?? null);
+    getLiveKitToken(sessionId)
+      .then((res) => {
+        if (!cancelled) setData(res);
       })
       .catch(async (err: unknown) => {
         const parsed = await extractError(err);

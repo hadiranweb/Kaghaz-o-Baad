@@ -14,6 +14,7 @@ import { registerUsageReportRoutes } from './modules/admin/usage-report-routes.j
 import { registerBillingRoutes } from './modules/billing/routes.js';
 import { registerContentRoutes } from './modules/content/routes.js';
 import { registerSearchRoutes } from './modules/search/routes.js';
+import { registerLiveRoutes } from './modules/live/routes.js';
 
 const env = loadEnv();
 const app = Fastify({ logger: true });
@@ -38,8 +39,9 @@ await registerRewriteRoutes(app, env);
 await registerQuotaRoutes(app);
 await registerUsageReportRoutes(app);
 await registerBillingRoutes(app, env);
-await registerContentRoutes(app);
+await registerContentRoutes(app, env);
 await registerSearchRoutes(app);
+await registerLiveRoutes(app, env);
 await registerPasswordRoute(app);
 
 app.get('/health', async () => ({

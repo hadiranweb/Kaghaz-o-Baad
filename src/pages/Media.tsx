@@ -1,7 +1,6 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { rpc } from '@/integrations/supabase/rpc';
+import { createMedia, createMediaUploadUrl, deleteMedia, getStorageUsage, listMedia, updateMedia } from '@/lib/backend-api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -85,78 +84,40 @@ export default function Media() {
     }
   }, [user]);
 
+  const mapMedia = (row: any): MediaItem => ({
+    id: row.id,
+    title_en: row.title || row.metadata?.title_en || '',
+    title_fa: row.title || row.metadata?.title_fa || '',
+    type: row.type,
+    src_url: row.public_url || '',
+    thumb_url: row.metadata?.thumb_url || null,
+    file_size: Number(row.file_size || 0),
+    visibility: row.visibility,
+    shared_with: Array.isArray(row.metadata?.shared_with) ? row.metadata.shared_with : [],
+    created_at: row.created_at,
+    owner_id: row.owner_id || null,
+    created_by: row.created_by || null,
+  });
+
   const loadMedia = useCallback(async () => {
-    if (!user) {
-      const { data, error } = await rpc<MediaItem[]>('paginate_media', {
-        p_type: activeTab,
-        p_scope: 'public',
-        p_cursor_time: null,
-        p_cursor_id: null,
-        p_limit: 12,
-      });
-      if (!error && data) {
-        const rows = data || [];
-        const more = rows.length > 12;
-        const items = more ? rows.slice(0, 12) : rows;
-        setPublicMedia(items);
-        setHasMorePublic(more);
-      } else {
-        const { data: fbData } = await supabase.from('media').select('*').eq('visibility', 'public').eq('type', activeTab).order('created_at', { ascending: false }).limit(50);
-        setPublicMedia((fbData as MediaItem[]) || []);
-        setHasMorePublic(false);
-      }
-      return;
-    }
-
-    // شخصی (با صفحه‌بندی مکان‌نما + فال‌بک)
-    const { data: mine, error: mineErr } = await rpc<MediaItem[]>('paginate_media', {
-      p_type: activeTab,
-      p_scope: 'mine',
-      p_cursor_time: null,
-      p_cursor_id: null,
-      p_limit: 12,
-    });
-    if (!mineErr && mine) {
-      const rows = mine || [];
-      const more = rows.length > 12;
-      const items = more ? rows.slice(0, 12) : rows;
-      setMyMedia(items);
-      setHasMoreMine(more);
-    } else {
-      const { data: fbMine } = await supabase.from('media').select('*').eq('type', activeTab).or(`owner_id.eq.${user.id},created_by.eq.${user.id}`).order('created_at', { ascending: false }).limit(50);
-      setMyMedia((fbMine as MediaItem[]) || []);
-      setHasMoreMine(false);
-    }
-
-    // خواندن حجم مصرفی دقیق از جدول user_storage (که توسط تریگر خودکار دیتابیس tr_media_storage_quota به‌روز می‌شود)
-    const { data: storageRow } = await supabase
-      .from('user_storage')
-      .select('used_bytes')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (storageRow && typeof storageRow.used_bytes === 'number') {
-      setUsedBytes(storageRow.used_bytes);
-    }
-
-    // عمومی (با صفحه‌بندی مکان‌نما + فال‌بک)
-    const { data: pub, error: pubErr } = await rpc<MediaItem[]>('paginate_media', {
-      p_type: activeTab,
-      p_scope: 'public',
-      p_cursor_time: null,
-      p_cursor_id: null,
-      p_limit: 12,
-    });
-    if (!pubErr && pub) {
-      const rows = pub || [];
-      const more = rows.length > 12;
-      const items = more ? rows.slice(0, 12) : rows;
-      setPublicMedia(items);
-      setHasMorePublic(more);
-    } else {
-      const { data: fbPub } = await supabase.from('media').select('*').eq('visibility', 'public').eq('type', activeTab).order('created_at', { ascending: false }).limit(50);
-      setPublicMedia((fbPub as MediaItem[]) || []);
+    try {
+      const publicResponse = await listMedia({ type: activeTab, visibility: 'public' });
+      setPublicMedia(publicResponse.media.map(mapMedia));
       setHasMorePublic(false);
+      if (!user) {
+        setMyMedia([]);
+        setHasMoreMine(false);
+        return;
+      }
+      const [mineResponse, storageResponse] = await Promise.all([
+        listMedia({ type: activeTab, mine: true }),
+        getStorageUsage(),
+      ]);
+      setMyMedia(mineResponse.media.map(mapMedia));
+      setUsedBytes(storageResponse.usedBytes);
+      setHasMoreMine(false);
+    } catch (error) {
+      console.error('Error loading media:', error);
     }
   }, [user, activeTab]);
 
@@ -164,40 +125,10 @@ export default function Media() {
     loadMedia();
   }, [loadMedia]);
 
-  const handleLoadMoreMedia = async (scope: 'mine' | 'public') => {
-    const list = scope === 'mine' ? myMedia : publicMedia;
-    if (list.length === 0) return;
-    const last = list[list.length - 1];
-
-    if (scope === 'mine') setLoadingMoreMine(true);
-    else setLoadingMorePublic(true);
-
-    try {
-      const { data, error } = await rpc<MediaItem[]>('paginate_media', {
-        p_type: activeTab,
-        p_scope: scope,
-        p_cursor_time: last.created_at,
-        p_cursor_id: last.id,
-        p_limit: 12,
-      });
-      if (error) throw error;
-      const rows = data || [];
-      const more = rows.length > 12;
-      const items = more ? rows.slice(0, 12) : rows;
-
-      if (scope === 'mine') {
-        setMyMedia((prev) => [...prev, ...items]);
-        setHasMoreMine(more);
-      } else {
-        setPublicMedia((prev) => [...prev, ...items]);
-        setHasMorePublic(more);
-      }
-    } catch (err) {
-      console.error('Error loading more media:', err);
-    } finally {
-      if (scope === 'mine') setLoadingMoreMine(false);
-      else setLoadingMorePublic(false);
-    }
+    const handleLoadMoreMedia = async (_scope: 'mine' | 'public') => {
+    // The independent API currently returns the bounded first page. Cursor pagination is planned for the storage wave.
+    setHasMoreMine(false);
+    setHasMorePublic(false);
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -239,26 +170,19 @@ export default function Media() {
 
     setUploading(true);
     try {
-      const profile = await supabase.from('profiles').select('id').eq('user_id', user.id).maybeSingle();
-      const profileId = (profile.data as { id?: string })?.id || null;
-
-      const filePath = `${user.id}/${detectedTab}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
-      const { error: upErr } = await supabase.storage.from('media').upload(filePath, file, { upsert: false });
-      if (upErr) throw upErr;
-
-      const { data: urlData } = supabase.storage.from('media').getPublicUrl(filePath);
-
-      const { error: dbErr } = await supabase.from('media').insert({
-        title_en: file.name,
-        title_fa: file.name,
+      const upload = await createMediaUploadUrl({ fileName: file.name, contentType: file.type, type: detectedTab });
+      const uploadResponse = await fetch(upload.uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
+      if (!uploadResponse.ok) throw new Error('storage_upload_failed');
+      await createMedia({
         type: detectedTab,
-        src_url: urlData.publicUrl,
-        file_size: file.size,
-        owner_id: user.id,
-        created_by: profileId,
+        title: file.name,
+        description: '',
+        filePath: upload.key,
+        publicUrl: upload.publicUrl,
         visibility: 'private',
+        fileSize: file.size,
+        metadata: { title_en: file.name, title_fa: file.name },
       });
-      if (dbErr) throw dbErr;
 
       toast({ title: locale === 'fa' ? 'آپلود شد' : 'Uploaded' });
       loadMedia();
@@ -272,55 +196,39 @@ export default function Media() {
   };
 
   const updateVisibility = async (id: string, visibility: string) => {
-    const { error } = await supabase.from('media').update({ visibility }).eq('id', id);
-    if (!error) {
+    try {
+      await updateMedia(id, { visibility });
       toast({ title: locale === 'fa' ? 'اشتراک به‌روزرسانی شد' : 'Sharing updated' });
       loadMedia();
+    } catch (error) {
+      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا' : 'Error', description: error instanceof Error ? error.message : 'Update failed' });
     }
   };
 
-  const handleDelete = async (id: string, src: string) => {
-    const { error } = await supabase.from('media').delete().eq('id', id);
-    if (!error) {
-      try {
-        const path = extractStoragePath(src);
-        if (path) {
-          await supabase.storage.from('media').remove([path]);
-        }
-      } catch (err) {
-        console.error('Error removing storage object:', err);
-      }
+  const handleDelete = async (id: string, _src: string) => {
+    try {
+      await deleteMedia(id);
       toast({ title: locale === 'fa' ? 'حذف شد' : 'Deleted' });
       loadMedia();
-    } else {
-      toast({
-        variant: 'destructive',
-        title: locale === 'fa' ? 'خطا در حذف' : 'Delete error',
-        description: error.message,
-      });
+    } catch (error) {
+      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا در حذف' : 'Delete error', description: error instanceof Error ? error.message : 'Delete failed' });
     }
   };
 
   const handleShareWithEmail = async () => {
     if (!sharingItem || !shareEmail.trim()) return;
     setSharingBusy(true);
-    const { data, error } = await rpc<{ ok?: boolean; error?: string }>('share_media_with_email', {
-      p_media_id: sharingItem.id,
-      p_email: shareEmail.trim(),
-    });
-    setSharingBusy(false);
-
-    if (error || data?.ok === false) {
-      const msg = error?.message || String(data?.error || 'Error sharing file');
-      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا در اشتراک‌گذاری' : 'Sharing Error', description: msg });
-    } else {
-      toast({
-        title: locale === 'fa' ? 'به اشتراک گذاشته شد' : 'File Shared',
-        description: locale === 'fa' ? `فایل با موفقیت با ${shareEmail} به اشتراک گذاشته شد.` : `File shared with ${shareEmail}.`,
-      });
+    try {
+      const sharedWith = Array.from(new Set([...(sharingItem.shared_with || []), shareEmail.trim().toLowerCase()]));
+      await updateMedia(sharingItem.id, { visibility: 'public', metadata: { shared_with: sharedWith } });
+      toast({ title: locale === 'fa' ? 'به اشتراک گذاشته شد' : 'File Shared', description: locale === 'fa' ? `فایل با موفقیت با ${shareEmail} به اشتراک گذاشته شد.` : `File shared with ${shareEmail}.` });
       setShareEmail('');
       loadMedia();
       setSharingItem(null);
+    } catch (error) {
+      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا در اشتراک‌گذاری' : 'Sharing Error', description: error instanceof Error ? error.message : 'Sharing failed' });
+    } finally {
+      setSharingBusy(false);
     }
   };
 

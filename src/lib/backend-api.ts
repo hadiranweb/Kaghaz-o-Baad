@@ -42,6 +42,7 @@ export type BackendMedia = {
   public_url?: string | null;
   visibility: 'private' | 'public';
   metadata: Record<string, unknown>;
+  file_size: number;
   created_at: string;
   updated_at: string;
 };
@@ -93,6 +94,14 @@ export function saveProfile(input: Partial<Pick<BackendProfile, 'first_name' | '
       metadata: input.metadata,
     }),
   });
+}
+
+export function getStorageUsage() {
+  return backendRequest<{ ok: true; usedBytes: number }>('/me/storage');
+}
+
+export function createMediaUploadUrl(input: { fileName: string; contentType: string; type: string }) {
+  return backendRequest<{ ok: true; uploadUrl: string; publicUrl: string; key: string }>('/media/upload-url', { method: 'POST', body: JSON.stringify(input) });
 }
 
 export function listMedia(params: { type?: string; visibility?: 'public' | 'private'; mine?: boolean } = {}) {
@@ -262,4 +271,24 @@ export function deleteSlide(slideId: string) {
 
 export function updateProjectDescription(id: string, input: { title?: string; description?: string; metadata?: Record<string, unknown> }) {
   return backendRequest<{ ok: true; description: BackendProjectDescription }>(`/projects/descriptions/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export function getLiveKitToken(sessionId: string) {
+  return backendRequest<{
+    ok: true;
+    token: string;
+    url: string;
+    room: string;
+    role: 'host' | 'speaker' | 'viewer';
+    identity: string;
+    name: string;
+    session_status?: string;
+    e2ee_enabled?: boolean;
+    article_id?: string | null;
+    presentation_enabled?: boolean;
+    presentation_media_id?: string | null;
+    presentation_url?: string | null;
+    presentation_name?: string | null;
+    presentation_kind?: 'pdf' | 'image' | 'pptx' | 'other' | null;
+  }>(`/live/sessions/${sessionId}/token`, { method: 'POST', body: '{}' });
 }
