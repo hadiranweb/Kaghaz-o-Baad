@@ -1,0 +1,96 @@
+name: Kaghaz-o-Baad CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend check and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+  backend:
+    name: Backend check, build and migration dry-run
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: npm run migrate:dry-run
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+  installer:
+    name: Windows EXE installer
+    runs-on: windows-latest
+    needs: [frontend, backend]
+    defaults:
+      run:
+        working-directory: installer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: installer/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm run build
+      - run: npm run package:exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KaghazBaad-Windows-Installer
+          path: installer/release/*.exe
+          if-no-files-found: error
+          retention-days: 14
+
+  secret-scan:
+    name: Public repository secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check tracked files for private keys and common API key formats
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git grep -nE 'BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z_-]{20,}' -- ':!**/node_modules/**'; then
+            echo 'Potential secret detected in tracked content.' >&2
+            exit 1
+          fi
+          if git ls-files | grep -E '(^|/)(\.env($|\.)|.*\.pem$|.*\.key$)' | grep -vE '(^|/)\.env\.example$|(^|/)\.env\.local\.example$'; then
+            echo 'Potential secret-bearing file is tracked.' >&2
+            exit 1
+          fi
+
+# Deployment is intentionally not automatic. Liara or Single Server deployment
+# requires a human-reviewed environment, database URL, callback URL and secrets.
