@@ -1,10 +1,9 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { getLiveSession, listArticleSlides, updateLiveSessionStatus } from '@/lib/backend-api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLiveKitToken } from '@/hooks/useLiveKitToken';
-import { rpc } from '@/integrations/supabase/rpc';
 import { Button } from '@/components/ui/button';
 import { Radio, Settings2, ArrowRight, Loader2 } from 'lucide-react';
 
@@ -29,6 +28,7 @@ interface SessionRow {
   article_id: string | null;
   status: string;
   host_user_id: string;
+  host_id?: string | null;
 }
 
 export default function LiveRoomPage() {
@@ -47,33 +47,34 @@ export default function LiveRoomPage() {
 
   const loadSession = useCallback(async () => {
     if (!id) return;
-    const { data, error } = await supabase
-      .from('live_sessions')
-      .select('id, title_en, title_fa, article_id, status, host_user_id')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error || !data) {
-      setSessionError(error?.message || 'Session not found');
+    try {
+      const { session: row } = await getLiveSession(id);
+      const metadata = row.metadata || {};
+      const nextSession: SessionRow = {
+        id: row.id,
+        title_en: typeof metadata.title_en === 'string' ? metadata.title_en : row.title,
+        title_fa: typeof metadata.title_fa === 'string' ? metadata.title_fa : row.title,
+        article_id: typeof metadata.article_id === 'string' ? metadata.article_id : null,
+        status: row.status,
+        host_user_id: row.host_id || '',
+        host_id: row.host_id,
+      };
+      setSession(nextSession);
       setSessionLoaded(true);
-      return;
-    }
-    setSession(data);
-    setSessionLoaded(true);
-
-    // بارگذاری اسلایدهای مقالهٔ متصل: اول از RPC امن (عبور از RLS)، بعد پرس‌وجوی مستقیم
-    if (data.article_id) {
-      const { data: rpcRows, error: rpcErr } = await rpc<SlideItem[]>('get_session_slides', { p_session_id: id });
-      if (!rpcErr && Array.isArray(rpcRows) && rpcRows.length > 0) {
-        setSlides(rpcRows);
-        return;
+      if (nextSession.article_id) {
+        const { slides: rows } = await listArticleSlides(nextSession.article_id);
+        setSlides(rows.map((slide) => ({
+          id: slide.id,
+          order_num: slide.sort_order,
+          title_fa: typeof slide.content.title_fa === 'string' ? slide.content.title_fa : slide.title,
+          title_en: typeof slide.content.title_en === 'string' ? slide.content.title_en : slide.title,
+          body_fa: typeof slide.content.body_fa === 'string' ? slide.content.body_fa : '',
+          body_en: typeof slide.content.body_en === 'string' ? slide.content.body_en : '',
+        })));
       }
-      const { data: slideRows } = await supabase
-        .from('slides')
-        .select('*')
-        .eq('article_id', data.article_id)
-        .order('order_num', { ascending: true });
-      setSlides(slideRows || []);
+    } catch (error) {
+      setSessionError(error instanceof Error ? error.message : 'Session not found');
+      setSessionLoaded(true);
     }
   }, [id]);
 
@@ -101,24 +102,22 @@ export default function LiveRoomPage() {
 
   const startSession = useCallback(async () => {
     if (!id) return;
-    const { error } = await supabase
-      .from('live_sessions')
-      .update({ status: 'live', started_at: new Date().toISOString() })
-      .eq('id', id);
-    if (error) {
+    try {
+      await updateLiveSessionStatus(id, 'live');
+      await loadSession();
+    } catch (error) {
       console.error('start session error', error);
-      return;
     }
-    await loadSession();
   }, [id, loadSession]);
 
   const endSession = useCallback(async () => {
     if (!id) return;
-    await supabase
-      .from('live_sessions')
-      .update({ status: 'ended', ended_at: new Date().toISOString() })
-      .eq('id', id);
-    await loadSession();
+    try {
+      await updateLiveSessionStatus(id, 'ended');
+      await loadSession();
+    } catch (error) {
+      console.error('end session error', error);
+    }
   }, [id, loadSession]);
 
   if (authLoading || !sessionLoaded) return null;

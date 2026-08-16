@@ -292,3 +292,51 @@ export function getLiveKitToken(sessionId: string) {
     presentation_kind?: 'pdf' | 'image' | 'pptx' | 'other' | null;
   }>(`/live/sessions/${sessionId}/token`, { method: 'POST', body: '{}' });
 }
+
+export function getLiveSession(id: string) {
+  return backendRequest<{ ok: true; session: BackendLiveSession }>(`/live-sessions/${id}`);
+}
+
+export function updateLiveSessionStatus(id: string, status: BackendLiveSession['status']) {
+  return backendRequest<{ ok: true; session: BackendLiveSession }>(`/live-sessions/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+}
+
+export function updateLiveSession(id: string, input: Record<string, unknown>) {
+  return backendRequest<{ ok: true; session: BackendLiveSession }>(`/live-sessions/${id}`, { method: 'PATCH', body: JSON.stringify(input) });
+}
+
+export type AdminUserRecord = {
+  id: string;
+  email: string | null;
+  created_at: string;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
+  roles: string[];
+  profile: { first_name?: string; last_name?: string; phone?: string } | null;
+};
+
+export function adminUsers(input: Record<string, unknown>) {
+  return backendRequest<{ ok: true; users?: AdminUserRecord[]; forcedPasswordChange?: boolean }>('/admin/users', { method: 'POST', body: JSON.stringify(input) });
+}
+
+export type BackendCircuitBreaker = {
+  service_name: string;
+  state: 'CLOSED' | 'OPEN' | 'HALF_OPEN';
+  failure_count: number;
+  last_failure_at: string | null;
+  opened_at: string | null;
+  cooldown_seconds: number;
+  updated_at: string;
+};
+
+export function listCircuitBreakers() {
+  return backendRequest<{ ok: true; breakers: BackendCircuitBreaker[] }>('/admin/circuit-breakers');
+}
+
+export function resetCircuitBreaker(service: string) {
+  return backendRequest<{ ok: true }>('/admin/circuit-breakers/reset', { method: 'POST', body: JSON.stringify({ service }) });
+}
+
+export function tripCircuitBreakerTest(service: string) {
+  return backendRequest<{ ok: true }>('/admin/circuit-breakers/trip-test', { method: 'POST', body: JSON.stringify({ service }) });
+}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { createLiveSession, createMedia, createMediaUploadUrl, listArticles } from '@/lib/backend-api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -41,12 +41,9 @@ export default function LiveSessionNew() {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from('articles')
-      .select('id, title_fa, title_en')
-      .eq('author_id', user.id)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => setMyArticles(data || []));
+    listArticles()
+      .then(({ articles }) => setMyArticles(articles.filter((article) => article.author_id === user.id).map((article) => ({ id: article.id, title_fa: article.title_fa, title_en: article.title_en }))))
+      .catch((error) => console.error('Error loading articles:', error));
   }, [user]);
 
   // تولید کلید E2EE در مرورگر — روی سرور ذخیره نمی‌شود
@@ -84,98 +81,45 @@ export default function LiveSessionNew() {
       let presentationMediaId: string | null = null;
       if (presentationFile && user) {
         setUploading(true);
-        const ext = extOf(presentationFile.name) || '.pdf';
-        const storagePath = `${user.id}/presentations/${crypto.randomUUID()}${ext}`;
-        const { error: upErr } = await supabase.storage
-          .from('media')
-          .upload(storagePath, presentationFile, { upsert: false, cacheControl: '3600' });
-        if (upErr) throw new Error(fa ? `آپلود ناموفق: ${upErr.message}` : `Upload failed: ${upErr.message}`);
-
         const mime = presentationFile.type || 'application/octet-stream';
         const isImage = mime.startsWith('image/');
         const isPdf = mime === 'application/pdf';
         const isPpt = mime.includes('presentation') || /\.ppt.?$/i.test(presentationFile.name);
-        const mediaType = isImage ? 'image' : 'pdf'; // پایهٔ سازگار (document برای PPTX در صورت اعمال مهاجرت)
-
-        const { data: urlData } = supabase.storage.from('media').getPublicUrl(storagePath);
-
-        // تلاش با نوع توسعه‌یافتهٔ document (مهاجرت جدید) و عقب‌نشینی به pdf
-        const mediaRow = {
-          title_en: presentationFile.name,
-          title_fa: presentationFile.name,
+        const mediaType = isImage ? 'image' : isPdf ? 'pdf' : isPpt ? 'pptx' : 'other';
+        const upload = await createMediaUploadUrl({ fileName: presentationFile.name, contentType: mime, type: mediaType });
+        const uploadResponse = await fetch(upload.uploadUrl, { method: 'PUT', headers: { 'Content-Type': mime }, body: presentationFile });
+        if (!uploadResponse.ok) throw new Error(fa ? 'آپلود ناموفق بود' : 'Upload failed');
+        const mediaResponse = await createMedia({
           type: mediaType,
-          src_url: urlData.publicUrl,
-          owner_id: user.id,
-          file_size: presentationFile.size,
-          visibility: 'private' as const,
-          meta: {
-            storage_path: storagePath,
-            mime,
-            original_name: presentationFile.name,
-            presentation: true,
-            doc_type: isPpt ? 'pptx' : isPdf ? 'pdf' : isImage ? 'image' : 'other',
-          },
-        };
-
-        const baseRow = { ...mediaRow, type: isPpt ? ('document' as const) : mediaType };
-        let mediaResult = await supabase.from('media').insert(baseRow).select('id').single();
-        if (mediaResult.error && /document|check constraint|type/i.test(mediaResult.error.message || '')) {
-          // مهاجرت media_type_check اعمال نشده → عقب‌نشینی به نوع pdf
-          mediaResult = await supabase.from('media').insert(mediaRow).select('id').single();
-        }
-        const mediaErr = mediaResult.error;
-        if (mediaErr) throw new Error(fa ? `ثبت رسانه ناموفق: ${mediaErr.message}` : `Media insert failed: ${mediaErr.message}`);
-        presentationMediaId = mediaResult.data?.id ?? null;
+          title: presentationFile.name,
+          description: '',
+          filePath: upload.key,
+          publicUrl: upload.publicUrl,
+          visibility: 'private',
+          fileSize: presentationFile.size,
+          metadata: { mime, original_name: presentationFile.name, presentation: true, doc_type: isPpt ? 'pptx' : isPdf ? 'pdf' : isImage ? 'image' : 'other' },
+        });
+        presentationMediaId = mediaResponse.media.id;
         setUploading(false);
       }
 
       // ۲) ساخت جلسه زنده
       const roomName = `qa-${crypto.randomUUID().slice(0, 12)}`;
       const nowLive = !scheduledAt;
-      const sessionRow = {
-        host_user_id: user.id,
-        room_name: roomName,
-        title_fa: titleFa,
-        title_en: titleEn,
-        description_fa: descFa || null,
-        description_en: descEn || null,
-        scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
-        article_id: selectedArticleId !== 'none' ? selectedArticleId : null,
-        e2ee_enabled: e2eeEnabled,
-        presentation_enabled: true,
-        presentation_media_id: presentationMediaId,
+      const { session: data } = await createLiveSession({
+        roomName,
+        titleFa,
+        titleEn,
+        descriptionFa: descFa || '',
+        descriptionEn: descEn || '',
+        startsAt: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+        articleId: selectedArticleId !== 'none' ? selectedArticleId : null,
+        e2eeEnabled,
+        presentationEnabled: Boolean(presentationMediaId),
+        presentationMediaId,
         status: nowLive ? 'live' : 'scheduled',
-      };
-
-      // تایپ‌های تولیدشده هنوز ستون‌های جدید را نمی‌دانند؛ پس از `supabase gen types` می‌توان cast را حذف کرد
-      let sessionResult = await supabase
-        .from('live_sessions')
-        .insert(sessionRow as never)
-        .select('id')
-        .single();
-
-      if (sessionResult.error && /column|e2ee_enabled|presentation_media_id|presentation_enabled/i.test(sessionResult.error.message || '')) {
-        // مهاجرت ستون‌های جدید اعمال نشده → درج بدون ستون‌های جدید
-        toast.warning(fa ? 'ستون‌های جدید دیتابیس اعمال نشده‌اند — supabase db push را اجرا کنید' : 'New DB columns missing — run supabase db push');
-        sessionResult = await supabase
-          .from('live_sessions')
-          .insert({
-            host_user_id: user.id,
-            room_name: roomName,
-            title_fa: titleFa,
-            title_en: titleEn,
-            description_fa: descFa || null,
-            description_en: descEn || null,
-            scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
-            article_id: selectedArticleId !== 'none' ? selectedArticleId : null,
-            status: nowLive ? 'live' : 'scheduled',
-          })
-          .select('id')
-          .single();
-      }
-
-      const { data, error } = sessionResult;
-      if (error) throw error;
+        metadata: { e2ee_key_generated: Boolean(e2eeKey), presentation_enabled: Boolean(presentationMediaId) },
+      });
       setSubmitting(false);
 
       toast.success(fa ? 'جلسه ایجاد شد' : 'Session created');

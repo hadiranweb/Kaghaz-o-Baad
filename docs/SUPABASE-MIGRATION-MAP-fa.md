@@ -47,3 +47,12 @@ grep -RInE 'supabase|SUPABASE_|@supabase' src backend installer scripts
 ```
 
 وجود کلمهٔ Supabase در مستندات تاریخی مجاز است، اما نباید در source، dependency، env runtime، CI یا deploy config باقی بماند.
+
+
+## وضعیت موج نهایی مهاجرت — 2026-08-16
+
+مهاجرت اجرایی frontend تکمیل شد. مسیرهای profile، translations، search، articles، comments، community، slides، dashboard، rewrite، LiveKit، media، live sessions، admin users، circuit breakers و realtime اتاق زنده اکنون از API مستقل Node.js/Fastify استفاده می‌کنند. upload رسانه از presigned URL سازگار با Liara Object Storage انجام می‌شود و مصرف فضا از PostgreSQL خوانده می‌شود.
+
+وابستگی `@supabase/supabase-js`، پوشهٔ `src/integrations/supabase` و صفحهٔ Supabase OAuthConsent از branch اصلی حذف شدند. هیچ import یا فراخوانی اجرایی Supabase در `src` و `backend` باقی نمانده است. Migrationهای مستقل تا شمارهٔ 009 ادامه یافته‌اند.
+
+مواردی که عمداً خارج از این migration باقی می‌مانند، فقط اسناد تاریخی و فایل‌های legacy مستندشده هستند و نباید در runtime یا CI استفاده شوند.

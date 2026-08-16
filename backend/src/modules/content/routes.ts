@@ -37,11 +37,19 @@ const slideSchema = z.object({
 });
 const liveSessionSchema = z.object({
   title: z.string().max(300).optional().default(''),
+  titleFa: z.string().max(300).optional(),
+  titleEn: z.string().max(300).optional(),
   description: z.string().max(5000).optional().default(''),
+  descriptionFa: z.string().max(5000).optional(),
+  descriptionEn: z.string().max(5000).optional(),
   roomName: z.string().trim().min(1).max(180),
   status: z.enum(['scheduled', 'live', 'ended', 'cancelled']).optional().default('scheduled'),
   startsAt: z.string().datetime().optional().nullable(),
   endsAt: z.string().datetime().optional().nullable(),
+  articleId: z.string().uuid().optional().nullable(),
+  e2eeEnabled: z.boolean().optional().default(false),
+  presentationEnabled: z.boolean().optional().default(false),
+  presentationMediaId: z.string().uuid().optional().nullable(),
   metadata: z.record(z.unknown()).optional().default({}),
 });
 
@@ -304,16 +312,75 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
     return reply.send({ ok: true, sessions: result.rows });
   });
 
+  app.get('/api/v1/live-sessions/:id', async (request, reply) => {
+    const params = uuidParams.safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    const result = await db.query('SELECT * FROM live_sessions WHERE id = $1', [params.data.id]);
+    if (!result.rows[0]) return reply.status(404).send({ error: 'session_not_found' });
+    return reply.send({ ok: true, session: result.rows[0] });
+  });
+
+  app.patch('/api/v1/live-sessions/:id', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = uuidParams.safeParse(request.params);
+    const body = liveSessionSchema.partial().safeParse(request.body);
+    if (!params.success || !body.success || Object.keys(body.data).length === 0) return reply.status(400).send({ error: 'invalid_input' });
+    const existing = await db.query<{ host_id: string | null; metadata: Record<string, unknown> }>('SELECT host_id, metadata FROM live_sessions WHERE id = $1', [params.data.id]);
+    if (!existing.rows[0]) return reply.status(404).send({ error: 'session_not_found' });
+    if (existing.rows[0].host_id !== user.id && !canManageAll(user)) return reply.status(403).send({ error: 'forbidden' });
+    const d = body.data;
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    if (d.titleFa !== undefined || d.titleEn !== undefined || d.title !== undefined) {
+      values.push(d.titleEn ?? d.titleFa ?? d.title ?? ''); fields.push(`title = $${values.length}`);
+      const metadata = { ...existing.rows[0].metadata, ...(d.metadata ?? {}), ...(d.titleFa !== undefined ? { title_fa: d.titleFa } : {}), ...(d.titleEn !== undefined ? { title_en: d.titleEn } : {}) };
+      values.push(metadata); fields.push(`metadata = $${values.length}`);
+    }
+    if (d.descriptionFa !== undefined || d.descriptionEn !== undefined || d.description !== undefined) { values.push(d.descriptionEn ?? d.descriptionFa ?? d.description ?? ''); fields.push(`description = $${values.length}`); }
+    if (d.status !== undefined) { values.push(d.status); fields.push(`status = $${values.length}`); }
+    if (d.startsAt !== undefined) { values.push(d.startsAt ?? null); fields.push(`starts_at = $${values.length}`); }
+    if (d.endsAt !== undefined) { values.push(d.endsAt ?? null); fields.push(`ends_at = $${values.length}`); }
+    if (d.metadata !== undefined && !(d.titleFa !== undefined || d.titleEn !== undefined || d.title !== undefined)) { values.push({ ...existing.rows[0].metadata, ...d.metadata }); fields.push(`metadata = $${values.length}`); }
+    values.push(params.data.id);
+    const updated = await db.query(`UPDATE live_sessions SET ${fields.join(', ')}, updated_at = now() WHERE id = $${values.length} RETURNING *`, values);
+    return reply.send({ ok: true, session: updated.rows[0] });
+  });
+
+  app.patch('/api/v1/live-sessions/:id/status', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = uuidParams.safeParse(request.params);
+    const body = z.object({ status: z.enum(['scheduled', 'live', 'ended', 'cancelled']) }).safeParse(request.body);
+    if (!params.success || !body.success) return reply.status(400).send({ error: 'invalid_input' });
+    const result = await db.query<{ host_id: string | null }>('SELECT host_id FROM live_sessions WHERE id = $1', [params.data.id]);
+    if (!result.rows[0]) return reply.status(404).send({ error: 'session_not_found' });
+    if (result.rows[0].host_id !== user.id && !canManageAll(user)) return reply.status(403).send({ error: 'forbidden' });
+    const updated = await db.query('UPDATE live_sessions SET status = $1, starts_at = CASE WHEN $1 = \'live\' THEN COALESCE(starts_at, now()) ELSE starts_at END, ends_at = CASE WHEN $1 IN (\'ended\', \'cancelled\') THEN COALESCE(ends_at, now()) ELSE ends_at END, updated_at = now() WHERE id = $2 RETURNING *', [body.data.status, params.data.id]);
+    return reply.send({ ok: true, session: updated.rows[0] });
+  });
+
   app.post('/api/v1/live-sessions', async (request, reply) => {
     const user = await getAuthUser(request);
     if (!user) return reply.status(401).send({ error: 'unauthorized' });
     const body = liveSessionSchema.safeParse(request.body);
     if (!body.success) return reply.status(400).send({ error: 'invalid_input' });
     const d = body.data;
+    const metadata = {
+      ...d.metadata,
+      title_fa: d.titleFa ?? d.title ?? '',
+      title_en: d.titleEn ?? d.title ?? '',
+      description_fa: d.descriptionFa ?? d.description ?? '',
+      description_en: d.descriptionEn ?? d.description ?? '',
+      article_id: d.articleId ?? null,
+      e2ee_enabled: d.e2eeEnabled,
+      presentation_enabled: d.presentationEnabled,
+      presentation_media_id: d.presentationMediaId ?? null,
+    };
     const result = await db.query(
       `INSERT INTO live_sessions (host_id, title, description, room_name, status, starts_at, ends_at, metadata)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [user.id, d.title, d.description, d.roomName, d.status, d.startsAt ?? null, d.endsAt ?? null, d.metadata],
+      [user.id, d.titleEn ?? d.titleFa ?? d.title, d.descriptionEn ?? d.descriptionFa ?? d.description, d.roomName, d.status, d.startsAt ?? null, d.endsAt ?? null, metadata],
     );
     return reply.status(201).send({ ok: true, session: result.rows[0] });
   });

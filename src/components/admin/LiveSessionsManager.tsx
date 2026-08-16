@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { deleteLiveSession, listLiveSessions, updateLiveSession } from '@/lib/backend-api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -44,16 +44,21 @@ export default function LiveSessionsManager() {
   const [savingId, setSavingId] = useState<string | null>(null);
 
   const load = async () => {
-    const { data, error } = await supabase
-      .from('live_sessions')
-      .select('*')
-      .order('scheduled_at', { ascending: false, nullsFirst: false });
-    if (error) {
-      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا' : 'Error', description: error.message });
-    } else {
-      setSessions(data || []);
+    try {
+      const { sessions: data } = await listLiveSessions();
+      setSessions(data.map((session) => ({
+        ...session,
+        title_fa: typeof session.metadata.title_fa === 'string' ? session.metadata.title_fa : session.title,
+        title_en: typeof session.metadata.title_en === 'string' ? session.metadata.title_en : session.title,
+        description_fa: typeof session.metadata.description_fa === 'string' ? session.metadata.description_fa : session.description,
+        description_en: typeof session.metadata.description_en === 'string' ? session.metadata.description_en : session.description,
+        scheduled_at: session.starts_at,
+      })));
+    } catch (error) {
+      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا' : 'Error', description: error instanceof Error ? error.message : 'Load failed' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -66,38 +71,32 @@ export default function LiveSessionsManager() {
 
   const save = async (s: any) => {
     setSavingId(s.id);
-    const { error } = await supabase
-      .from('live_sessions')
-      .update({
-        title_en: s.title_en,
-        title_fa: s.title_fa,
-        description_en: s.description_en,
-        description_fa: s.description_fa,
+    try {
+      await updateLiveSession(s.id, {
+        titleFa: s.title_fa,
+        titleEn: s.title_en,
+        descriptionFa: s.description_fa,
+        descriptionEn: s.description_en,
         status: s.status,
-        scheduled_at: s.scheduled_at ? new Date(s.scheduled_at).toISOString() : null,
-        max_participants: Number(s.max_participants) || 100,
-        recording_enabled: !!s.recording_enabled,
-      })
-      .eq('id', s.id);
-    setSavingId(null);
-    if (error) {
-      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا' : 'Error', description: error.message });
-    } else {
-      toast({
-        title: locale === 'fa' ? 'ذخیره شد' : 'Saved',
-        description: locale === 'fa' ? 'جلسه به‌روزرسانی شد' : 'Session updated',
+        startsAt: s.scheduled_at ? new Date(s.scheduled_at).toISOString() : null,
+        metadata: { max_participants: Number(s.max_participants) || 100, recording_enabled: !!s.recording_enabled },
       });
+      toast({ title: locale === 'fa' ? 'ذخیره شد' : 'Saved', description: locale === 'fa' ? 'جلسه به‌روزرسانی شد' : 'Session updated' });
       load();
+    } catch (error) {
+      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا' : 'Error', description: error instanceof Error ? error.message : 'Save failed' });
+    } finally {
+      setSavingId(null);
     }
   };
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from('live_sessions').delete().eq('id', id);
-    if (error) {
-      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا' : 'Error', description: error.message });
-    } else {
+    try {
+      await deleteLiveSession(id);
       setSessions((prev) => prev.filter((s) => s.id !== id));
       toast({ title: locale === 'fa' ? 'حذف شد' : 'Deleted' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: locale === 'fa' ? 'خطا' : 'Error', description: error instanceof Error ? error.message : 'Delete failed' });
     }
   };
 

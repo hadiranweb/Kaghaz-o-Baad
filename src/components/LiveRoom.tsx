@@ -20,7 +20,6 @@ import * as pdfjs from 'pdfjs-dist';
 import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -379,35 +378,14 @@ export const LiveRoom = ({
     [room],
   );
 
-  // ——— همگام‌سازی اسلاید: کانال رمزشدهٔ LiveKit + پشتیبان Broadcast (فقط بدون E2EE) ———
-  useEffect(() => {
-    if (!sessionId || slides.length === 0 || e2eeEnabled) return;
-    const channel = supabase
-      .channel(`room-slide:${sessionId}`)
-      .on('broadcast', { event: 'slide_change' }, (payload) => {
-        if (typeof payload.payload?.index === 'number') {
-          setCurrentSlideIndex(clamp(payload.payload.index, 0, slides.length - 1));
-        }
-      })
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [sessionId, slides.length, e2eeEnabled]);
+  // ——— همگام‌سازی اسلاید فقط از طریق data channel بومی LiveKit انجام می‌شود ———
+
 
   const handleSlideChange = useCallback(
     (newIdx: number) => {
       if (newIdx < 0 || newIdx >= slides.length) return;
       setCurrentSlideIndex(newIdx);
-      void sendData(TOPIC_SLIDE, { t: 'slide', i: newIdx }).then((ok) => {
-        if (!ok && !e2eeEnabled) {
-          supabase.channel(`room-slide:${sessionId}`).send({
-            type: 'broadcast',
-            event: 'slide_change',
-            payload: { index: newIdx },
-          });
-        }
-      });
+      void sendData(TOPIC_SLIDE, { t: 'slide', i: newIdx });
     },
     [sendData, slides.length, sessionId, e2eeEnabled],
   );

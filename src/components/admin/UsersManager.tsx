@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { adminUsers } from '@/lib/backend-api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -64,44 +64,32 @@ export default function UsersManager() {
 
   const load = async () => {
     setLoading(true);
-    const { data, error } = await supabase.functions.invoke('admin-users', {
-      body: { action: 'list' },
-    });
-    if (error || (data as ApiResponse)?.error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as ApiResponse)?.error });
-    } else {
-      setUsers((data as ApiResponse)?.users || []);
+    try {
+      const data = await adminUsers({ action: 'list' });
+      setUsers((data.users || []) as AdminUser[]);
+    } catch (error) {
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : 'Load failed' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
   const seedTestUsers = async () => {
-    setSeeding(true);
-    const { data, error } = await supabase.functions.invoke('create-test-users');
-    setSeeding(false);
-    if (error || (data as ApiResponse)?.error) {
-      toast({ variant: 'destructive', title: t('خطا در ایجاد کاربران تستی', 'Error seeding test users'), description: error?.message || (data as ApiResponse)?.error });
-    } else {
-      toast({
-        title: t('۴ کاربر تستی ساخته شد', '4 test users seeded'),
-        description: t('حساب‌های تست برای admin, editor, contributor, user ایجاد و آماده شد.', 'Test accounts created for admin, editor, contributor, user.'),
-      });
-      load();
-    }
+    toast({ variant: 'destructive', title: t('غیرفعال', 'Unavailable'), description: t('ایجاد کاربر تستی در محیط مستقل هنوز فعال نشده است.', 'Test-user seeding is disabled until an explicit provisioning flow is added.') });
   };
 
   const toggleRole = async (u: AdminUser, role: Role, enabled: boolean) => {
     setBusy(u.id + role);
-    const { data, error } = await supabase.functions.invoke('admin-users', {
-      body: { action: 'setRole', user_id: u.id, role, enabled },
-    });
-    setBusy(null);
-    if (error || (data as ApiResponse)?.error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as ApiResponse)?.error });
+    try {
+      await adminUsers({ action: 'setRole', userId: u.id, role, enabled });
+    } catch (error) {
+      setBusy(null);
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : 'Role update failed' });
       return;
     }
+    setBusy(null);
     setUsers((prev) => prev.map((x) => x.id === u.id
       ? { ...x, roles: enabled ? Array.from(new Set([...x.roles, role])) : x.roles.filter((r) => r !== role) }
       : x));
@@ -110,14 +98,14 @@ export default function UsersManager() {
 
   const deleteUser = async (u: AdminUser) => {
     setBusy(u.id + 'del');
-    const { data, error } = await supabase.functions.invoke('admin-users', {
-      body: { action: 'deleteUser', user_id: u.id },
-    });
-    setBusy(null);
-    if (error || (data as ApiResponse)?.error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as ApiResponse)?.error });
+    try {
+      await adminUsers({ action: 'deleteUser', userId: u.id });
+    } catch (error) {
+      setBusy(null);
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : 'Delete failed' });
       return;
     }
+    setBusy(null);
     setUsers((prev) => prev.filter((x) => x.id !== u.id));
     toast({ title: t('کاربر حذف شد', 'User deleted') });
   };
@@ -138,22 +126,25 @@ export default function UsersManager() {
     setSaving(true);
     const payload: Record<string, unknown> = {
       action: 'updateUser',
-      user_id: editing.id,
+      userId: editing.id,
       email: form.email !== (editing.email ?? '') ? form.email : undefined,
-      first_name: form.first_name,
-      last_name: form.last_name,
+      firstName: form.first_name,
+      lastName: form.last_name,
       phone: form.phone,
     };
     if (form.password) payload.password = form.password;
-    const { data, error } = await supabase.functions.invoke('admin-users', { body: payload });
-    setSaving(false);
-    if (error || (data as ApiResponse)?.error) {
-      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error?.message || (data as ApiResponse)?.error });
+    let data: { forcedPasswordChange?: boolean };
+    try {
+      data = await adminUsers(payload);
+    } catch (error) {
+      setSaving(false);
+      toast({ variant: 'destructive', title: t('خطا', 'Error'), description: error instanceof Error ? error.message : 'Update failed' });
       return;
     }
+    setSaving(false);
     toast({
       title: t('ذخیره شد', 'Saved'),
-      description: (data as ApiResponse)?.forcedPasswordChange
+      description: data.forcedPasswordChange
         ? t('کاربر در ورود بعدی باید رمز را تغییر دهد.', 'User must change password on next sign-in.')
         : undefined,
     });

@@ -27,7 +27,6 @@ const LiveRoomPage = lazy(() => import("./pages/LiveRoomPage"));
 const LiveSessionNew = lazy(() => import("./pages/LiveSessionNew"));
 const Rewrite = lazy(() => import("./pages/Rewrite"));
 const ChangePassword = lazy(() => import("./pages/ChangePassword"));
-const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 
 const RouteFallback = () => (
   <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
@@ -68,7 +67,6 @@ const App = () => (
                     <Route path="/live/:id" element={<LiveRoomPage />} />
                     <Route path="/rewrite" element={<Rewrite />} />
                     <Route path="/change-password" element={<ChangePassword />} />
-                    <Route path="/oauth/consent" element={<OAuthConsent />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                     </Routes>

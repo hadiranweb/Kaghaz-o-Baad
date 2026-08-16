@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { rpc } from '@/integrations/supabase/rpc';
+import { listCircuitBreakers, resetCircuitBreaker, tripCircuitBreakerTest } from '@/lib/backend-api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,9 +29,8 @@ export default function CircuitBreakerMonitor() {
   const loadBreakers = async () => {
     setLoading(true);
     try {
-      const { data, error } = await rpc<CircuitBreakerItem[]>('list_circuit_breakers');
-      if (error) throw error;
-      setItems(data || []);
+      const { breakers } = await listCircuitBreakers();
+      setItems(breakers);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       toast({
@@ -52,13 +50,7 @@ export default function CircuitBreakerMonitor() {
   const handleReset = async (serviceName: string) => {
     setBusyService(serviceName);
     try {
-      const { data, error } = await rpc<{ ok?: boolean; error?: string }>('reset_circuit_breaker', {
-        p_service: serviceName,
-      });
-      if (error) throw error;
-      if (data?.ok === false) {
-        throw new Error(String(data?.error || 'Error'));
-      }
+      await resetCircuitBreaker(serviceName);
       toast({
         title: t('مدارشکن بازنشانی شد', 'Circuit Breaker Reset'),
         description: t(`سرویس ${serviceName} به وضعیت عادی (CLOSED) بازگشت.`, `${serviceName} returned to normal (CLOSED) state.`),
@@ -79,13 +71,7 @@ export default function CircuitBreakerMonitor() {
   const handleTripTest = async (serviceName: string) => {
     setBusyService(serviceName);
     try {
-      const { data, error } = await rpc<{ ok?: boolean; error?: string }>('trip_circuit_breaker_test', {
-        p_service: serviceName,
-      });
-      if (error) throw error;
-      if (data?.ok === false) {
-        throw new Error(String(data?.error || 'Error'));
-      }
+      await tripCircuitBreakerTest(serviceName);
       toast({
         variant: 'destructive',
         title: t('تست قطع سریع مدارشکن (OPEN)', 'Circuit Breaker Tripped (Test)'),
