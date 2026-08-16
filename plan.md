@@ -3,7 +3,7 @@
 پلتفرم: **LiveKit Cloud** (با امکان مهاجرت بعدی به self-host بدون تغییر کد). صدا/تصویر هرگز از Supabase عبور نمی‌کند؛ Supabase فقط Auth/DB/Edge Functions است.
 
 ## ۱) رازها (Secrets)
-نیاز به اضافه کردن سه راز در Lovable Cloud:
+نیاز به اضافه کردن سه راز در Supabase Cloud:
 - `LIVEKIT_URL` (مثل `wss://xxx.livekit.cloud`)
 - `LIVEKIT_API_KEY`
 - `LIVEKIT_API_SECRET`

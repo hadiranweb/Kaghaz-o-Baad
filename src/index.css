@@ -1,0 +1,284 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* === IRANSharp — فونت اختصاصی اکوسیستم لاپیداری (برگرفته از کتابچه هویت بصری) === */
+/* کتابچه: سه وزن 300/400/700 به صورت درون‌خطی (base64) جاسازی شده است. برای حجم بهینه، نسخه CDN متناظر استفاده می‌شود. */
+@font-face {
+  font-family: 'IRANSharp';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: local('IRANSharp Light'), local('IRANSharp-Light'),
+       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Light.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IRANSharp';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('IRANSharp'), local('IRANSharp-Regular'),
+       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'IRANSharp';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('IRANSharp Bold'), local('IRANSharp-Bold'),
+       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2');
+}
+
+/* === نظام رنگی کاغذ و باد — برگرفته از کتابچه هویت بصری اکوسیستم لاپیداری === */
+/* پروفایل مبنا: کاشان (Kashan) — آموزش · نشر · کاغذ و باد · Profile 2 */
+/* مرجع: :root در کتابچه — --navy:#0F1E2E --lapis:#16324F --azure:#1F4E79 --turq:#2E8B8B --cream:#F3E5C8 --parch:#FBF6EA --silver:#C9CBD1 */
+
+@layer base {
+  :root {
+    /* ——— تم روشن — Parchment / کاغذ — پروفایل کاشان ——— */
+    --background: 42 68% 95%; /* #FBF6EA پارچ */
+    --foreground: 211 51% 12%; /* #0F1E2E آبی سلطنتی */
+
+    --card: 0 0% 100%; /* سفید برای کارت روی پارچ */
+    --card-foreground: 211 51% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 211 51% 12%;
+
+    --primary: 209 59% 30%; /* #1F4E79 آزور — سرتیتر */
+    --primary-foreground: 42 68% 95%;
+
+    --secondary: 180 50% 36%; /* #2E8B8B فیروزه کاشان */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 225 8% 80%; /* #C9CBD1 نقره‌ای */
+    --muted-foreground: 211 56% 20%; /* #16324F */
+
+    --accent: 39 67% 55%; /* #D9A441 زعفران — لینک/نکته */
+    --accent-foreground: 211 51% 12%;
+
+    --destructive: 0 57% 39%; /* #9E2B2B انار */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 225 8% 80% / 0.35;
+    --input: 225 8% 80% / 0.45;
+    --ring: 209 59% 30%;
+
+    --radius: 0.75rem;
+
+    /* Glass — روشن: پارچ نیمه‌شفاف */
+    --glass-fill-from: 42 68% 98%;
+    --glass-fill-to: 40 64% 92%;
+    --glass-fill-opacity: 0.82;
+    --glass-border: 225 8% 80% / 0.45;
+    --glass-blur: 20px;
+    --glass-shadow-outer: 0 8px 24px hsla(211, 51%, 12%, 0.08);
+    --glass-shadow-inner: inset 0 1px 0 hsla(0, 0%, 100%, 0.7);
+    --glass-hover-from: 42 68% 99%;
+    --glass-hover-to: 40 64% 94%;
+
+    --ghost-fill: 211 51% 12% / 0.04;
+    --ghost-border: 211 51% 12% / 0.12;
+
+    --hero-gradient: linear-gradient(180deg, hsl(42 68% 97%) 0%, hsl(40 64% 92%) 100%);
+    --accent-gradient: linear-gradient(135deg, hsl(209 59% 30%) 0%, hsl(180 50% 36%) 100%);
+    --shadow-soft: 0 4px 20px -4px hsla(211, 51%, 12%, 0.08);
+    --shadow-elegant: 0 12px 32px -8px hsla(209, 59%, 30%, 0.14);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --sidebar-background: 42 68% 97%;
+    --sidebar-foreground: 211 51% 12%;
+    --sidebar-primary: 209 59% 30%;
+    --sidebar-primary-foreground: 42 68% 95%;
+    --sidebar-accent: 225 8% 92%;
+    --sidebar-accent-foreground: 211 51% 12%;
+    --sidebar-border: 225 8% 80% / 0.35;
+    --sidebar-ring: 209 59% 30%;
+  }
+
+  .dark {
+    /* ——— تم تیره — Navy / سرمه — کتابچه: body background:var(--navy) color:var(--cream) ——— */
+    --background: 211 51% 12%; /* #0F1E2E */
+    --foreground: 40 64% 87%; /* #F3E5C8 */
+
+    --card: 211 56% 20%; /* #16324F لاجورد عمیق */
+    --card-foreground: 40 64% 87%;
+
+    --popover: 211 56% 20%;
+    --popover-foreground: 40 64% 87%;
+
+    --primary: 39 67% 55%; /* #D9A441 زعفران روی تیره می‌درخشد */
+    --primary-foreground: 211 51% 12%;
+
+    --secondary: 209 59% 30%; /* #1F4E79 */
+    --secondary-foreground: 40 64% 87%;
+
+    --muted: 213 56% 7%; /* #08111C آبسیدین */
+    --muted-foreground: 225 8% 80%; /* #C9CBD1 */
+
+    --accent: 180 50% 36%; /* #2E8B8B فیروزه */
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 357 64% 52%; /* #D3343B Crimson Base — تیره */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 64% 87% / 0.14;
+    --input: 40 64% 87% / 0.16;
+    --ring: 39 67% 55%;
+
+    --glass-fill-from: 211 56% 20%;
+    --glass-fill-to: 211 51% 12%;
+    --glass-fill-opacity: 0.88;
+    --glass-border: 40 64% 87% / 0.13;
+    --glass-blur: 24px;
+    --glass-shadow-outer: 0 14px 30px hsla(211, 51%, 5%, 0.55);
+    --glass-shadow-inner: inset 0 1px 0 hsla(40, 64%, 87%, 0.06);
+    --glass-hover-from: 211 56% 24%;
+    --glass-hover-to: 211 51% 14%;
+
+    --ghost-fill: 40 64% 87% / 0.06;
+    --ghost-border: 40 64% 87% / 0.14;
+
+    --hero-gradient: linear-gradient(180deg, hsl(211 51% 14%) 0%, hsl(212 56% 18%) 100%);
+    --accent-gradient: linear-gradient(135deg, hsl(39 67% 55%) 0%, hsl(180 50% 36%) 100%);
+    --shadow-soft: 0 4px 20px -4px hsla(211, 51%, 5%, 0.45);
+    --shadow-elegant: 0 12px 32px -8px hsla(211, 51%, 5%, 0.6);
+
+    --sidebar-background: 211 51% 9%;
+    --sidebar-foreground: 40 64% 87%;
+    --sidebar-primary: 39 67% 55%;
+    --sidebar-primary-foreground: 211 51% 12%;
+    --sidebar-accent: 211 56% 18%;
+    --sidebar-accent-foreground: 40 64% 87%;
+    --sidebar-border: 40 64% 87% / 0.1;
+    --sidebar-ring: 39 67% 55%;
+  }
+
+  /* برای سازگاری با کدهای قدیمی که .light می‌زنند */
+  .light {
+    --background: 42 68% 95%;
+    --foreground: 211 51% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 211 51% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 211 51% 12%;
+    --primary: 209 59% 30%;
+    --primary-foreground: 42 68% 95%;
+    --secondary: 180 50% 36%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 225 8% 80%;
+    --muted-foreground: 211 56% 20%;
+    --accent: 39 67% 55%;
+    --accent-foreground: 211 51% 12%;
+    --destructive: 0 57% 39%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 225 8% 80% / 0.35;
+    --input: 225 8% 80% / 0.45;
+    --ring: 209 59% 30%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'IRANSharp', Vazirmatn, Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.95;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* تیترها — کتابچه: وردمارک Cormorant و فارسی IRANSharp */
+  h1, h2, h3, h4 {
+    font-family: 'IRANSharp', Vazirmatn, sans-serif;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+  }
+  html[lang="en"] h1, html[lang="en"] h2, html[lang="en"] h3, html[lang="en"] h4 {
+    font-family: 'Cormorant Garamond', 'Inter', serif;
+    letter-spacing: 0.02em;
+  }
+
+  h1 { @apply text-4xl md:text-5xl lg:text-6xl; }
+  h2 { @apply text-3xl md:text-4xl lg:text-5xl; }
+  h3 { @apply text-2xl md:text-3xl; }
+
+  [dir="rtl"] { text-align: right; }
+  [dir="ltr"] { text-align: left; }
+
+  /* اعداد فارسی — tabular-nums از کتابچه */
+  .num, [data-numeric] {
+    font-family: 'IRANSharp', Vazirmatn, sans-serif;
+    font-variant-numeric: tabular-nums;
+    unicode-bidi: isolate;
+  }
+}
+
+/* Glass — از کتابچه: backdrop-blur + border روی rule */
+@layer components {
+  .glass-surface {
+    background: linear-gradient(
+      145deg,
+      hsla(var(--glass-fill-from), var(--glass-fill-opacity)),
+      hsla(var(--glass-fill-to), var(--glass-fill-opacity))
+    );
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow-outer), var(--glass-shadow-inner);
+  }
+  .glass-surface:hover {
+    background: linear-gradient(
+      145deg,
+      hsla(var(--glass-hover-from), 0.94),
+      hsla(var(--glass-hover-to), 0.96)
+    );
+  }
+}
+
+/* حالت مطالعه — پارچ و کرم */
+.bg-reading-bg { background-color: hsl(42 68% 95%); }
+.dark .bg-reading-bg { background-color: hsl(211 51% 12%); }
+.text-reading-fg { color: hsl(211 51% 12%); }
+.dark .text-reading-fg { color: hsl(40 64% 87%); }
+.text-reading-muted { color: hsl(211 56% 20% / 0.65); }
+.dark .text-reading-muted { color: hsl(225 8% 80% / 0.65); }
+
+.prose-reading {
+  color: hsl(var(--foreground));
+  font-size: 1.125rem;
+  line-height: 1.95;
+  letter-spacing: 0.01em;
+  font-family: 'IRANSharp', Vazirmatn, serif;
+}
+.prose-reading p { margin-bottom: 1.5em; }
+.prose-reading h1, .prose-reading h2, .prose-reading h3 {
+  font-weight: 700;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  line-height: 1.35;
+}
+.prose-reading a { color: hsl(var(--foreground)); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: hsl(var(--accent) / 0.5); }
+.prose-reading a:hover { color: hsl(var(--accent)); text-decoration-color: hsl(var(--accent)); }
+.prose-reading blockquote {
+  border-inline-start: 3px solid hsl(var(--accent));
+  padding-inline-start: 1em;
+  color: hsl(var(--muted-foreground));
+  font-style: italic;
+}
+.prose-reading code {
+  background: hsla(var(--muted), 0.5);
+  padding: 0.15em 0.4em;
+  border-radius: 0.3em;
+  font-size: 0.9em;
+  font-family: 'Inter', monospace;
+}
+.prose-reading img { max-width: 100%; border-radius: 0.75rem; }
+
+/* لینک‌ها — کتابچه: در تم تیره روشن و در تم روشن تیره (foreground) */
+.prose a { color: hsl(var(--foreground)); text-decoration-color: hsl(var(--accent) / 0.4); }
+.prose a:hover { color: hsl(var(--accent)); }

@@ -1,0 +1,28 @@
+project_id = "invdjkxkyytdpervudzw"
+
+[functions.send-otp]
+verify_jwt = false
+
+[functions.verify-otp]
+verify_jwt = false
+
+[functions.rewrite-article]
+verify_jwt = false
+
+[functions.create-admin]
+verify_jwt = false
+
+[functions.create-test-users]
+verify_jwt = false
+
+[functions.admin-users]
+verify_jwt = false
+
+[functions.livekit-token]
+verify_jwt = false
+
+[functions.livekit-webhook]
+verify_jwt = false
+
+[functions.search-suggest]
+verify_jwt = false

@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: kaghazbaad-postgres-local
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-kaghazbaad_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-kaghazbaad}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local_dev_password_change_me}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - kaghazbaad_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.local
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-kaghazbaad}:${POSTGRES_PASSWORD:-local_dev_password_change_me}@postgres:5432/${POSTGRES_DB:-kaghazbaad_dev}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-local-only-change-this-secret-please-32-chars}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["npm", "run", "migrate"]
+    restart: "no"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.local
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-kaghazbaad}:${POSTGRES_PASSWORD:-local_dev_password_change_me}@postgres:5432/${POSTGRES_DB:-kaghazbaad_dev}
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-local-only-change-this-secret-please-32-chars}
+      NODE_ENV: development
+      HOST: 0.0.0.0
+      PORT: 8080
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      AI_PROVIDER: ${AI_PROVIDER:-openai}
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-https://api.openai.com/v1}
+      AI_MODEL: ${AI_MODEL:-gpt-5-mini}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health >/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+volumes:
+  kaghazbaad_postgres_data:
