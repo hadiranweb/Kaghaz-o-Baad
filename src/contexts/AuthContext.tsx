@@ -7,6 +7,8 @@ import {
   currentUser,
   login,
   logout,
+  sendPhoneCode,
+  verifyPhoneCode,
   register,
   setToken,
 } from '@/lib/auth-api';
@@ -28,6 +30,8 @@ interface AuthContextType {
   session: FrontendSession | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: unknown | null }>;
+  sendPhoneOtp: (phone: string) => Promise<{ error: unknown | null; expiresIn?: number }>;
+  verifyPhoneOtp: (phone: string, code: string) => Promise<{ error: unknown | null }>;
   signUp: (email: string, password: string, userData: { first_name: string; last_name: string; phone: string }) => Promise<{ error: unknown | null }>;
   signOut: () => Promise<void>;
   setSessionFromOtp: (session: FrontendSession) => Promise<void>;
@@ -102,6 +106,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const sendPhoneOtp = async (phone: string) => {
+    try {
+      const response = await sendPhoneCode(phone);
+      return { error: null, expiresIn: response.expires_in_seconds };
+    } catch (error: unknown) {
+      toast({ variant: 'destructive', title: 'خطا در ارسال کد', description: error instanceof Error && error.message === 'sms_provider_not_configured' ? 'سرویس پیامک هنوز در backend تنظیم نشده است' : error instanceof Error ? error.message : 'خطای ناشناخته' });
+      return { error };
+    }
+  };
+
+  const verifyPhoneOtp = async (phone: string, code: string) => {
+    try {
+      const response = await verifyPhoneCode(phone, code);
+      const nextSession = toSession(response);
+      setUser(nextSession.user);
+      setSession(nextSession);
+      toast({ title: 'ورود موفق', description: 'خوش آمدید' });
+      return { error: null };
+    } catch (error: unknown) {
+      toast({ variant: 'destructive', title: 'کد نامعتبر است', description: error instanceof Error ? error.message : 'کد واردشده معتبر نیست' });
+      return { error };
+    }
+  };
+
   const signUp = async (
     email: string,
     password: string,
@@ -140,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut, setSessionFromOtp }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, sendPhoneOtp, verifyPhoneOtp, signUp, signOut, setSessionFromOtp }}>
       {children}
     </AuthContext.Provider>
   );

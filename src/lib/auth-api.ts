@@ -49,6 +49,22 @@ export async function register(input: {
   return { user: response.user, token: response.token };
 }
 
+export async function sendPhoneCode(phone: string) {
+  return request<{ ok: true; expires_in_seconds: number }>('/auth/phone/send-code', {
+    method: 'POST',
+    body: JSON.stringify({ phone }),
+  });
+}
+
+export async function verifyPhoneCode(phone: string, code: string) {
+  const response = await request<{ user: BackendUser; token: string }>('/auth/phone/verify-code', {
+    method: 'POST',
+    body: JSON.stringify({ phone, code }),
+  });
+  setToken(response.token);
+  return { user: response.user, token: response.token };
+}
+
 export async function login(email: string, password: string) {
   const response = await request<{ user: BackendUser; token: string }>('/auth/login', {
     method: 'POST',

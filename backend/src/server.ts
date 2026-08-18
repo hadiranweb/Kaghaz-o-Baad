@@ -32,7 +32,7 @@ await app.register(cors, {
   credentials: true,
 });
 
-await registerAuthRoutes(app);
+await registerAuthRoutes(app, env);
 await registerArticleRoutes(app);
 await registerWorkflowRoutes(app);
 await registerCommentRoutes(app);

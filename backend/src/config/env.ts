@@ -31,6 +31,12 @@ const envSchema = z.object({
   S3_BUCKET: z.string().optional(),
   S3_ACCESS_KEY_ID: z.string().optional(),
   S3_SECRET_ACCESS_KEY: z.string().optional(),
+  SMSIR_API_KEY: z.string().optional(),
+  SMSIR_TEMPLATE_ID: z.coerce.number().int().positive().optional(),
+  SMSIR_CODE_PARAMETER: z.string().min(1).max(50).default('Code'),
+  SMSIR_TIMEOUT_MS: z.coerce.number().int().positive().max(30_000).default(10_000),
+  OTP_TTL_SECONDS: z.coerce.number().int().positive().max(900).default(120),
+  OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().max(10).default(5),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
