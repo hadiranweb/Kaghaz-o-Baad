@@ -282,3 +282,28 @@
 /* لینک‌ها — کتابچه: در تم تیره روشن و در تم روشن تیره (foreground) */
 .prose a { color: hsl(var(--foreground)); text-decoration-color: hsl(var(--accent) / 0.4); }
 .prose a:hover { color: hsl(var(--accent)); }
+
+
+/* شناوری آرام کاراکتر مغز، مانند فضانورد در حالت بی‌وزنی */
+@keyframes brain-float {
+  0%,
+  100% {
+    transform: translate3d(0, -3px, 0) rotate(-0.25deg);
+  }
+  50% {
+    transform: translate3d(0, 3px, 0) rotate(0.25deg);
+  }
+}
+
+.brain-float {
+  animation: brain-float 8s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brain-float {
+    animation: none;
+    transform: none;
+  }
+}

@@ -76,7 +76,7 @@ export const BrainAnimation = () => {
     >
       {svgContent ? (
         <div
-          className="w-full h-auto cursor-pointer"
+          className={`w-full h-auto cursor-pointer ${!isReducedMotion ? 'brain-float' : ''}`}
           dangerouslySetInnerHTML={{ __html: svgContent }}
           aria-label="Brain character with moving eyes"
         />
