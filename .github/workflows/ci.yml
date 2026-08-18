@@ -88,7 +88,7 @@ jobs:
             --team-id "$LIARA_TEAM_ID" \
             --api-token "$LIARA_API_TOKEN" \
             --path backend \
-            --dockerfile backend/Dockerfile \
+            --dockerfile Dockerfile \
             --port 8080 \
             --no-app-logs \
             --message "GitHub ${GITHUB_SHA}"
