@@ -28,7 +28,8 @@ function normalizePhone(input: string) {
     .replace(/[۰-۹]/g, (digit) => String(persianDigits.indexOf(digit)))
     .replace(/[٠-٩]/g, (digit) => String(arabicDigits.indexOf(digit)));
   const digits = translated.replace(/[^0-9]/g, '');
-  const national = digits.startsWith('0098') ? digits.slice(4) : digits.startsWith('98') ? digits.slice(2) : digits;
+  const withoutCountry = digits.startsWith('0098') ? digits.slice(4) : digits.startsWith('98') ? digits.slice(2) : digits;
+  const national = withoutCountry.startsWith('0') ? withoutCountry.slice(1) : withoutCountry;
   if (!/^9\d{9}$/.test(national)) throw new Error('invalid_phone');
   return `0${national}`;
 }
