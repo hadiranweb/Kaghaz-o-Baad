@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 const origin = 'https://kaghazobaad.ir';
 const apiBase = (process.env.SEO_PUBLIC_API_URL || process.env.VITE_API_URL || 'https://api.kaghazobaad.ir/api/v1').replace(/\/$/, '');
-const staticPaths = ['/', '/about', '/about-project', '/read', '/media'];
+const staticPaths = ['/', '/about/', '/about-project/', '/read/', '/media/'];
 
 function localized(path, locale) {
   return path === '/' ? `/${locale}` : `/${locale}${path}`;
@@ -41,13 +41,19 @@ function localePath(path, locale) {
   return `/${locale}${path}`;
 }
 
+function normalizePath(path) {
+  if (!path || path === '/') return '/';
+  return path.endsWith('/') ? path : `${path}/`;
+}
+
 function urlEntry(path, lastmod) {
-  const isLocalized = path.startsWith('/fa') || path.startsWith('/en');
-  const basePath = isLocalized ? path.replace(/^\/(fa|en)/, '') || '/' : path;
+  const normalizedPath = normalizePath(path);
+  const isLocalized = normalizedPath.startsWith('/fa') || normalizedPath.startsWith('/en');
+  const basePath = isLocalized ? normalizedPath.replace(/^\/(fa|en)/, '') || '/' : normalizedPath;
   const alternates = isLocalized || basePath === '/' || staticPaths.includes(basePath) || basePath.startsWith('/read/')
     ? `\n    <xhtml:link rel="alternate" hreflang="fa" href="${escapeXml(`${origin}${localePath(basePath, 'fa')}`)}" />\n    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(`${origin}${localePath(basePath, 'en')}`)}" />\n    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(`${origin}${basePath}`)}" />`
     : '';
-  return `  <url>\n    <loc>${escapeXml(`${origin}${path}`)}</loc>${lastmod ? `\n    <lastmod>${escapeXml(new Date(lastmod).toISOString())}</lastmod>` : ''}${alternates}\n  </url>`;
+  return `  <url>\n    <loc>${escapeXml(`${origin}${normalizedPath}`)}</loc>${lastmod ? `\n    <lastmod>${escapeXml(new Date(lastmod).toISOString())}</lastmod>` : ''}${alternates}\n  </url>`;
 }
 
 async function main() {

@@ -178,3 +178,12 @@ URLهای `/fa/...` و `/en/...`، cookie/context فقط برای تجربهٔ �
 برای performance، vendorهای React، PDF و LiveKit به chunkهای مستقل منتقل شدند؛ LiveKit و PDF در مسیرهای عمومی بار اولیه نیستند. هشدار باقی‌ماندهٔ chunk بزرگ shared در build ثبت شد و به مسیر عملیاتی خصوصی مربوط است، نه HTML عمومی؛ این مورد در backlog performance برای بررسی مستقل با bundle analyzer باقی می‌ماند.
 
 CI اکنون پس از build، `npm run verify:seo` را اجرا می‌کند و وجود canonical، Open Graph، JSON-LD، sitemap و robots را قبل از job deploy کنترل می‌کند. typecheck و lint اختصاصی فایل‌های SEO موفق‌اند؛ build، prerender و smoke test نیز موفق‌اند. lint کامل ریپو همچنان خطاهای قدیمی خارج از این تغییرات دارد و تا زمانی که مسئولانه تفکیک و اصلاح نشوند، نباید به‌عنوان نتیجهٔ این فاز نسبت داده شوند.
+
+
+## انتشار و وضعیت نهایی production
+
+نسخهٔ SEO پس از build، prerender و smoke test با deploy مستقیم روی `kaghazbaad-frontend` در Liara منتشر شد. صفحات `/about-project/`، `/fa/about-project/` و `/en/about-project/` با HTTP 200 پاسخ می‌دهند و HTML اولیهٔ آن‌ها شامل canonical مطابق URL نهایی، `FAQPage`، `BreadcrumbList` و Open Graph است. `robots.txt` با HTTP 200 و `sitemap.xml` با HTTP 200 در دسترس هستند؛ sitemap فعلاً ۱۵ URL عمومی و hreflangهای `fa`، `en` و `x-default` دارد.
+
+در تست اولیه مشخص شد Liara برای routeهای directory-style یک slash نهایی اضافه می‌کند. canonical و sitemap اصلاح شدند تا به نسخهٔ slashدار اشاره کنند و redirect/canonical mismatch باقی نماند. build بعدی، typecheck، lint اختصاصی، verify:seo و deploy مجدد موفق بودند.
+
+commit محلی اصلی `988ffd3` شامل اجرای SEO ساخته شد. push به GitHub در این نشست به‌دلیل نامعتبر بودن credential فعلی GitHub CLI و نبودن کلید SSH انجام نشد؛ هیچ force push یا دورزدن احراز انجام نشد. انتشار Liara از همان source محلی انجام شده و برای همسان‌سازی history، پس از اتصال مجدد GitHub باید commitهای محلی باقی‌مانده به `main` push شوند.

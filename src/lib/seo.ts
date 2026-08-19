@@ -12,6 +12,13 @@ export const SITE_ORIGIN = 'https://kaghazobaad.ir';
 export const SITE_NAME = 'کاغذ و باد | KaghazBaad';
 export const DEFAULT_SOCIAL_IMAGE = `${SITE_ORIGIN}/brain-character.svg`;
 
+export function normalizePublicPath(path: string) {
+  if (!path || path === '/') return '/';
+  const [pathname, query = ''] = path.split('?');
+  const normalized = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  return query ? `${normalized}?${query}` : normalized;
+}
+
 export const SEO_ROUTE_POLICIES: SeoRoutePolicy[] = [
   { pattern: '/', indexing: 'index', follow: true, public: true, reason: 'public homepage' },
   { pattern: '/about', indexing: 'index', follow: true, public: true, reason: 'public introduction' },
@@ -69,7 +76,7 @@ function upsertLink(rel: string, href: string, extra: Record<string, string> = {
 }
 
 export function setSeoMetadata(metadata: SeoMetadata) {
-  const canonicalUrl = new URL(metadata.canonicalPath, SITE_ORIGIN).toString();
+  const canonicalUrl = new URL(normalizePublicPath(metadata.canonicalPath), SITE_ORIGIN).toString();
   const imageUrl = metadata.image ?? DEFAULT_SOCIAL_IMAGE;
   const indexing = metadata.indexing ?? 'index';
   const follow = metadata.follow ?? true;

@@ -4,6 +4,11 @@ const origin = 'https://kaghazobaad.ir';
 const apiBase = (process.env.SEO_PUBLIC_API_URL || process.env.VITE_API_URL || 'https://api.kaghazobaad.ir/api/v1').replace(/\/$/, '');
 const baseHtml = await readFile('dist/index.html', 'utf8');
 
+function normalizePath(path) {
+  if (!path || path === '/') return '/';
+  return path.endsWith('/') ? path : `${path}/`;
+}
+
 function escapeHtml(value) {
   return String(value).replace(/[&<>\"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', "'": '&#39;' })[character]);
 }
@@ -15,7 +20,8 @@ function localizedPath(path, locale) {
   return `/${locale}${path}`;
 }
 function headFor({ path, title, description, locale = 'fa_IR', type = 'website', image, structuredData }) {
-  const canonical = `${origin}${path}`;
+  const normalizedPath = normalizePath(path);
+  const canonical = `${origin}${normalizedPath}`;
   const alternateLocale = locale === 'fa_IR' ? 'en_US' : 'fa_IR';
   const language = locale === 'fa_IR' ? 'fa-IR' : 'en-US';
   const imageUrl = image || `${origin}/brain-character.svg`;
@@ -39,9 +45,9 @@ function headFor({ path, title, description, locale = 'fa_IR', type = 'website',
     `<meta name="description" content="${escapeHtml(description)}" />`,
     `<meta name="robots" content="index,follow,max-image-preview:large" />`,
     `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
-    `<link rel="alternate" hreflang="fa" href="${escapeHtml(`${origin}${localizedPath(path.replace(/^\/(fa|en)/, '') || '/', 'fa')}`)}" />`,
-    `<link rel="alternate" hreflang="en" href="${escapeHtml(`${origin}${localizedPath(path.replace(/^\/(fa|en)/, '') || '/', 'en')}`)}" />`,
-    `<link rel="alternate" hreflang="x-default" href="${escapeHtml(`${origin}${path.replace(/^\/(fa|en)/, '') || '/'}`)}" />`,
+    `<link rel="alternate" hreflang="fa" href="${escapeHtml(`${origin}${normalizePath(localizedPath(normalizedPath.replace(/^\/(fa|en)/, '') || '/', 'fa'))}`)}" />`,
+    `<link rel="alternate" hreflang="en" href="${escapeHtml(`${origin}${normalizePath(localizedPath(normalizedPath.replace(/^\/(fa|en)/, '') || '/', 'en'))}`)}" />`,
+    `<link rel="alternate" hreflang="x-default" href="${escapeHtml(`${origin}${normalizePath(normalizedPath.replace(/^\/(fa|en)/, '') || '/')}`)}" />`,
     `<meta property="og:title" content="${escapeHtml(title)}" />`,
     `<meta property="og:description" content="${escapeHtml(description)}" />`,
     `<meta property="og:type" content="${type}" />`,
