@@ -11,7 +11,7 @@ export type BackendSession = {
   user: BackendUser;
 };
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'https://api.kaghazobaad.ir/api/v1').replace(/\/$/, '');
 const TOKEN_KEY = 'kaghazbaad_backend_session_token';
 
 function token() {

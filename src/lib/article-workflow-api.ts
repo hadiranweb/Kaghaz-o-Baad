@@ -1,6 +1,6 @@
 import type { ArticleStatus } from '@/lib/content-workflow';
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL ?? '/api/v1').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_URL ?? 'https://api.kaghazobaad.ir/api/v1').replace(/\/$/, '');
 import { getToken } from './auth-api';
 
 function getSessionToken() {
