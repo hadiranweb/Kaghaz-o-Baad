@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import rawBody from 'fastify-raw-body';
 import cors from '@fastify/cors';
 import { loadEnv } from './config/env.js';
 import { registerAuthRoutes } from './auth/routes.js';
@@ -25,6 +26,14 @@ app.addHook('onRequest', async (request, reply) => {
   const requestId = request.headers['x-request-id'];
   const resolvedRequestId = typeof requestId === 'string' && requestId.length <= 200 ? requestId : request.id;
   reply.header('x-request-id', resolvedRequestId);
+});
+
+await app.register(rawBody, {
+  field: 'rawBody',
+  global: false,
+  encoding: 'utf8',
+  runFirst: true,
+  routes: ['/api/v1/live/webhooks/livekit'],
 });
 
 await app.register(cors, {

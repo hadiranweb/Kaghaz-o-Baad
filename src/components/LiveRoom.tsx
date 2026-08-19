@@ -34,6 +34,7 @@ import MDEditor from '@uiw/react-md-editor';
 import type { LiveKitTokenResponse, LiveRole, PresentationKind } from '@/hooks/useLiveKitToken';
 import type { SlideItem } from '@/pages/LiveRoomPage';
 import LiveHostControls from '@/components/LiveHostControls';
+import { createLiveInteraction } from '@/lib/backend-api';
 
 pdfjs.GlobalWorkerOptions.workerPort = new PdfWorker();
 
@@ -406,6 +407,7 @@ export const LiveRoom = ({
     setChats((prev) => [...prev.slice(-199), msg]);
     setChatText('');
     void sendData(TOPIC_CHAT, { t: 'chat', id: msg.id, name: msg.name, text, ts: msg.ts });
+    void createLiveInteraction(sessionId, 'chat', { messageId: msg.id, text, name: msg.name, sentAt: msg.ts }).catch(() => undefined);
   }, [chatText, room, sendData, fa]);
 
   // ——— کنترل ویدیوی ورودی برای بینندگان (صرفه‌جویی در پهنای باند) ———

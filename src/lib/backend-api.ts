@@ -196,6 +196,30 @@ export function revokeLiveSessionRole(sessionId: string, userId: string) {
   return backendRequest<{ ok: true; role: 'viewer' }>(`/live/sessions/${sessionId}/roles/${encodeURIComponent(userId)}`, { method: 'DELETE' });
 }
 
+export type LiveInteractionType = 'chat' | 'question' | 'reaction' | 'hand_raise';
+export type LiveInteraction = {
+  id: string;
+  session_id: string;
+  user_id: string | null;
+  interaction_type: LiveInteractionType;
+  payload: Record<string, unknown>;
+  created_at: string;
+  email?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+};
+
+export function createLiveInteraction(sessionId: string, type: LiveInteractionType, payload: Record<string, unknown> = {}) {
+  return backendRequest<{ ok: true; interaction: LiveInteraction }>(`/live/sessions/${sessionId}/interactions`, {
+    method: 'POST',
+    body: JSON.stringify({ type, payload }),
+  });
+}
+
+export function listLiveInteractions(sessionId: string) {
+  return backendRequest<{ ok: true; interactions: LiveInteraction[] }>(`/live/sessions/${sessionId}/interactions`);
+}
+
 export function listLiveRoomParticipants(sessionId: string) {
   return backendRequest<{ ok: true; participants: LiveRoomParticipant[] }>(`/live/sessions/${sessionId}/participants`);
 }

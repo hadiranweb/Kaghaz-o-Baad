@@ -1,9 +1,10 @@
 import type { FastifyInstance } from 'fastify';
-import { AccessToken, RoomServiceClient } from 'livekit-server-sdk';
+import { AccessToken, RoomServiceClient, WebhookReceiver } from 'livekit-server-sdk';
 import { TrackSource } from '@livekit/protocol';
 import { z } from 'zod';
 import { getAuthUser, hasRole } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
+import { commitQuota, getQuotaStatus, reserveQuota } from '../quota/service.js';
 import type { AppEnv } from '../../config/env.js';
 
 const paramsSchema = z.object({ sessionId: z.string().uuid() });
@@ -12,6 +13,10 @@ const roomOptionsSchema = z.object({ maxParticipants: z.number().int().positive(
 const muteSchema = z.object({ trackSid: z.string().min(1).max(200), muted: z.boolean().default(true) });
 const roleParamsSchema = z.object({ sessionId: z.string().uuid(), userId: z.string().uuid() });
 const roleBodySchema = z.object({ role: z.enum(['speaker', 'viewer']) });
+const interactionSchema = z.object({
+  type: z.enum(['chat', 'question', 'reaction', 'hand_raise']),
+  payload: z.record(z.string(), z.unknown()).default({}),
+});
 
 const MANAGEMENT_ROLES = ['admin', 'editor', 'senior_manager', 'technical_manager'];
 
@@ -51,7 +56,124 @@ function isSessionManager(user: { id: string; roles: string[] }, session: LiveSe
   return session.host_id === user.id || canManageAll(user);
 }
 
+function userIdFromIdentity(identity: unknown) {
+  if (typeof identity !== 'string' || !identity.startsWith('user:')) return null;
+  const value = identity.slice('user:'.length);
+  return z.string().uuid().safeParse(value).success ? value : null;
+}
+
+function rawBodyOf(request: { rawBody?: unknown }) {
+  return typeof request.rawBody === 'string' ? request.rawBody : null;
+}
+
 export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
+  // LiveKit signs webhook requests with the API secret. The raw request body is
+  // verified before any event is persisted, making retries idempotent by event id.
+  app.post('/api/v1/live/webhooks/livekit', async (request, reply) => {
+    if (!livekitConfigured(env)) return reply.status(503).send({ error: 'livekit_not_configured' });
+    const rawBody = rawBodyOf(request as unknown as { rawBody?: unknown });
+    const authHeader = request.headers.authorization ?? request.headers.authorize;
+    if (!rawBody || typeof authHeader !== 'string') return reply.status(400).send({ error: 'invalid_webhook' });
+    let event: any;
+    try {
+      event = await new WebhookReceiver(env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET).receive(rawBody, authHeader);
+    } catch {
+      return reply.status(401).send({ error: 'invalid_webhook_signature' });
+    }
+
+    const eventId = typeof event.id === 'string' && event.id ? event.id : `${event.event}:${event.room?.name ?? 'unknown'}:${event.participant?.identity ?? 'unknown'}:${event.createdAt ?? Date.now()}`;
+    const roomName = typeof event.room?.name === 'string' ? event.room.name : null;
+    const sessionResult = roomName ? await db.query<{ id: string }>('SELECT id FROM live_sessions WHERE room_name = $1', [roomName]) : { rows: [] };
+    const sessionId = sessionResult.rows[0]?.id ?? null;
+    const participantIdentity = typeof event.participant?.identity === 'string' ? event.participant.identity : null;
+    const userId = userIdFromIdentity(participantIdentity);
+    const inserted = await db.query(
+      `INSERT INTO live_session_events (event_id, session_id, user_id, event_type, participant_identity, payload, occurred_at)
+       VALUES ($1, $2, $3, $4, $5, $6, COALESCE(to_timestamp($7 / 1000.0), now()))
+       ON CONFLICT (event_id) DO NOTHING
+       RETURNING id`,
+      [eventId, sessionId, userId, event.event, participantIdentity, event, Number(event.createdAt ?? Date.now())],
+    );
+
+    if (inserted.rowCount && sessionId && participantIdentity) {
+      if (event.event === 'participant_joined') {
+        await db.query(
+          `INSERT INTO live_session_presence (session_id, user_id, participant_identity, joined_at, join_event_id)
+           VALUES ($1, $2, $3, COALESCE(to_timestamp($4 / 1000.0), now()), $5)
+           ON CONFLICT (join_event_id) DO NOTHING`,
+          [sessionId, userId, participantIdentity, Number(event.createdAt ?? Date.now()), eventId],
+        );
+      } else if (event.event === 'participant_left' || event.event === 'participant_connection_aborted') {
+        const presence = await db.query<{ user_id: string | null; duration_seconds: string }>(
+          `UPDATE live_session_presence
+           SET left_at = COALESCE(left_at, COALESCE(to_timestamp($2 / 1000.0), now())),
+               duration_seconds = EXTRACT(EPOCH FROM (COALESCE(left_at, COALESCE(to_timestamp($2 / 1000.0), now())) - joined_at)),
+               leave_event_id = COALESCE(leave_event_id, $3),
+               updated_at = now()
+           WHERE session_id = $1 AND participant_identity = $4 AND left_at IS NULL
+           RETURNING user_id, duration_seconds`,
+          [sessionId, Number(event.createdAt ?? Date.now()), eventId, participantIdentity],
+        );
+        const presenceRow = presence.rows[0];
+        if (presenceRow?.user_id) {
+          const minutes = Math.max(1, Math.ceil(Number(presenceRow.duration_seconds) / 60));
+          try {
+            const reservation = await reserveQuota({ userId: presenceRow.user_id, requestId: `live:${eventId}`, featureKey: 'live.minutes', units: minutes });
+            await commitQuota(reservation, minutes);
+          } catch {
+            // Presence is retained even when the plan has no live quota or is exhausted.
+            // The token endpoint prevents new non-manager joins once remaining is zero.
+          }
+        }
+      }
+    }
+    if (inserted.rowCount && sessionId && event.event === 'room_finished') {
+      await db.query(`UPDATE live_sessions SET status = CASE WHEN status = 'cancelled' THEN status ELSE 'ended' END, ends_at = COALESCE(ends_at, now()), updated_at = now() WHERE id = $1`, [sessionId]);
+    }
+    return reply.send({ ok: true, duplicate: !inserted.rowCount });
+  });
+
+  app.post('/api/v1/live/sessions/:sessionId/interactions', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = paramsSchema.safeParse(request.params);
+    const body = interactionSchema.safeParse(request.body);
+    if (!params.success || !body.success) return reply.status(400).send({ error: 'invalid_input' });
+    const session = await getSession(params.data.sessionId);
+    if (!session) return reply.status(404).send({ error: 'session_not_found' });
+    if (!['live', 'scheduled'].includes(session.status)) return reply.status(409).send({ error: 'session_not_active' });
+    const result = await db.query(
+      `INSERT INTO live_session_interactions (session_id, user_id, interaction_type, payload)
+       VALUES ($1, $2, $3, $4) RETURNING id, session_id, user_id, interaction_type, payload, created_at`,
+      [session.id, user.id, body.data.type, body.data.payload],
+    );
+    await db.query(
+      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, metadata)
+       VALUES ($1, $2, 'live_session', $3, $4)`,
+      [user.id, `live.${body.data.type}`, session.id, body.data.payload],
+    );
+    return reply.status(201).send({ ok: true, interaction: result.rows[0] });
+  });
+
+  app.get('/api/v1/live/sessions/:sessionId/interactions', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = paramsSchema.safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    const session = await getSession(params.data.sessionId);
+    if (!session) return reply.status(404).send({ error: 'session_not_found' });
+    const result = await db.query(
+      `SELECT i.id, i.session_id, i.user_id, i.interaction_type, i.payload, i.created_at,
+              u.email, p.first_name, p.last_name
+       FROM live_session_interactions i
+       LEFT JOIN users u ON u.id = i.user_id
+       LEFT JOIN profiles p ON p.user_id = i.user_id
+       WHERE i.session_id = $1 ORDER BY i.created_at DESC LIMIT 100`,
+      [session.id],
+    );
+    return reply.send({ ok: true, interactions: result.rows.reverse() });
+  });
+
   // Returns the session-scoped role assignments. The host is represented by
   // live_sessions.host_id; this endpoint returns it together with assignments.
   app.get('/api/v1/live/sessions/:sessionId/roles', async (request, reply) => {
@@ -160,6 +282,11 @@ export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
     const session = await getSession(params.data.sessionId);
     if (!session) return reply.status(404).send({ error: 'session_not_found' });
     if (session.status === 'ended' || session.status === 'cancelled') return reply.status(409).send({ error: 'session_not_active' });
+
+    if (!canManageAll(user)) {
+      const quota = await getQuotaStatus(user.id, 'live.minutes');
+      if (quota.configured && quota.remaining <= 0) return reply.status(429).send({ error: 'live_quota_exceeded', quota });
+    }
 
     const assignment = await db.query<{ role: 'speaker' | 'viewer' }>(
       'SELECT role FROM live_session_participants WHERE session_id = $1 AND user_id = $2',
