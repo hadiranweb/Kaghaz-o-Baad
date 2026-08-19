@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { db } from '../db/pool.js';
 import { createSession, getAuthUser, hashPassword, verifyPassword } from './service.js';
 import { sendSmsIrVerificationCode, SmsProviderError } from './smsir.js';
+import { recordAuthEvent } from './audit.js';
 import { enforceRateLimit, RateLimitExceededError } from '../modules/rate-limit/service.js';
 import type { AppEnv } from '../config/env.js';
 
@@ -71,12 +72,20 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
   });
 
   app.post('/api/v1/auth/login', async (request, reply) => {
+    const startedAt = Date.now();
     const parsed = credentialsSchema.safeParse(request.body);
-    if (!parsed.success) return reply.status(400).send({ error: 'invalid_credentials' });
+    if (!parsed.success) {
+      await recordAuthEvent({ request, eventType: 'password_login', outcome: 'failure', errorCode: 'invalid_credentials', startedAt });
+      return reply.status(400).send({ error: 'invalid_credentials' });
+    }
     const result = await db.query<{ id: string; email: string; password_hash: string }>(`SELECT id, email, password_hash FROM users WHERE email = $1 AND is_active = TRUE`, [parsed.data.email]);
     const user = result.rows[0];
-    if (!user || !(await verifyPassword(parsed.data.password, user.password_hash))) return reply.status(401).send({ error: 'invalid_email_or_password' });
+    if (!user || !(await verifyPassword(parsed.data.password, user.password_hash))) {
+      await recordAuthEvent({ request, eventType: 'password_login', outcome: 'failure', email: parsed.data.email, errorCode: 'invalid_email_or_password', startedAt });
+      return reply.status(401).send({ error: 'invalid_email_or_password' });
+    }
     const token = await createSession(user.id);
+    await recordAuthEvent({ request, eventType: 'password_login', outcome: 'success', userId: user.id, email: user.email, startedAt });
     return reply.send({ user: { id: user.id, email: user.email }, token });
   });
 

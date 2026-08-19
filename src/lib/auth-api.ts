@@ -74,6 +74,20 @@ export async function login(email: string, password: string) {
   return { user: response.user, token: response.token };
 }
 
+export function oauthStartUrl(provider: 'google' | 'github', next = '/dashboard') {
+  const params = new URLSearchParams({ next });
+  return `${API_BASE_URL}/auth/oauth/${provider}/start?${params.toString()}`;
+}
+
+export async function exchangeOAuthTicket(ticket: string) {
+  const response = await request<{ token: string }>('/auth/oauth/exchange', {
+    method: 'POST',
+    body: JSON.stringify({ ticket }),
+  });
+  setToken(response.token);
+  return currentUser();
+}
+
 export async function currentUser() {
   const response = await request<{ user: BackendUser }>('/auth/me');
   return response.user;

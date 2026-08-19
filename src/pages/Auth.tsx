@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { exchangeOAuthTicket, oauthStartUrl } from '@/lib/auth-api';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, Lock, Phone, ArrowRight, RefreshCw } from 'lucide-react';
+import { Github, Mail, Lock, Phone, ArrowRight, RefreshCw } from 'lucide-react';
 
 type Mode = 'signin' | 'signup';
 type Method = 'phone' | 'email';
@@ -28,10 +29,26 @@ export default function Auth() {
   const [lastName, setLastName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [resendSeconds, setResendSeconds] = useState(0);
+  const [oauthLoading, setOauthLoading] = useState<'google' | 'github' | null>(null);
   const rawNext = searchParams.get('next') ?? '';
   const nextPath = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '';
   const t = (fa: string, en: string) => (locale === 'fa' ? fa : en);
 
+  useEffect(() => {
+    const oauthTicket = searchParams.get('oauth_ticket');
+    const oauthError = searchParams.get('oauth_error');
+    if (oauthError) {
+      toast({ variant: 'destructive', title: t('ورود با حساب اجتماعی ناموفق بود', 'Social sign-in failed'), description: t('لطفاً دوباره تلاش کنید یا از ورود با تلفن استفاده کنید.', 'Please try again or use phone sign-in.') });
+      navigate(`/auth${nextPath ? `?next=${encodeURIComponent(nextPath)}` : ''}`, { replace: true });
+      return;
+    }
+    if (!oauthTicket || user || loading) return;
+    setOauthLoading('google');
+    exchangeOAuthTicket(oauthTicket)
+      .then(() => navigate(nextPath || '/dashboard', { replace: true }))
+      .catch(() => toast({ variant: 'destructive', title: t('پیوند ورود منقضی شده است', 'Sign-in link expired'), description: t('لطفاً ورود اجتماعی را دوباره آغاز کنید.', 'Please start social sign-in again.') }))
+      .finally(() => setOauthLoading(null));
+  }, [searchParams, user, loading, navigate, nextPath, toast, locale]);
   useEffect(() => { if (user && !loading) navigate(nextPath || '/dashboard'); }, [user, loading, navigate, nextPath]);
   useEffect(() => { if (!resendSeconds) return; const timer = window.setInterval(() => setResendSeconds((value) => Math.max(0, value - 1)), 1000); return () => window.clearInterval(timer); }, [resendSeconds]);
 
@@ -65,6 +82,10 @@ export default function Auth() {
   };
 
   const switchMethod = (next: Method) => { setMethod(next); setPhoneStep('phone'); setCode(''); };
+  const startOAuth = (provider: 'google' | 'github') => {
+    setOauthLoading(provider);
+    window.location.assign(oauthStartUrl(provider, nextPath || '/dashboard'));
+  };
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground/30" /></div>;
 
   return (
@@ -74,6 +95,14 @@ export default function Auth() {
         <div className="text-center space-y-2">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground tracking-tight">{t('کاغذ و باد', 'KaghazBaad')}</h1>
           <p className="text-sm text-muted-foreground">{method === 'phone' ? t('ورود سریع و امن با شمارهٔ تلفن', 'Fast and secure phone sign in') : mode === 'signin' ? t('با ایمیل و رمز عبور وارد شوید', 'Sign in with email and password') : t('حساب کاربری خود را بسازید', 'Create your account')}</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Button type="button" variant="outline" className="h-11 rounded-xl" onClick={() => startOAuth('google')} disabled={oauthLoading !== null}>
+            {oauthLoading === 'google' ? t('در حال اتصال...', 'Connecting...') : t('ورود با Google', 'Continue with Google')}
+          </Button>
+          <Button type="button" variant="outline" className="h-11 rounded-xl" onClick={() => startOAuth('github')} disabled={oauthLoading !== null}>
+            <Github className="w-4 h-4 ml-2" />{oauthLoading === 'github' ? t('در حال اتصال...', 'Connecting...') : t('ورود با GitHub', 'Continue with GitHub')}
+          </Button>
         </div>
         <div className="flex gap-2 p-1 rounded-2xl bg-secondary/40">
           <Button type="button" variant={method === 'phone' ? 'default' : 'ghost'} className="flex-1 rounded-xl" onClick={() => switchMethod('phone')}><Phone className="w-4 h-4 ml-2" />{t('شماره تلفن', 'Phone')}</Button>

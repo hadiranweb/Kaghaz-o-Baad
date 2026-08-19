@@ -38,6 +38,21 @@ const envSchema = z.object({
   SMSIR_TIMEOUT_MS: z.coerce.number().int().positive().max(30_000).default(10_000),
   OTP_TTL_SECONDS: z.coerce.number().int().positive().max(900).default(120),
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().max(10).default(5),
+  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  BACKEND_PUBLIC_URL: z.string().url().default('http://localhost:8080'),
+  GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_OAUTH_REDIRECT_URI: z.string().url().optional(),
+  GITHUB_OAUTH_CLIENT_ID: z.string().optional(),
+  GITHUB_OAUTH_CLIENT_SECRET: z.string().optional(),
+  GITHUB_OAUTH_REDIRECT_URI: z.string().url().optional(),
+  EMAIL_PROVIDER: z.enum(['none', 'smtp', 'resend']).default('none'),
+  EMAIL_FROM: z.string().email().optional(),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
