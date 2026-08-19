@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getPublicArticleBySlug, listArticleSlides, listPublicProfiles } from '@/lib/backend-api';
 import ArticleComments from '@/components/ArticleComments';
 import MDEditor from '@uiw/react-md-editor';
+import { setNoIndexMetadata, setSeoMetadata } from '@/lib/seo';
 
 export default function ArticleSlides() {
   const { slug } = useParams();
@@ -37,7 +38,13 @@ export default function ArticleSlides() {
       }
       return {
         id: article.id,
+        slug: article.slug,
         title_en: article.title_en,
+        summary_en: article.summary_en,
+        summary_fa: article.summary_fa,
+        cover_url: article.cover_url,
+        published_at: article.published_at,
+        updated_at: article.updated_at,
         title_fa: article.title_fa,
         slides: backendSlides.map((slide) => ({
           ...slide,
@@ -78,6 +85,51 @@ export default function ArticleSlides() {
       else goToNextSlide();
     }
   }, [direction, goToNextSlide, goToPrevSlide]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (error || !articleData || !slug) {
+      setNoIndexMetadata();
+      return;
+    }
+
+    const prefix = window.location.pathname.startsWith('/fa/') ? '/fa' : window.location.pathname.startsWith('/en/') ? '/en' : '';
+    const canonicalPath = `${prefix}/read/${encodeURIComponent(articleData.slug)}`;
+    const title = locale === 'fa' ? articleData.title_fa || articleData.title_en : articleData.title_en || articleData.title_fa;
+    const description = locale === 'fa' ? articleData.summary_fa || articleData.summary_en || title : articleData.summary_en || articleData.summary_fa || title;
+    const authorName = articleData.author ? [articleData.author.first_name, articleData.author.last_name].filter(Boolean).join(' ') : 'کاغذ و باد';
+    setSeoMetadata({
+      title: `${title} — کاغذ و باد`,
+      description,
+      canonicalPath,
+      locale: locale === 'fa' ? 'fa_IR' : 'en_US',
+      language: locale === 'fa' ? 'fa-IR' : 'en-US',
+      type: 'article',
+      image: articleData.cover_url || undefined,
+      structuredData: [
+        {
+          '@type': 'Article',
+          '@id': `${window.location.origin}${canonicalPath}#article`,
+          headline: title,
+          description,
+          mainEntityOfPage: { '@id': `${window.location.origin}${canonicalPath}#webpage` },
+          author: { '@type': 'Person', name: authorName },
+          publisher: { '@type': 'Organization', name: 'کاغذ و باد', url: 'https://kaghazobaad.ir' },
+          datePublished: articleData.published_at || undefined,
+          dateModified: articleData.updated_at || articleData.published_at || undefined,
+          image: articleData.cover_url ? [articleData.cover_url] : ['https://kaghazobaad.ir/brain-character.svg'],
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: locale === 'fa' ? 'خانه' : 'Home', item: `https://kaghazobaad.ir${prefix || ''}/` },
+            { '@type': 'ListItem', position: 2, name: locale === 'fa' ? 'مقالات' : 'Read', item: `https://kaghazobaad.ir${prefix}/read` },
+            { '@type': 'ListItem', position: 3, name: title },
+          ],
+        },
+      ],
+    });
+  }, [articleData, error, isLoading, locale, slug]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

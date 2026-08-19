@@ -6,7 +6,10 @@
   "description": "کاغذ و باد - پلتفرم دو زبانه مقالات آکادمیک و جلسات زنده",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/generate-seo-files.mjs",
     "build": "vite build",
+    "postbuild": "node scripts/prerender-seo-pages.mjs",
+    "verify:seo": "node scripts/verify-seo-build.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"

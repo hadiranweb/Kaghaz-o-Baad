@@ -2,12 +2,14 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { setNoIndexMetadata } from '@/lib/seo';
 
 const NotFound = () => {
   const location = useLocation();
   const { locale } = useLanguage();
 
   useEffect(() => {
+    setNoIndexMetadata();
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
   }, [location.pathname]);
 

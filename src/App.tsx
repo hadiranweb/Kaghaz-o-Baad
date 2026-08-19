@@ -10,6 +10,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { LocalizedRoute } from "@/components/LocalizedRoute";
+import { SeoGuard } from "@/components/SeoGuard";
+import { PublicSeoRoute } from "@/components/PublicSeoRoute";
 const Home = lazy(() => import("./pages/Home"));
 const Read = lazy(() => import("./pages/Read"));
 const ArticleSlides = lazy(() => import("./pages/ArticleSlides"));
@@ -51,22 +54,34 @@ const App = () => (
                 <ErrorBoundary>
                   <Suspense fallback={<RouteFallback />}>
                     <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/read" element={<Read />} />
+                    <Route path="/" element={<PublicSeoRoute page="home"><Home /></PublicSeoRoute>} />
+                    <Route path="/read" element={<PublicSeoRoute page="read"><Read /></PublicSeoRoute>} />
+                    <Route path="/fa" element={<LocalizedRoute locale="fa"><PublicSeoRoute page="home"><Home /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/en" element={<LocalizedRoute locale="en"><PublicSeoRoute page="home"><Home /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/fa/read" element={<LocalizedRoute locale="fa"><PublicSeoRoute page="read"><Read /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/en/read" element={<LocalizedRoute locale="en"><PublicSeoRoute page="read"><Read /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/fa/read/:slug" element={<LocalizedRoute locale="fa"><ArticleSlides /></LocalizedRoute>} />
+                    <Route path="/en/read/:slug" element={<LocalizedRoute locale="en"><ArticleSlides /></LocalizedRoute>} />
                     <Route path="/read/:slug" element={<ArticleSlides />} />
-                    <Route path="/media" element={<Media />} />
-                    <Route path="/about" element={<About />} />
+                    <Route path="/media" element={<PublicSeoRoute page="media"><Media /></PublicSeoRoute>} />
+                    <Route path="/fa/media" element={<LocalizedRoute locale="fa"><PublicSeoRoute page="media"><Media /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/en/media" element={<LocalizedRoute locale="en"><PublicSeoRoute page="media"><Media /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/about" element={<PublicSeoRoute page="about"><About /></PublicSeoRoute>} />
                     <Route path="/about-project" element={<AboutProject />} />
-                    <Route path="/community" element={<Community />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    <Route path="/complete-profile" element={<CompleteProfile />} />
-                    <Route path="/live" element={<LiveSessions />} />
-                    <Route path="/live/new" element={<LiveSessionNew />} />
-                    <Route path="/live/:id" element={<LiveRoomPage />} />
-                    <Route path="/rewrite" element={<Rewrite />} />
-                    <Route path="/change-password" element={<ChangePassword />} />
+                    <Route path="/fa/about" element={<LocalizedRoute locale="fa"><PublicSeoRoute page="about"><About /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/en/about" element={<LocalizedRoute locale="en"><PublicSeoRoute page="about"><About /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/fa/about-project" element={<LocalizedRoute locale="fa"><AboutProject /></LocalizedRoute>} />
+                    <Route path="/en/about-project" element={<LocalizedRoute locale="en"><AboutProject /></LocalizedRoute>} />
+                    <Route path="/community" element={<SeoGuard><Community /></SeoGuard>} />
+                    <Route path="/auth" element={<SeoGuard><Auth /></SeoGuard>} />
+                    <Route path="/dashboard" element={<SeoGuard><Dashboard /></SeoGuard>} />
+                    <Route path="/admin" element={<SeoGuard><AdminDashboard /></SeoGuard>} />
+                    <Route path="/complete-profile" element={<SeoGuard><CompleteProfile /></SeoGuard>} />
+                    <Route path="/live" element={<SeoGuard><LiveSessions /></SeoGuard>} />
+                    <Route path="/live/new" element={<SeoGuard><LiveSessionNew /></SeoGuard>} />
+                    <Route path="/live/:id" element={<SeoGuard><LiveRoomPage /></SeoGuard>} />
+                    <Route path="/rewrite" element={<SeoGuard><Rewrite /></SeoGuard>} />
+                    <Route path="/change-password" element={<SeoGuard><ChangePassword /></SeoGuard>} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                     </Routes>

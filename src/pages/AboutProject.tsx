@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -18,6 +18,7 @@ import {
   Video,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { setSeoMetadata } from '@/lib/seo';
 
 type Icon = typeof FileText;
 
@@ -93,7 +94,7 @@ export default function AboutProject() {
   const { locale } = useLanguage();
   const isFa = locale === 'fa';
   const dir = isFa ? 'rtl' : 'ltr';
-  const text = (fa: string, en: string) => (isFa ? fa : en);
+  const text = useCallback((fa: string, en: string) => (isFa ? fa : en), [isFa]);
 
   const pageTitle = text('شرح پروژه — کاغذ و باد', 'Project Description — KaghazBaad');
   const pageDesc = text(
@@ -102,80 +103,25 @@ export default function AboutProject() {
   );
 
   useEffect(() => {
-    const origin = window.location.origin;
-    const canonicalUrl = `${origin}/about-project`;
-    const imageUrl = `${origin}/brain-character.svg`;
-    const localeCode = isFa ? 'fa_IR' : 'en_US';
-    const alternateLocaleCode = isFa ? 'en_US' : 'fa_IR';
-
-    document.title = pageTitle;
-
-    const upsertMeta = (selector: string, attributes: Record<string, string>, content: string) => {
-      let element = document.head.querySelector<HTMLMetaElement>(selector);
-      if (!element) {
-        element = document.createElement('meta');
-        Object.entries(attributes).forEach(([key, value]) => element!.setAttribute(key, value));
-        document.head.appendChild(element);
-      }
-      element.setAttribute('content', content);
-    };
-
-    const upsertLink = (rel: string, href: string) => {
-      let element = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
-      if (!element) {
-        element = document.createElement('link');
-        element.setAttribute('rel', rel);
-        document.head.appendChild(element);
-      }
-      element.setAttribute('href', href);
-    };
-
-    upsertMeta('meta[name="description"]', { name: 'description' }, pageDesc);
-    upsertMeta('meta[name="robots"]', { name: 'robots' }, 'index,follow,max-image-preview:large');
-    upsertMeta('meta[property="og:title"]', { property: 'og:title' }, pageTitle);
-    upsertMeta('meta[property="og:description"]', { property: 'og:description' }, pageDesc);
-    upsertMeta('meta[property="og:type"]', { property: 'og:type' }, 'website');
-    upsertMeta('meta[property="og:url"]', { property: 'og:url' }, canonicalUrl);
-    upsertMeta('meta[property="og:image"]', { property: 'og:image' }, imageUrl);
-    upsertMeta('meta[property="og:image:alt"]', { property: 'og:image:alt' }, text('نشان کاغذ و باد', 'KaghazBaad mark'));
-    upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name' }, 'کاغذ و باد | KaghazBaad');
-    upsertMeta('meta[property="og:locale"]', { property: 'og:locale' }, localeCode);
-    upsertMeta('meta[property="og:locale:alternate"]', { property: 'og:locale:alternate' }, alternateLocaleCode);
-    upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card' }, 'summary_large_image');
-    upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title' }, pageTitle);
-    upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description' }, pageDesc);
-    upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image' }, imageUrl);
-    upsertMeta('meta[name="twitter:image:alt"]', { name: 'twitter:image:alt' }, text('نشان کاغذ و باد', 'KaghazBaad mark'));
-    upsertLink('canonical', canonicalUrl);
-
-    const structuredDataId = 'about-project-structured-data';
-    document.getElementById(structuredDataId)?.remove();
-    const structuredData = document.createElement('script');
-    structuredData.id = structuredDataId;
-    structuredData.type = 'application/ld+json';
-    structuredData.textContent = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [
+    const pathname = window.location.pathname;
+    const prefix = pathname.startsWith('/fa/') ? '/fa' : pathname.startsWith('/en/') ? '/en' : '';
+    setSeoMetadata({
+      title: pageTitle,
+      description: pageDesc,
+      canonicalPath: `${prefix}/about-project`,
+      locale: isFa ? 'fa_IR' : 'en_US',
+      language: isFa ? 'fa-IR' : 'en-US',
+      structuredData: [
         {
-          '@type': 'WebPage',
-          '@id': `${canonicalUrl}#webpage`,
-          url: canonicalUrl,
-          name: pageTitle,
-          description: pageDesc,
-          inLanguage: isFa ? 'fa-IR' : 'en-US',
-          isPartOf: { '@id': `${origin}/#website` },
-          about: { '@id': `${origin}/#organization` },
-        },
-        {
-          '@type': 'Organization',
-          '@id': `${origin}/#organization`,
-          name: 'کاغذ و باد | KaghazBaad',
-          url: origin,
-          logo: imageUrl,
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: isFa ? 'خانه' : 'Home', item: `https://kaghazobaad.ir${prefix || ''}/` },
+            { '@type': 'ListItem', position: 2, name: isFa ? 'شرح پروژه' : 'Project Description' },
+          ],
         },
         {
           '@type': 'FAQPage',
-          '@id': `${canonicalUrl}#faq`,
+          '@id': `${window.location.origin}${prefix}/about-project#faq`,
           mainEntity: faqs.map(({ faQ, enQ, faA, enA }) => ({
             '@type': 'Question',
             name: text(faQ, enQ),
@@ -184,10 +130,7 @@ export default function AboutProject() {
         },
       ],
     });
-    document.head.appendChild(structuredData);
-
-    return () => document.getElementById(structuredDataId)?.remove();
-  }, [isFa, pageTitle, pageDesc]);
+  }, [isFa, pageTitle, pageDesc, text]);
 
   return (
     <main dir={dir} className="min-h-screen pb-16">
