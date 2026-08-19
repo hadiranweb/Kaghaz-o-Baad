@@ -168,6 +168,34 @@ export function ensureLiveRoom(sessionId: string, maxParticipants = 500) {
   });
 }
 
+export type LiveSessionRoleAssignment = {
+  session_id: string;
+  user_id: string;
+  role: 'speaker' | 'viewer';
+  granted_by?: string | null;
+  email?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  avatar_url?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export function listLiveSessionRoles(sessionId: string) {
+  return backendRequest<{ ok: true; host: { user_id: string; role: 'host' } | null; participants: LiveSessionRoleAssignment[] }>(`/live/sessions/${sessionId}/roles`);
+}
+
+export function assignLiveSessionRole(sessionId: string, userId: string, role: 'speaker' | 'viewer') {
+  return backendRequest<{ ok: true; assignment: LiveSessionRoleAssignment }>(`/live/sessions/${sessionId}/roles/${encodeURIComponent(userId)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ role }),
+  });
+}
+
+export function revokeLiveSessionRole(sessionId: string, userId: string) {
+  return backendRequest<{ ok: true; role: 'viewer' }>(`/live/sessions/${sessionId}/roles/${encodeURIComponent(userId)}`, { method: 'DELETE' });
+}
+
 export function listLiveRoomParticipants(sessionId: string) {
   return backendRequest<{ ok: true; participants: LiveRoomParticipant[] }>(`/live/sessions/${sessionId}/participants`);
 }

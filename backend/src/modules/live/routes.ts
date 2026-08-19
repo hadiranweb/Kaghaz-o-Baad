@@ -10,6 +10,8 @@ const paramsSchema = z.object({ sessionId: z.string().uuid() });
 const participantParamsSchema = z.object({ sessionId: z.string().uuid(), identity: z.string().min(1).max(200) });
 const roomOptionsSchema = z.object({ maxParticipants: z.number().int().positive().max(10_000).optional() }).default({});
 const muteSchema = z.object({ trackSid: z.string().min(1).max(200), muted: z.boolean().default(true) });
+const roleParamsSchema = z.object({ sessionId: z.string().uuid(), userId: z.string().uuid() });
+const roleBodySchema = z.object({ role: z.enum(['speaker', 'viewer']) });
 
 const MANAGEMENT_ROLES = ['admin', 'editor', 'senior_manager', 'technical_manager'];
 
@@ -41,6 +43,7 @@ async function getSession(sessionId: string) {
     'SELECT id, host_id, title, room_name, status, metadata FROM live_sessions WHERE id = $1',
     [sessionId],
   );
+
   return result.rows[0] ?? null;
 }
 
@@ -49,6 +52,69 @@ function isSessionManager(user: { id: string; roles: string[] }, session: LiveSe
 }
 
 export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
+  // Returns the session-scoped role assignments. The host is represented by
+  // live_sessions.host_id; this endpoint returns it together with assignments.
+  app.get('/api/v1/live/sessions/:sessionId/roles', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = paramsSchema.safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    const session = await getSession(params.data.sessionId);
+    if (!session) return reply.status(404).send({ error: 'session_not_found' });
+    if (!isSessionManager(user, session)) return reply.status(403).send({ error: 'forbidden' });
+    const result = await db.query(
+      `SELECT lsp.session_id, lsp.user_id, lsp.role, lsp.granted_by, lsp.created_at, lsp.updated_at,
+              u.email, p.first_name, p.last_name, p.avatar_url
+       FROM live_session_participants lsp
+       JOIN users u ON u.id = lsp.user_id
+       LEFT JOIN profiles p ON p.user_id = u.id
+       WHERE lsp.session_id = $1
+       ORDER BY lsp.role ASC, lsp.created_at ASC`,
+      [session.id],
+    );
+    return reply.send({
+      ok: true,
+      host: session.host_id ? { user_id: session.host_id, role: 'host' } : null,
+      participants: result.rows,
+    });
+  });
+
+  // Host or platform manager assigns a speaker or resets a user to viewer.
+  app.put('/api/v1/live/sessions/:sessionId/roles/:userId', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = roleParamsSchema.safeParse(request.params);
+    const body = roleBodySchema.safeParse(request.body);
+    if (!params.success || !body.success) return reply.status(400).send({ error: 'invalid_input' });
+    const session = await getSession(params.data.sessionId);
+    if (!session) return reply.status(404).send({ error: 'session_not_found' });
+    if (!isSessionManager(user, session)) return reply.status(403).send({ error: 'forbidden' });
+    if (params.data.userId === session.host_id) return reply.status(409).send({ error: 'host_role_is_implicit' });
+    const target = await db.query<{ id: string }>('SELECT id FROM users WHERE id = $1 AND is_active = TRUE', [params.data.userId]);
+    if (!target.rows[0]) return reply.status(404).send({ error: 'user_not_found' });
+    const result = await db.query(
+      `INSERT INTO live_session_participants (session_id, user_id, role, granted_by)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (session_id, user_id)
+       DO UPDATE SET role = EXCLUDED.role, granted_by = EXCLUDED.granted_by, updated_at = now()
+       RETURNING session_id, user_id, role, granted_by, created_at, updated_at`,
+      [session.id, params.data.userId, body.data.role, user.id],
+    );
+    return reply.send({ ok: true, assignment: result.rows[0] });
+  });
+
+  app.delete('/api/v1/live/sessions/:sessionId/roles/:userId', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = roleParamsSchema.safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    const session = await getSession(params.data.sessionId);
+    if (!session) return reply.status(404).send({ error: 'session_not_found' });
+    if (!isSessionManager(user, session)) return reply.status(403).send({ error: 'forbidden' });
+    await db.query('DELETE FROM live_session_participants WHERE session_id = $1 AND user_id = $2', [session.id, params.data.userId]);
+    return reply.send({ ok: true, role: 'viewer' });
+  });
+
   // Creates/configures the LiveKit room explicitly. LiveKit can also auto-create
   // a room on first join, but explicit creation lets the product control metadata,
   // capacity and lifecycle from the database.
@@ -95,9 +161,14 @@ export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
     if (!session) return reply.status(404).send({ error: 'session_not_found' });
     if (session.status === 'ended' || session.status === 'cancelled') return reply.status(409).send({ error: 'session_not_active' });
 
+    const assignment = await db.query<{ role: 'speaker' | 'viewer' }>(
+      'SELECT role FROM live_session_participants WHERE session_id = $1 AND user_id = $2',
+      [session.id, user.id],
+    );
     const isHost = session.host_id === user.id;
-    const isSpeaker = isHost || canManageAll(user);
-    const role = isHost ? 'host' : isSpeaker ? 'speaker' : 'viewer';
+    const assignedRole = assignment.rows[0]?.role ?? 'viewer';
+    const isSpeaker = isHost || assignedRole === 'speaker';
+    const role = isHost ? 'host' : assignedRole;
     const identity = `user:${user.id}`;
     const accessToken = new AccessToken(env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET, {
       identity,

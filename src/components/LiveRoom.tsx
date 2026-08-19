@@ -33,6 +33,7 @@ import {
 import MDEditor from '@uiw/react-md-editor';
 import type { LiveKitTokenResponse, LiveRole, PresentationKind } from '@/hooks/useLiveKitToken';
 import type { SlideItem } from '@/pages/LiveRoomPage';
+import LiveHostControls from '@/components/LiveHostControls';
 
 pdfjs.GlobalWorkerOptions.workerPort = new PdfWorker();
 
@@ -680,6 +681,10 @@ export const LiveRoom = ({
           </Button>
         </div>
       </div>
+
+      {tokenData.role === 'host' && room && (
+        <LiveHostControls sessionId={sessionId} hostIdentity={tokenData.identity} />
+      )}
 
       {/* اعلان شروع جلسه برای میزبان */}
       {sessionStatus === 'scheduled' && canStart && !startedByHost && (
