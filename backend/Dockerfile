@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --no-audit --no-fund
 COPY tsconfig.json ./
+COPY migrations ./migrations
 COPY src ./src
 RUN npm run build
 
@@ -12,5 +13,6 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/migrations ./migrations
 EXPOSE 8080
 CMD ["node", "dist/server.js"]
