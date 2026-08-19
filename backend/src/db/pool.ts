@@ -9,7 +9,7 @@ export const db = new Pool({
   max: 10,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 10_000,
-  ssl: env.NODE_ENV === 'development' ? undefined : { rejectUnauthorized: false },
+  ssl: env.DATABASE_SSL ? { rejectUnauthorized: false } : undefined,
 });
 
 export async function closeDatabase() {
