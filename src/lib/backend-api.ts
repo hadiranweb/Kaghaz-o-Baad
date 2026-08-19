@@ -152,6 +152,37 @@ export function createLiveSession(input: Record<string, unknown>) {
   return backendRequest<{ ok: true; session: BackendLiveSession }>('/live-sessions', { method: 'POST', body: JSON.stringify(input) });
 }
 
+export type LiveRoomParticipant = {
+  sid: string;
+  identity: string;
+  name?: string;
+  state?: string;
+  permission?: Record<string, boolean>;
+  tracks?: Array<{ sid?: string; source?: string; muted?: boolean; name?: string }>;
+};
+
+export function ensureLiveRoom(sessionId: string, maxParticipants = 500) {
+  return backendRequest<{ ok: true; room: { name: string; sid: string; metadata?: string; max_participants?: number } }>(`/live/sessions/${sessionId}/room`, {
+    method: 'POST',
+    body: JSON.stringify({ maxParticipants }),
+  });
+}
+
+export function listLiveRoomParticipants(sessionId: string) {
+  return backendRequest<{ ok: true; participants: LiveRoomParticipant[] }>(`/live/sessions/${sessionId}/participants`);
+}
+
+export function removeLiveRoomParticipant(sessionId: string, identity: string) {
+  return backendRequest<{ ok: true }>(`/live/sessions/${sessionId}/participants/${encodeURIComponent(identity)}`, { method: 'DELETE' });
+}
+
+export function muteLiveRoomParticipant(sessionId: string, identity: string, input: { trackSid: string; muted: boolean }) {
+  return backendRequest<{ ok: true; track: unknown }>(`/live/sessions/${sessionId}/participants/${encodeURIComponent(identity)}/mute`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
 export function deleteLiveSession(id: string) {
   return backendRequest<void>(`/live-sessions/${id}`, { method: 'DELETE' });
 }

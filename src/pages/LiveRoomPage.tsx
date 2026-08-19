@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useParams, useNavigate, Navigate } from 'react-router-dom';
-import { getLiveSession, listArticleSlides, updateLiveSessionStatus } from '@/lib/backend-api';
+import { ensureLiveRoom, getLiveSession, listArticleSlides, updateLiveSessionStatus } from '@/lib/backend-api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLiveKitToken } from '@/hooks/useLiveKitToken';
@@ -103,6 +103,7 @@ export default function LiveRoomPage() {
   const startSession = useCallback(async () => {
     if (!id) return;
     try {
+      await ensureLiveRoom(id);
       await updateLiveSessionStatus(id, 'live');
       await loadSession();
     } catch (error) {
