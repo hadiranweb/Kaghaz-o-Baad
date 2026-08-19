@@ -224,6 +224,38 @@ export function listLiveRoomParticipants(sessionId: string) {
   return backendRequest<{ ok: true; participants: LiveRoomParticipant[] }>(`/live/sessions/${sessionId}/participants`);
 }
 
+export type LiveRecording = {
+  id: string;
+  session_id: string;
+  egress_id: string;
+  output_type: 'mp4' | 'audio';
+  status: 'starting' | 'active' | 'completed' | 'failed' | 'stopped';
+  object_key: string | null;
+  object_url: string | null;
+  duration_seconds: string | null;
+  file_size_bytes: string | null;
+  mime_type: string | null;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export function startLiveRecording(sessionId: string, outputType: 'mp4' | 'audio' = 'mp4') {
+  return backendRequest<{ ok: true; recording: LiveRecording }>(`/live/sessions/${sessionId}/recordings`, {
+    method: 'POST',
+    body: JSON.stringify({ outputType }),
+  });
+}
+
+export function stopLiveRecording(sessionId: string, egressId: string) {
+  return backendRequest<{ ok: true; status: string }>(`/live/sessions/${sessionId}/recordings/${encodeURIComponent(egressId)}/stop`, { method: 'POST' });
+}
+
+export function listLiveRecordings(sessionId: string) {
+  return backendRequest<{ ok: true; recordings: LiveRecording[] }>(`/live/sessions/${sessionId}/recordings`);
+}
+
 export function removeLiveRoomParticipant(sessionId: string, identity: string) {
   return backendRequest<{ ok: true }>(`/live/sessions/${sessionId}/participants/${encodeURIComponent(identity)}`, { method: 'DELETE' });
 }

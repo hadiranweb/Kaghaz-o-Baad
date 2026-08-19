@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import { AccessToken, RoomServiceClient, WebhookReceiver } from 'livekit-server-sdk';
+import { AccessToken, EgressClient, RoomServiceClient, WebhookReceiver } from 'livekit-server-sdk';
+import { EncodedFileOutput, EncodedFileType, S3Upload } from '@livekit/protocol';
 import { TrackSource } from '@livekit/protocol';
 import { z } from 'zod';
 import { getAuthUser, hasRole } from '../../auth/service.js';
@@ -13,6 +14,7 @@ const roomOptionsSchema = z.object({ maxParticipants: z.number().int().positive(
 const muteSchema = z.object({ trackSid: z.string().min(1).max(200), muted: z.boolean().default(true) });
 const roleParamsSchema = z.object({ sessionId: z.string().uuid(), userId: z.string().uuid() });
 const roleBodySchema = z.object({ role: z.enum(['speaker', 'viewer']) });
+const recordingBodySchema = z.object({ outputType: z.enum(['mp4', 'audio']).default('mp4') });
 const interactionSchema = z.object({
   type: z.enum(['chat', 'question', 'reaction', 'hand_raise']),
   payload: z.record(z.string(), z.unknown()).default({}),
@@ -35,6 +37,16 @@ function canManageAll(user: { roles: string[] }) {
 
 function livekitConfigured(env: AppEnv): env is AppEnv & { LIVEKIT_URL: string; LIVEKIT_API_KEY: string; LIVEKIT_API_SECRET: string } {
   return Boolean(env.LIVEKIT_URL && env.LIVEKIT_API_KEY && env.LIVEKIT_API_SECRET);
+}
+
+function createEgressService(env: AppEnv) {
+  if (!livekitConfigured(env)) return null;
+  const host = env.LIVEKIT_URL.replace(/^wss:/, 'https:').replace(/^ws:/, 'http:');
+  return new EgressClient(host, env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET);
+}
+
+function storageConfigured(env: AppEnv): env is AppEnv & { S3_ENDPOINT: string; S3_BUCKET: string; S3_ACCESS_KEY_ID: string; S3_SECRET_ACCESS_KEY: string } {
+  return Boolean(env.S3_ENDPOINT && env.S3_BUCKET && env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY);
 }
 
 function createRoomService(env: AppEnv) {
@@ -67,6 +79,99 @@ function rawBodyOf(request: { rawBody?: unknown }) {
 }
 
 export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
+  app.post('/api/v1/live/sessions/:sessionId/recordings', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = paramsSchema.safeParse(request.params);
+    const body = recordingBodySchema.safeParse(request.body ?? {});
+    if (!params.success || !body.success) return reply.status(400).send({ error: 'invalid_input' });
+    if (!livekitConfigured(env)) return reply.status(503).send({ error: 'livekit_not_configured' });
+    if (!storageConfigured(env)) return reply.status(503).send({ error: 'object_storage_not_configured' });
+    const session = await getSession(params.data.sessionId);
+    if (!session) return reply.status(404).send({ error: 'session_not_found' });
+    if (!isSessionManager(user, session)) return reply.status(403).send({ error: 'forbidden' });
+    if (session.status !== 'live') return reply.status(409).send({ error: 'session_not_live' });
+    const active = await db.query('SELECT id FROM live_recordings WHERE session_id = $1 AND status IN (\'starting\', \'active\') LIMIT 1', [session.id]);
+    if (active.rows[0]) return reply.status(409).send({ error: 'recording_already_active' });
+
+    const outputType = body.data.outputType;
+    const objectKey = `live-recordings/${session.id}/{time}.${outputType === 'audio' ? 'mp3' : 'mp4'}`;
+    const fileOutput = new EncodedFileOutput({
+      fileType: outputType === 'audio' ? EncodedFileType.MP3 : EncodedFileType.MP4,
+      filepath: objectKey,
+      output: {
+        case: 's3',
+        value: new S3Upload({
+          accessKey: env.S3_ACCESS_KEY_ID,
+          secret: env.S3_SECRET_ACCESS_KEY,
+          region: env.S3_REGION,
+          endpoint: env.S3_ENDPOINT,
+          bucket: env.S3_BUCKET,
+          forcePathStyle: true,
+          contentDisposition: 'attachment',
+          metadata: { session_id: session.id, product: 'kaghaz-o-baad' },
+        }),
+      },
+    });
+    try {
+      const info = await createEgressService(env)!.startRoomCompositeEgress(session.room_name, fileOutput, {
+        layout: 'speaker',
+        audioOnly: outputType === 'audio',
+      });
+      const result = await db.query(
+        `INSERT INTO live_recordings (session_id, egress_id, output_type, status, object_key, started_at, created_by, metadata)
+         VALUES ($1, $2, $3, 'starting', $4, now(), $5, $6)
+         RETURNING id, session_id, egress_id, output_type, status, object_key, started_at, created_at`,
+        [session.id, info.egressId, outputType, objectKey, user.id, { roomName: session.room_name, egressStatus: info.status }],
+      );
+      return reply.status(201).send({ ok: true, recording: result.rows[0] });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(502).send({ error: 'egress_start_failed' });
+    }
+  });
+
+  app.post('/api/v1/live/sessions/:sessionId/recordings/:egressId/stop', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = z.object({ sessionId: z.string().uuid(), egressId: z.string().min(1).max(100) }).safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    if (!livekitConfigured(env)) return reply.status(503).send({ error: 'livekit_not_configured' });
+    const session = await getSession(params.data.sessionId);
+    if (!session) return reply.status(404).send({ error: 'session_not_found' });
+    if (!isSessionManager(user, session)) return reply.status(403).send({ error: 'forbidden' });
+    try {
+      const info = await createEgressService(env)!.stopEgress(params.data.egressId);
+      await db.query(`UPDATE live_recordings SET status = 'stopped', ended_at = COALESCE(ended_at, now()), updated_at = now(), metadata = metadata || $2 WHERE session_id = $1 AND egress_id = $3`, [session.id, { egressStatus: info.status }, params.data.egressId]);
+      return reply.send({ ok: true, status: info.status });
+    } catch (error) {
+      request.log.error(error);
+      return reply.status(502).send({ error: 'egress_stop_failed' });
+    }
+  });
+
+  app.get('/api/v1/live/sessions/:sessionId/recordings', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = paramsSchema.safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+    const session = await getSession(params.data.sessionId);
+    if (!session) return reply.status(404).send({ error: 'session_not_found' });
+    const access = await db.query(
+      `SELECT 1 FROM live_session_participants WHERE session_id = $1 AND user_id = $2
+       UNION ALL SELECT 1 WHERE $2 = $3 OR $4 = TRUE LIMIT 1`,
+      [session.id, user.id, session.host_id, canManageAll(user)],
+    );
+    if (!access.rows[0]) return reply.status(403).send({ error: 'forbidden' });
+    const result = await db.query(
+      `SELECT id, session_id, egress_id, output_type, status, object_key, object_url,
+              duration_seconds, file_size_bytes, mime_type, started_at, ended_at, created_by, created_at, updated_at
+       FROM live_recordings WHERE session_id = $1 ORDER BY created_at DESC`,
+      [session.id],
+    );
+    return reply.send({ ok: true, recordings: result.rows });
+  });
+
   // LiveKit signs webhook requests with the API secret. The raw request body is
   // verified before any event is persisted, making retries idempotent by event id.
   app.post('/api/v1/live/webhooks/livekit', async (request, reply) => {
@@ -129,6 +234,29 @@ export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
     }
     if (inserted.rowCount && sessionId && event.event === 'room_finished') {
       await db.query(`UPDATE live_sessions SET status = CASE WHEN status = 'cancelled' THEN status ELSE 'ended' END, ends_at = COALESCE(ends_at, now()), updated_at = now() WHERE id = $1`, [sessionId]);
+    }
+
+    const egress = event.egressInfo ?? event.egress;
+    const egressId = typeof egress?.egressId === 'string' ? egress.egressId : null;
+    if (inserted.rowCount && egressId) {
+      const egressStatus = event.event === 'egress_started' ? 'active' : event.event === 'egress_ended' ? (egress.error ? 'failed' : 'completed') : 'active';
+      const fileInfo = Array.isArray(egress.fileResults) ? egress.fileResults[0] : null;
+      const duration = Number(egress.endedAt ?? egress.duration ?? 0);
+      const size = Number(fileInfo?.size ?? fileInfo?.fileSize ?? 0);
+      await db.query(
+        `UPDATE live_recordings
+         SET status = $2,
+             ended_at = CASE WHEN $2 IN ('completed', 'failed', 'stopped') THEN COALESCE(ended_at, now()) ELSE ended_at END,
+             duration_seconds = CASE WHEN $3 > 0 THEN $3 ELSE duration_seconds END,
+             file_size_bytes = CASE WHEN $4 > 0 THEN $4 ELSE file_size_bytes END,
+             mime_type = COALESCE($5, mime_type),
+             object_url = COALESCE($6, object_url),
+             error_code = COALESCE($7, error_code),
+             metadata = metadata || $8,
+             updated_at = now()
+         WHERE egress_id = $1`,
+        [egressId, egressStatus, duration, size, fileInfo?.type ?? null, fileInfo?.location ?? null, egress.error ?? null, egress],
+      );
     }
     return reply.send({ ok: true, duplicate: !inserted.rowCount });
   });

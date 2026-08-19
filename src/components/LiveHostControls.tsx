@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Mic, MicOff, UserMinus, Users } from 'lucide-react';
+import { CircleStop, Mic, MicOff, UserMinus, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -7,6 +7,10 @@ import {
   listLiveRoomParticipants,
   muteLiveRoomParticipant,
   removeLiveRoomParticipant,
+  listLiveRecordings,
+  startLiveRecording,
+  stopLiveRecording,
+  type LiveRecording,
   type LiveRoomParticipant,
 } from '@/lib/backend-api';
 import { toast } from 'sonner';
@@ -21,6 +25,7 @@ export default function LiveHostControls({ sessionId, hostIdentity }: Props) {
   const fa = locale === 'fa';
   const [participants, setParticipants] = useState<LiveRoomParticipant[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
+  const [recordings, setRecordings] = useState<LiveRecording[]>([]);
 
   const refresh = useCallback(async () => {
     try {
@@ -33,9 +38,34 @@ export default function LiveHostControls({ sessionId, hostIdentity }: Props) {
 
   useEffect(() => {
     void refresh();
-    const timer = window.setInterval(() => void refresh(), 5000);
+    void listLiveRecordings(sessionId).then((result) => setRecordings(result.recordings)).catch(() => undefined);
+    const timer = window.setInterval(() => {
+      void refresh();
+      void listLiveRecordings(sessionId).then((result) => setRecordings(result.recordings)).catch(() => undefined);
+    }, 5000);
     return () => window.clearInterval(timer);
-  }, [refresh]);
+  }, [refresh, sessionId]);
+
+  const activeRecording = recordings.find((recording) => recording.status === 'starting' || recording.status === 'active');
+
+  const toggleRecording = async () => {
+    setBusy('recording');
+    try {
+      if (activeRecording) {
+        await stopLiveRecording(sessionId, activeRecording.egress_id);
+        toast.success(fa ? 'ضبط متوقف شد' : 'Recording stopped');
+      } else {
+        await startLiveRecording(sessionId, 'mp4');
+        toast.success(fa ? 'ضبط جلسه آغاز شد' : 'Recording started');
+      }
+      const result = await listLiveRecordings(sessionId);
+      setRecordings(result.recordings);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : fa ? 'عملیات ضبط ناموفق بود' : 'Recording operation failed');
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const removeParticipant = async (identity: string) => {
     setBusy(identity);
@@ -72,6 +102,21 @@ export default function LiveHostControls({ sessionId, hostIdentity }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4 space-y-2">
+        <div className="flex items-center justify-between rounded-xl border border-border/50 px-3 py-2">
+          <div>
+            <p className="text-sm">{fa ? 'ضبط جلسه' : 'Session recording'}</p>
+            <p className="text-[11px] text-muted-foreground">{activeRecording ? (fa ? 'در حال ضبط' : 'Recording') : fa ? 'متوقف' : 'Stopped'}</p>
+          </div>
+          <Button size="sm" variant={activeRecording ? 'destructive' : 'default'} disabled={busy !== null} onClick={() => void toggleRecording()}>
+            <CircleStop className="h-4 w-4 me-1" />
+            {activeRecording ? (fa ? 'توقف' : 'Stop') : (fa ? 'شروع ضبط' : 'Record')}
+          </Button>
+        </div>
+        {recordings.filter((recording) => recording.status === 'completed' && recording.object_url).map((recording) => (
+          <a key={recording.id} href={recording.object_url ?? '#'} target="_blank" rel="noreferrer" className="block rounded-xl border border-border/50 px-3 py-2 text-xs text-primary hover:underline">
+            {fa ? 'مشاهدهٔ آرشیو جلسه' : 'Open session archive'}
+          </a>
+        ))}
         {participants.length === 0 ? (
           <p className="text-xs text-muted-foreground">{fa ? 'هنوز کاربری در اتاق نیست.' : 'No participants are connected yet.'}</p>
         ) : participants.map((participant) => (
