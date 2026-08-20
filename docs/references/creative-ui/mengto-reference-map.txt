@@ -1,0 +1,95 @@
+```markdown
+# جدول منابع — کاغذ و باد × MengTo
+
+## ۱. پروژه‌ی خود شما
+
+| نام | URL | کاربرد در این مکالمه |
+|---|---|---|
+| کاغذ و باد — سایت | https://kaghazobaad.ir | پلتفرم اصلی |
+| کاغذ و باد — صفحه شرح | https://kaghazobaad.ir/about-project | صفحه‌ای که بازنویسی شد |
+| کاغذ و باد — ریپو | https://github.com/hadiranweb/Kaghaz-o-Baad | سورس کد پروژه |
+| AboutProject.tsx | https://github.com/hadiranweb/Kaghaz-o-Baad/blob/main/src/pages/AboutProject.tsx | فایل اصلی صفحه |
+
+---
+
+## ۲. ریپوهای MengTo — دسته‌ی 🟢 مستقیم
+
+| ریپو | URL | چه چیزی از آن استفاده کردیم |
+|---|---|---|
+| `Skills` | https://github.com/MengTo/Skills | ساختار SKILL.md — الگوی فایل‌محور برای AGENTS.md کاغذ و باد |
+| `kage` | https://github.com/MengTo/kage | الگوی scroll-as-wind — حرکت دوربین با اسکرول برای نمایش اسلاید |
+| `complete-shelf` | https://github.com/MengTo/complete-shelf | الگوی page-turn تعاملی — ورق‌زدن اسلاید مثل کاغذ |
+| `sylva` | https://github.com/MengTo/sylva | pointer parallax + graceful degradation + navigation dock |
+| `a-long-expected-party` | https://github.com/MengTo/a-long-expected-party | الگوی timeline + audio sync برای جلسه‌ی زنده |
+
+---
+
+## ۳. ریپوهای MengTo — دسته‌ی 🟡 غیرمستقیم
+
+| ریپو | URL | چه چیزی از آن استفاده کردیم |
+|---|---|---|
+| `sketchbook` | https://github.com/MengTo/sketchbook | فیزیک خم‌شدن کاغذ — onboarding تعاملی |
+| `towers` | https://github.com/MengTo/towers | الگوی procedural + سبک‌های مختلف نمایش |
+| `DesignerNewsApp` | https://github.com/MengTo/DesignerNewsApp | الگوی روایت commit-by-commit برای CHANGELOG |
+| `Ripple` | https://github.com/MengTo/Ripple | الگوی یادگیری با دنبال‌کردن کامیت‌ها |
+
+---
+
+## ۴. ریپوهای MengTo — دسته‌ی 🔴 بررسی شد، استفاده نشد
+
+| ریپو | URL |
+|---|---|
+| `Spring` | https://github.com/MengTo/Spring |
+| `react-native-for-designers` | https://github.com/MengTo/react-native-for-designers |
+| `my-react-app` | https://github.com/MengTo/my-react-app |
+| `codux-course` | https://github.com/MengTo/codux-course |
+| `gatsby-starter-designcode` | https://github.com/MengTo/gatsby-starter-designcode |
+| `gatsby-starter-default` | https://github.com/MengTo/gatsby-starter-default |
+| `my-sf-react` | https://github.com/MengTo/my-sf-react |
+| `my-react-sf` | https://github.com/MengTo/my-react-sf |
+| `Angle-Sketch-Plugin` | https://github.com/MengTo/Angle-Sketch-Plugin |
+| `angle-figma-plugin` | https://github.com/MengTo/angle-figma-plugin |
+| `AppStoreSketch` | https://github.com/MengTo/AppStoreSketch |
+| `shape2-library` | https://github.com/MengTo/shape2-library |
+| `open-sauced` | https://github.com/MengTo/open-sauced |
+| `Heyzap` | https://github.com/MengTo/Heyzap |
+
+---
+
+## ۵. صفحه‌ی اصلی MengTo
+
+| نام | URL |
+|---|---|
+| پروفایل GitHub | https://github.com/MengTo |
+| همه‌ی ریپوها | https://github.com/MengTo?tab=repositories |
+
+---
+
+## ۶. نقشه‌ی ارتباط منابع با لایه‌های UI
+
+```
+لایه‌ی Hero (pointer parallax)
+  └── github.com/MengTo/sylva
+
+لایه‌ی Scroll Navigation
+  └── github.com/MengTo/kage
+
+لایه‌ی Page Turn (اسلاید)
+  ├── github.com/MengTo/complete-shelf
+  └── github.com/MengTo/sketchbook
+
+لایه‌ی Wind Particles
+  └── github.com/MengTo/kage  (falling leaves technique)
+
+لایه‌ی Navigation Dock
+  └── github.com/MengTo/sylva  (proximity magnification)
+
+لایه‌ی Timeline/Live Session
+  └── github.com/MengTo/a-long-expected-party
+
+لایه‌ی SKILL.md / AGENTS.md
+  └── github.com/MengTo/Skills
+
+لایه‌ی Graceful Degradation
+  └── github.com/MengTo/sylva
+```
