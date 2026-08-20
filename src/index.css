@@ -555,3 +555,255 @@
   .kb-wind-ring-two { display: none; }
   .kb-wind-caption { right: 1rem; bottom: 0.75rem; font-size: 0.54rem; }
 }
+
+
+.kb-progress-dock {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  max-width: 42rem;
+  margin-inline: auto;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.kb-progress-track {
+  position: relative;
+  width: 2px;
+  min-height: 11rem;
+  overflow: hidden;
+  flex: 0 0 2px;
+  border-radius: 999px;
+  background: hsl(var(--border));
+}
+
+.kb-progress-track span {
+  display: block;
+  width: 100%;
+  border-radius: inherit;
+  background: hsl(var(--primary));
+  transition: height 360ms var(--kb-ease-wind);
+}
+
+.kb-progress-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  gap: 0.5rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kb-progress-link {
+  display: flex;
+  min-height: 2.6rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid transparent;
+  border-radius: 0.9rem;
+  padding: 0.55rem 0.65rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.78rem;
+  line-height: 1.35;
+  text-decoration: none;
+  transition: color 240ms ease, background-color 240ms ease, border-color 240ms ease, transform 240ms var(--kb-ease-paper);
+}
+
+.kb-progress-link:hover,
+.kb-progress-link:focus-visible,
+.kb-progress-link.is-active {
+  border-color: hsl(var(--primary) / 0.28);
+  background: hsl(var(--primary) / 0.08);
+  color: hsl(var(--foreground));
+}
+
+.kb-progress-link:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+
+.kb-progress-link.is-active {
+  transform: translateY(-2px);
+}
+
+.kb-progress-index {
+  color: hsl(var(--primary));
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.kb-progress-dock-compact {
+  max-width: none;
+  overflow-x: auto;
+  gap: 0;
+  padding-block: 0.25rem 0.75rem;
+  scrollbar-width: thin;
+}
+
+.kb-progress-dock-compact .kb-progress-track {
+  display: none;
+}
+
+.kb-progress-dock-compact .kb-progress-list {
+  display: flex;
+  min-width: max-content;
+  gap: 0.5rem;
+}
+
+.kb-progress-dock-compact .kb-progress-link {
+  min-height: 2.25rem;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-progress-track span,
+  .kb-progress-link {
+    transition: none;
+  }
+
+  .kb-progress-link.is-active {
+    transform: none;
+  }
+}
+
+
+.kb-archive-grid {
+  display: grid;
+  gap: 1.35rem;
+}
+
+.kb-archive-shelf {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+}
+
+.kb-archive-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kb-archive-list {
+  grid-template-columns: 1fr;
+}
+
+.kb-archive-card {
+  position: relative;
+  border-color: hsl(var(--border) / 0.75);
+  transition: transform 320ms var(--kb-ease-paper), box-shadow 320ms var(--kb-ease-wind), border-color 240ms ease;
+}
+
+.kb-archive-shelf .kb-archive-card {
+  transform: perspective(900px) rotateY(var(--book-angle, 0deg));
+}
+
+.kb-archive-shelf .kb-archive-card:nth-child(3n + 1) { --book-angle: -1.4deg; }
+.kb-archive-shelf .kb-archive-card:nth-child(3n + 2) { --book-angle: 0.7deg; }
+.kb-archive-shelf .kb-archive-card:nth-child(3n) { --book-angle: 1.1deg; }
+
+.kb-archive-card:hover,
+.kb-archive-card:focus-within {
+  border-color: hsl(var(--primary) / 0.36);
+  box-shadow: 0 24px 44px -26px hsl(var(--primary) / 0.48);
+  transform: translateY(-5px) perspective(900px) rotateY(0deg);
+}
+
+.kb-book-cover {
+  isolation: isolate;
+  border-bottom: 1px solid hsl(var(--primary) / 0.18);
+  box-shadow: inset -1.1rem 0 0 -1rem hsl(var(--foreground) / 0.22), inset 0 -1.5rem 2rem -1.5rem hsl(var(--foreground) / 0.6);
+}
+
+.kb-book-cover::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(120deg, transparent 15%, hsl(var(--background) / 0.14) 48%, transparent 58%);
+  content: '';
+  pointer-events: none;
+  transform: translateX(-120%);
+  transition: transform 700ms var(--kb-ease-wind);
+}
+
+.kb-archive-card:hover .kb-book-cover::after {
+  transform: translateX(120%);
+}
+
+.kb-book-spine {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  z-index: 2;
+  width: 0.55rem;
+  border-inline-end: 1px solid hsl(var(--foreground) / 0.16);
+  background: linear-gradient(to right, hsl(var(--foreground) / 0.22), transparent);
+}
+
+.kb-book-edition {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.8rem;
+  z-index: 2;
+  color: hsl(var(--foreground) / 0.56);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.kb-archive-list .kb-archive-card {
+  display: grid;
+  grid-template-columns: minmax(10rem, 15rem) 1fr;
+}
+
+.kb-archive-list .kb-book-cover {
+  height: 100%;
+  min-height: 13rem;
+}
+
+.kb-archive-list .kb-archive-card > div:not(.kb-book-cover) {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .kb-archive-shelf,
+  .kb-archive-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .kb-archive-shelf,
+  .kb-archive-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kb-archive-shelf .kb-archive-card {
+    transform: none;
+  }
+
+  .kb-archive-list .kb-archive-card {
+    display: block;
+  }
+
+  .kb-archive-list .kb-book-cover {
+    height: 10rem;
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-archive-card,
+  .kb-book-cover::after {
+    transition: none;
+  }
+
+  .kb-archive-card,
+  .kb-archive-card:hover,
+  .kb-archive-card:focus-within {
+    transform: none;
+  }
+
+  .kb-book-cover::after {
+    display: none;
+  }
+}
