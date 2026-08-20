@@ -1,6 +1,6 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { BrainAnimation } from '@/components/BrainAnimation';
-import { Search } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Search } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { backendRequest } from '@/lib/backend-api';
@@ -163,6 +163,37 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      <section className="mt-10 w-full max-w-[760px] px-4" aria-labelledby="home-discovery-title">
+        <div className="grid gap-3 rounded-3xl border border-border/70 bg-card/50 p-4 shadow-elegant sm:grid-cols-[1.2fr_1fr] sm:p-5" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
+          <div className="rounded-2xl bg-primary/10 p-5">
+            <div className="flex items-center gap-2 text-xs font-semibold text-primary">
+              <BookOpen className="h-4 w-4" />
+              {locale === 'fa' ? 'اتاق مطالعهٔ کاغذ و باد' : 'KaghazBaad reading room'}
+            </div>
+            <h2 id="home-discovery-title" className="mt-3 text-xl font-bold">
+              {locale === 'fa' ? 'مقاله‌ها را روی قفسه ببینید، نه در یک فهرست بی‌روح.' : 'See articles on a shelf, not in a flat list.'}
+            </h2>
+            <p className="mt-2 text-sm leading-7 text-muted-foreground">
+              {locale === 'fa' ? 'قفسه، شبکه و فهرست برای مرور سریع؛ با مسیر خواندن واقعی هر مقاله.' : 'Shelf, grid and list views for quick review, with a real reading path for every article.'}
+            </p>
+            <Link to="/read" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
+              {locale === 'fa' ? 'رفتن به آرشیو مقالات' : 'Open article archive'}
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="flex flex-col justify-between rounded-2xl border border-border/70 p-5">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground">{locale === 'fa' ? 'نقشهٔ محصول' : 'Product map'}</p>
+              <p className="mt-3 text-lg font-bold">{locale === 'fa' ? 'از ایده تا گفت‌وگو، مسیر را دنبال کنید.' : 'Follow the path from idea to discussion.'}</p>
+            </div>
+            <Link to="/about-project" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">
+              {locale === 'fa' ? 'دیدن شرح پروژه و فهرست مسیر' : 'View project map and TOC'}
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
