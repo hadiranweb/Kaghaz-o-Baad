@@ -26,6 +26,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: npm run verify:seo
 
   backend:
     name: Backend check, build and migration dry-run

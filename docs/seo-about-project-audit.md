@@ -25,3 +25,11 @@
 - `og:url` و تصویر Open Graph URL مطلق داشته باشند.
 - JSON-LD شامل `WebPage` و `FAQPage` در head وجود داشته باشد.
 - نسخهٔ انگلیسی با تغییر زبان، title، description، locale و inLanguage را تغییر دهد.
+
+## وضعیت انتشار
+
+Commit `306875f322475dcdf73cd1c877ba61b9ed99faf9` روی `main` قرار گرفت. اجرای GitHub Actions با موفقیت کامل شد و همهٔ jobها، شامل Frontend build، Backend check/build، secret scan، installer و **Deploy frontend and backend to Liara** موفق بودند.
+
+HTML فعلی `https://kaghazobaad.ir/` شامل fallbackهای `canonical`، `robots`، `og:url`، `og:image` و `twitter:title` است. مسیر `https://kaghazobaad.ir/about-project` نیز با HTTP 200 و TLS معتبر پاسخ می‌دهد. صفحهٔ route-specific هنگام mount شدن React، canonical را روی `/about-project` و Open Graph/Twitter را بر اساس زبان فعال تنظیم می‌کند.
+
+نکته: ابزارهای crawler بدون اجرای JavaScript، fallback عمومی صفحهٔ اصلی را می‌بینند؛ برای metadata کاملاً route-specific در HTML اولیه، در آینده می‌توان prerender/SSR اضافه کرد. برای release حاضر، metadata runtime و fallback عمومی هر دو بهینه و production شده‌اند.

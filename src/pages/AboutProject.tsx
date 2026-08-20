@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -18,6 +18,7 @@ import {
   Video,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { setSeoMetadata } from '@/lib/seo';
 
 type Icon = typeof FileText;
 
@@ -93,7 +94,7 @@ export default function AboutProject() {
   const { locale } = useLanguage();
   const isFa = locale === 'fa';
   const dir = isFa ? 'rtl' : 'ltr';
-  const text = (fa: string, en: string) => (isFa ? fa : en);
+  const text = useCallback((fa: string, en: string) => (isFa ? fa : en), [isFa]);
 
   const pageTitle = text('شرح پروژه — کاغذ و باد', 'Project Description — KaghazBaad');
   const pageDesc = text(
@@ -102,80 +103,25 @@ export default function AboutProject() {
   );
 
   useEffect(() => {
-    const origin = window.location.origin;
-    const canonicalUrl = `${origin}/about-project`;
-    const imageUrl = `${origin}/brain-character.svg`;
-    const localeCode = isFa ? 'fa_IR' : 'en_US';
-    const alternateLocaleCode = isFa ? 'en_US' : 'fa_IR';
-
-    document.title = pageTitle;
-
-    const upsertMeta = (selector: string, attributes: Record<string, string>, content: string) => {
-      let element = document.head.querySelector<HTMLMetaElement>(selector);
-      if (!element) {
-        element = document.createElement('meta');
-        Object.entries(attributes).forEach(([key, value]) => element!.setAttribute(key, value));
-        document.head.appendChild(element);
-      }
-      element.setAttribute('content', content);
-    };
-
-    const upsertLink = (rel: string, href: string) => {
-      let element = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
-      if (!element) {
-        element = document.createElement('link');
-        element.setAttribute('rel', rel);
-        document.head.appendChild(element);
-      }
-      element.setAttribute('href', href);
-    };
-
-    upsertMeta('meta[name="description"]', { name: 'description' }, pageDesc);
-    upsertMeta('meta[name="robots"]', { name: 'robots' }, 'index,follow,max-image-preview:large');
-    upsertMeta('meta[property="og:title"]', { property: 'og:title' }, pageTitle);
-    upsertMeta('meta[property="og:description"]', { property: 'og:description' }, pageDesc);
-    upsertMeta('meta[property="og:type"]', { property: 'og:type' }, 'website');
-    upsertMeta('meta[property="og:url"]', { property: 'og:url' }, canonicalUrl);
-    upsertMeta('meta[property="og:image"]', { property: 'og:image' }, imageUrl);
-    upsertMeta('meta[property="og:image:alt"]', { property: 'og:image:alt' }, text('نشان کاغذ و باد', 'KaghazBaad mark'));
-    upsertMeta('meta[property="og:site_name"]', { property: 'og:site_name' }, 'کاغذ و باد | KaghazBaad');
-    upsertMeta('meta[property="og:locale"]', { property: 'og:locale' }, localeCode);
-    upsertMeta('meta[property="og:locale:alternate"]', { property: 'og:locale:alternate' }, alternateLocaleCode);
-    upsertMeta('meta[name="twitter:card"]', { name: 'twitter:card' }, 'summary_large_image');
-    upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title' }, pageTitle);
-    upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description' }, pageDesc);
-    upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image' }, imageUrl);
-    upsertMeta('meta[name="twitter:image:alt"]', { name: 'twitter:image:alt' }, text('نشان کاغذ و باد', 'KaghazBaad mark'));
-    upsertLink('canonical', canonicalUrl);
-
-    const structuredDataId = 'about-project-structured-data';
-    document.getElementById(structuredDataId)?.remove();
-    const structuredData = document.createElement('script');
-    structuredData.id = structuredDataId;
-    structuredData.type = 'application/ld+json';
-    structuredData.textContent = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': [
+    const pathname = window.location.pathname;
+    const prefix = pathname.startsWith('/fa/') ? '/fa' : pathname.startsWith('/en/') ? '/en' : '';
+    setSeoMetadata({
+      title: pageTitle,
+      description: pageDesc,
+      canonicalPath: `${prefix}/about-project`,
+      locale: isFa ? 'fa_IR' : 'en_US',
+      language: isFa ? 'fa-IR' : 'en-US',
+      structuredData: [
         {
-          '@type': 'WebPage',
-          '@id': `${canonicalUrl}#webpage`,
-          url: canonicalUrl,
-          name: pageTitle,
-          description: pageDesc,
-          inLanguage: isFa ? 'fa-IR' : 'en-US',
-          isPartOf: { '@id': `${origin}/#website` },
-          about: { '@id': `${origin}/#organization` },
-        },
-        {
-          '@type': 'Organization',
-          '@id': `${origin}/#organization`,
-          name: 'کاغذ و باد | KaghazBaad',
-          url: origin,
-          logo: imageUrl,
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: isFa ? 'خانه' : 'Home', item: `https://kaghazobaad.ir${prefix || ''}/` },
+            { '@type': 'ListItem', position: 2, name: isFa ? 'شرح پروژه' : 'Project Description' },
+          ],
         },
         {
           '@type': 'FAQPage',
-          '@id': `${canonicalUrl}#faq`,
+          '@id': `${window.location.origin}${prefix}/about-project#faq`,
           mainEntity: faqs.map(({ faQ, enQ, faA, enA }) => ({
             '@type': 'Question',
             name: text(faQ, enQ),
@@ -184,25 +130,22 @@ export default function AboutProject() {
         },
       ],
     });
-    document.head.appendChild(structuredData);
-
-    return () => document.getElementById(structuredDataId)?.remove();
-  }, [isFa, pageTitle, pageDesc]);
+  }, [isFa, pageTitle, pageDesc, text]);
 
   return (
-    <main dir={dir} className="min-h-screen pb-16">
-      <section className="relative overflow-hidden border-b border-border/60 bg-gradient-to-br from-primary/10 via-background to-accent/10 py-14 md:py-20">
-        <div className="container mx-auto grid max-w-6xl gap-10 px-4 lg:grid-cols-[1.1fr_.9fr] lg:items-center lg:px-8">
-          <div className="text-center lg:text-start">
+    <main dir={dir} className="min-h-screen pb-16 bg-background">
+      <section className="kb-hero relative overflow-hidden border-b border-border/60 py-14 md:py-20">
+        <div className="container relative z-10 mx-auto grid max-w-6xl gap-10 px-4 lg:grid-cols-[1.1fr_.9fr] lg:items-center lg:px-8">
+          <div className="kb-hero-content text-center lg:text-start">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-background/70 px-3 py-1.5 text-xs text-primary shadow-sm">
               <Sparkles className="h-3.5 w-3.5" />
               {text('شرح پروژه و نقشهٔ محصول', 'Project brief and product blueprint')}
             </div>
             <h1 className="font-[IRANSharp] text-4xl font-bold tracking-tight md:text-6xl">
-              {text('کاغذ و باد', 'KaghazBaad')}
+              {text('دانشی که رها می‌شود تا پرواز کند', 'Knowledge released to take flight')}
             </h1>
             <p className="mt-4 text-xl font-semibold leading-9 text-foreground/85 md:text-2xl">
-              {text('نشر آکادمیک دوزبانه، با اسلایدهای کوتاه و کارگاه زنده', 'Bilingual academic publishing with concise slides and live workshops')}
+              {text('کاغذ · باد · بادبادک — نشر آکادمیک دوزبانه، با اسلایدهای کوتاه و کارگاه زنده', 'Paper · Wind · Kite — bilingual academic publishing with concise slides and live workshops')}
             </p>
             <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-muted-foreground lg:mx-0">
               {text('مقاله را از یک فایل دفن‌شده در PDF به اثری قابل مرور، قابل گفت‌وگو و قابل ادامه تبدیل می‌کنیم.', 'We turn the buried PDF into work that can be scanned, discussed and extended.')}
@@ -218,11 +161,11 @@ export default function AboutProject() {
               </Link>
             </div>
           </div>
-          <div className="glass-surface rounded-3xl border border-primary/15 p-6 shadow-soft md:p-8">
+          <div className="kb-hero-art glass-surface rounded-3xl border border-primary/15 p-6 shadow-soft md:p-8"><span className="kb-kite-line" aria-hidden="true" />
             <div className="mb-5 flex items-center gap-3 text-primary"><Target className="h-6 w-6" /><span className="font-semibold">{text('چرخهٔ کوتاه‌تر فهم', 'A shorter path to understanding')}</span></div>
             <div className="space-y-4">
               {[['۰۱', 'بنویس', 'Write', 'متن و چکیدهٔ روشن'], ['۰۲', 'بساز', 'Build', 'هر ایده در یک اسلاید'], ['۰۳', 'زنده کن', 'Make it live', 'پرسش، پاسخ و برگ افزوده']].map(([number, fa, en, sub]) => (
-                <div key={number} className="flex items-center gap-4 rounded-2xl bg-background/65 p-4">
+                <div key={number} className="kb-step-card flex items-center gap-4 rounded-2xl p-4">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 font-semibold text-primary">{number}</span>
                   <div><p className="font-semibold">{text(fa, en)}</p><p className="mt-1 text-sm text-muted-foreground">{text(sub, ['Clear text and abstract', 'One idea per slide', 'Questions, answers and addenda'][Number(number) - 1])}</p></div>
                 </div>
@@ -234,7 +177,7 @@ export default function AboutProject() {
 
       <section className="border-b border-border/50 bg-background/70 py-6">
         <div className="container mx-auto grid max-w-6xl gap-3 px-4 sm:grid-cols-2 lg:grid-cols-4 lg:px-8">
-          {trustItems.map(({ fa, en, icon: Icon }) => <div key={en} className="flex items-center gap-2 text-sm text-muted-foreground"><Icon className="h-4 w-4 shrink-0 text-primary" />{text(fa, en)}</div>)}
+          {trustItems.map(({ fa, en, icon: Icon }) => <div key={en} className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"><Icon className="h-4 w-4 shrink-0 text-primary" />{text(fa, en)}</div>)}
         </div>
       </section>
 
@@ -244,9 +187,9 @@ export default function AboutProject() {
           <div className="rounded-3xl border border-primary/20 bg-primary/5 p-7"><p className="mb-3 text-sm font-semibold text-primary">{text('راه‌حل', 'The solution')}</p><h2 className="font-[IRANSharp] text-2xl font-bold">{text('کاغذ و باد مقاله را به یک تجربهٔ کاملِ نشر، مرور و گفت‌وگو تبدیل می‌کند.', 'KaghazBaad turns an article into a complete publishing, review and discussion experience.')}</h2><ul className="mt-5 space-y-3 text-sm leading-7 text-muted-foreground">{['Deck اسلایدی برای مرور سریع و نقدپذیر', 'جلسهٔ زنده به‌عنوان پیوست مقاله، نه رویدادی جدا', 'دوزبانگی هم‌سطح برای فارسی و انگلیسی'].map((item, index) => <li key={item} className="flex gap-2"><CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-primary" />{text(item, ['A slide deck for quick review and critique', 'A live session as an article addendum, not a separate event', 'Equal bilingual structure for Persian and English'][index])}</li>)}</ul></div>
         </section>
 
-        <section><div className="mb-8 text-center"><p className="text-sm font-semibold text-primary">{text('چطور کار می‌کند؟', 'How it works')}</p><h2 className="mt-2 font-[IRANSharp] text-3xl font-bold">{text('سه گام از ایده تا گفت‌وگو', 'Three steps from idea to discussion')}</h2></div><div className="grid gap-5 md:grid-cols-3">{[['۰۱', 'بنویس', 'Write', 'متن، چکیده و برچسب‌ها را در دو زبان آماده کن.', 'Prepare text, abstract and tags in both languages.'], ['۰۲', 'بساز', 'Build', 'هر اسلاید را به یک ادعا و دلیل روشن اختصاص بده.', 'Give each slide one clear claim and reason.'], ['۰۳', 'زنده کن', 'Make it live', 'کارگاه پرسش‌وپاسخ را برگزار کن و خروجی را به مقاله برگردان.', 'Host a Q&A workshop and return its output to the article.']].map(([number, faTitle, enTitle, faBody, enBody]) => <div key={number} className="rounded-2xl border border-border/70 bg-card/50 p-6"><span className="text-sm font-bold text-primary">{number}</span><h3 className="mt-4 text-xl font-bold">{text(faTitle, enTitle)}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{text(faBody, enBody)}</p></div>)}</div></section>
+        <section><div className="mb-8 text-center"><p className="text-sm font-semibold text-primary">{text('چطور کار می‌کند؟', 'How it works')}</p><h2 className="mt-2 font-[IRANSharp] text-3xl font-bold">{text('سه گام از ایده تا گفت‌وگو', 'Three steps from idea to discussion')}</h2></div><div className="grid gap-5 md:grid-cols-3">{[['۰۱', 'بنویس', 'Write', 'متن، چکیده و برچسب‌ها را در دو زبان آماده کن.', 'Prepare text, abstract and tags in both languages.'], ['۰۲', 'بساز', 'Build', 'هر اسلاید را به یک ادعا و دلیل روشن اختصاص بده.', 'Give each slide one clear claim and reason.'], ['۰۳', 'زنده کن', 'Make it live', 'کارگاه پرسش‌وپاسخ را برگزار کن و خروجی را به مقاله برگردان.', 'Host a Q&A workshop and return its output to the article.']].map(([number, faTitle, enTitle, faBody, enBody]) => <div key={number} className="kb-step-card rounded-2xl p-6"><span className="text-sm font-bold text-primary">{number}</span><h3 className="mt-4 text-xl font-bold">{text(faTitle, enTitle)}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{text(faBody, enBody)}</p></div>)}</div></section>
 
-        <section><div className="mb-8"><p className="text-sm font-semibold text-primary">{text('مزیت‌ها', 'Benefits')}</p><h2 className="mt-2 font-[IRANSharp] text-3xl font-bold">{text('نتیجه برای کاربر، نه فهرست فیچرها', 'Outcomes, not a feature list')}</h2></div><div className="grid gap-5 sm:grid-cols-2">{featureItems.map(({ faTitle, enTitle, faBody, enBody, icon: Icon }) => <div key={enTitle} className="rounded-2xl border border-border/70 bg-card/50 p-6"><Icon className="h-6 w-6 text-primary" /><h3 className="mt-4 text-lg font-bold">{text(faTitle, enTitle)}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{text(faBody, enBody)}</p></div>)}</div></section>
+        <section><div className="mb-8"><p className="text-sm font-semibold text-primary">{text('مزیت‌ها', 'Benefits')}</p><h2 className="mt-2 font-[IRANSharp] text-3xl font-bold">{text('نتیجه برای کاربر، نه فهرست فیچرها', 'Outcomes, not a feature list')}</h2></div><div className="grid gap-5 sm:grid-cols-2">{featureItems.map(({ faTitle, enTitle, faBody, enBody, icon: Icon }) => <div key={enTitle} className="kb-step-card rounded-2xl p-6"><Icon className="h-6 w-6 text-primary" /><h3 className="mt-4 text-lg font-bold">{text(faTitle, enTitle)}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{text(faBody, enBody)}</p></div>)}</div></section>
 
         <section><div className="mb-8 text-center"><p className="text-sm font-semibold text-primary">{text('برای چه کسانی؟', 'For whom?')}</p><h2 className="mt-2 font-[IRANSharp] text-3xl font-bold">{text('یک فضای کوچک برای پیوندهای باکیفیت', 'A small space for high-quality connections')}</h2></div><div className="grid gap-5 md:grid-cols-3">{audiences.map(({ faTitle, enTitle, faBody, enBody, icon: Icon }) => <div key={enTitle} className="rounded-2xl border border-border/70 p-6 text-center"><Icon className="mx-auto h-7 w-7 text-primary" /><h3 className="mt-4 font-bold">{text(faTitle, enTitle)}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{text(faBody, enBody)}</p></div>)}</div></section>
 

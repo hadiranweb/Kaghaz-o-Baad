@@ -308,3 +308,142 @@
     transform: none;
   }
 }
+
+
+/* === KaghazBaad creative presentation layer === */
+:root {
+  --kb-paper-white: #faf9f6;
+  --kb-paper-warm: #f5f0e8;
+  --kb-paper-edge: #e8e0d0;
+  --kb-wind-light: #dbeafe;
+  --kb-wind-mid: #93c5fd;
+  --kb-wind-mark: #3b82f6;
+  --kb-ink-heavy: #1c1917;
+  --kb-ink-mid: #57534e;
+  --kb-ink-light: #a8a29e;
+  --kb-ease-wind: cubic-bezier(0.23, 1, 0.32, 1);
+  --kb-ease-paper: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.kb-hero {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 12% 18%, hsl(var(--primary) / 0.12), transparent 30%),
+    radial-gradient(circle at 88% 80%, hsl(var(--secondary) / 0.12), transparent 28%),
+    linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--card)) 100%);
+}
+
+.kb-hero::before,
+.kb-hero::after {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: '';
+}
+
+.kb-hero::before {
+  z-index: -2;
+  opacity: 0.32;
+  background-image:
+    radial-gradient(hsl(var(--foreground) / 0.11) 0.7px, transparent 0.7px),
+    radial-gradient(hsl(var(--primary) / 0.08) 0.6px, transparent 0.6px);
+  background-position: 0 0, 11px 13px;
+  background-size: 19px 19px, 23px 23px;
+  mix-blend-mode: multiply;
+}
+
+.kb-hero::after {
+  z-index: -1;
+  opacity: 0.35;
+  background: repeating-linear-gradient(115deg, transparent 0 70px, hsl(var(--primary) / 0.09) 71px 72px, transparent 73px 150px);
+  transform: translateX(-8%);
+  animation: kb-wind-drift 18s linear infinite;
+}
+
+.kb-hero-content {
+  animation: kb-rise-in 0.9s var(--kb-ease-wind) both;
+}
+
+.kb-hero-art {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, hsl(var(--card) / 0.88), hsl(var(--background) / 0.68));
+}
+
+.kb-hero-art::before {
+  position: absolute;
+  width: 18rem;
+  height: 18rem;
+  border: 1px solid hsl(var(--primary) / 0.2);
+  border-radius: 999px;
+  content: '';
+  inset: auto -5rem -8rem auto;
+  animation: kb-orbit 22s linear infinite;
+}
+
+.kb-kite-line {
+  position: absolute;
+  inset-inline-start: 16%;
+  top: 8%;
+  width: 1px;
+  height: 84%;
+  background: linear-gradient(to bottom, transparent, hsl(var(--primary) / 0.24), transparent);
+  transform: rotate(14deg);
+  transform-origin: center;
+}
+
+.kb-step-card {
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--background) / 0.62);
+  box-shadow: 0 12px 32px -20px hsl(var(--foreground) / 0.35);
+  transition: transform 360ms var(--kb-ease-paper), box-shadow 360ms var(--kb-ease-wind), border-color 360ms ease;
+}
+
+.kb-step-card:hover,
+.kb-step-card:focus-within {
+  border-color: hsl(var(--primary) / 0.32);
+  box-shadow: 0 18px 36px -20px hsl(var(--primary) / 0.34);
+  transform: translateY(-4px);
+}
+
+.kb-section-label {
+  color: hsl(var(--primary));
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@keyframes kb-wind-drift {
+  from { transform: translate3d(-8%, 0, 0); }
+  to { transform: translate3d(8%, 0, 0); }
+}
+
+@keyframes kb-rise-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes kb-orbit {
+  from { transform: rotate(0deg) translateX(16px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(16px) rotate(-360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-hero::after,
+  .kb-hero-content,
+  .kb-hero-art::before {
+    animation: none;
+  }
+
+  .kb-step-card {
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .kb-hero::after,
+  .kb-kite-line {
+    display: none;
+  }
+}

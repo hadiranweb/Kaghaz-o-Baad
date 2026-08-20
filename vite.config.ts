@@ -10,6 +10,18 @@ export default defineConfig(({ mode }) => ({
     allowedHosts: true,
   },
   plugins: [react()].filter(Boolean),
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/pdfjs-dist')) return 'pdf-vendor';
+          if (id.includes('node_modules/@livekit') || id.includes('node_modules/livekit-client')) return 'livekit-vendor';
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) return 'react-vendor';
+          return undefined;
+        },
+      },
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
