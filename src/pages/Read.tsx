@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link, useSearchParams } from 'react-router-dom';
-import { BookOpen, Calendar, Loader2, Search, X } from 'lucide-react';
+import { ArrowUpRight, BookOpen, Calendar, Grid2X2, List, Loader2, Search, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { listPublicArticles, listPublicProfiles, publishArticle } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
@@ -53,6 +53,7 @@ export default function Read() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'published' | 'draft' | 'all'>('published');
+  const [viewMode, setViewMode] = useState<'shelf' | 'grid' | 'list'>('shelf');
 
   const loadInitial = useCallback(async () => {
     setLoading(true);
@@ -194,6 +195,33 @@ export default function Read() {
           )}
         </div>
 
+        {!loading && (
+          <div className="kb-archive-toolbar mb-8 flex flex-wrap items-center justify-between gap-4" aria-label={locale === 'fa' ? 'تنظیمات نمایش آرشیو' : 'Archive display settings'}>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <BookOpen className="h-4 w-4 text-primary" />
+              <span>{locale === 'fa' ? 'قفسهٔ مقالات' : 'Article shelf'}</span>
+            </div>
+            <div className="inline-flex rounded-xl border border-border/60 bg-card/50 p-1" role="group" aria-label={locale === 'fa' ? 'حالت نمایش' : 'View mode'}>
+              {[
+                { id: 'shelf' as const, labelFa: 'قفسه', labelEn: 'Shelf', Icon: BookOpen },
+                { id: 'grid' as const, labelFa: 'شبکه', labelEn: 'Grid', Icon: Grid2X2 },
+                { id: 'list' as const, labelFa: 'فهرست', labelEn: 'List', Icon: List },
+              ].map(({ id, labelFa, labelEn, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={viewMode === id}
+                  onClick={() => setViewMode(id)}
+                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring ${viewMode === id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {locale === 'fa' ? labelFa : labelEn}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Loading State */}
         {loading && (
           <div className="flex justify-center items-center py-12">
@@ -204,25 +232,31 @@ export default function Read() {
         {/* Articles Grid */}
         {!loading && articles && articles.length > 0 && (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`kb-archive-grid kb-archive-${viewMode}`}>
               {articles.map((article) => {
                 const isUserArticle = user && article.author_id === user.id;
                 const authProfile = article.author_id ? authors[article.author_id] : undefined;
                 return (
                   <Card 
                     key={article.id} 
-                    className={`group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
+                    className={`kb-archive-card group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
                       isUserArticle ? 'ring-1 ring-accent/30' : ''
                     }`}
                   >
-                    <div className={`h-48 bg-gradient-to-br relative overflow-hidden ${
+                    <div className={`kb-book-cover h-48 bg-gradient-to-br relative overflow-hidden ${
                       isUserArticle 
                         ? 'from-accent/15 via-secondary to-card' 
                         : 'from-secondary via-card to-background'
                     }`}>
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <BookOpen className="h-16 w-16 text-primary/20 group-hover:scale-110 transition-transform" />
-                      </div>
+                      {article.cover_url ? (
+                        <img src={article.cover_url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" loading="lazy" />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <BookOpen className="h-16 w-16 text-primary/20 group-hover:scale-110 transition-transform" />
+                        </div>
+                      )}
+                      <span className="kb-book-spine" aria-hidden="true" />
+                      <span className="kb-book-edition" aria-hidden="true">KB / {new Date(article.published_at || article.created_at).getFullYear()}</span>
                       {isUserArticle && (
                         <div className="absolute top-2 right-2">
                           <Badge variant="default" className="bg-accent text-accent-foreground">
@@ -295,6 +329,7 @@ export default function Read() {
                         <Button variant="ghost-ios" asChild className="w-full">
                           <Link to={`/read/${article.slug}`}>
                             {locale === 'fa' ? 'مطالعه مقاله' : 'Read Article'}
+                            <ArrowUpRight className="ms-2 h-4 w-4" />
                           </Link>
                         </Button>
                       )}
