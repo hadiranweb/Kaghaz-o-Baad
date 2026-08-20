@@ -151,5 +151,7 @@ jobs:
             exit 1
           fi
 
-# Deployment is intentionally not automatic. Liara or Single Server deployment
-# requires a human-reviewed environment, database URL, callback URL and secrets.
+# Continuous deployment contract:
+# - Pull requests run validation only; production deployment is skipped.
+# - A successful push to main runs the deploy job automatically.
+# - Liara credentials and production environment values remain in GitHub/Liara secrets.
