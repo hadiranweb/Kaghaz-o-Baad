@@ -1,8 +1,8 @@
-import { useLanguage } from '@/contexts/LanguageContext';
 import { BrainAnimation } from '@/components/BrainAnimation';
 import { ArrowUpRight, BookOpen, Search } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { backendRequest } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 
