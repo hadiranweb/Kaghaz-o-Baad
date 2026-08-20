@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import {
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { setSeoMetadata } from '@/lib/seo';
+import { PaperWindHero } from '@/components/creative/PaperWindHero';
 
 type Icon = typeof FileText;
 
@@ -95,6 +96,15 @@ export default function AboutProject() {
   const isFa = locale === 'fa';
   const dir = isFa ? 'rtl' : 'ltr';
   const text = useCallback((fa: string, en: string) => (isFa ? fa : en), [isFa]);
+  const [reducedMotion, setReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReducedMotion(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
 
   const pageTitle = text('شرح پروژه — کاغذ و باد', 'Project Description — KaghazBaad');
   const pageDesc = text(
@@ -161,13 +171,18 @@ export default function AboutProject() {
               </Link>
             </div>
           </div>
-          <div className="kb-hero-art glass-surface rounded-3xl border border-primary/15 p-6 shadow-soft md:p-8"><span className="kb-kite-line" aria-hidden="true" />
+          <div className="kb-hero-art glass-surface rounded-3xl border border-primary/15 p-6 shadow-soft md:p-8">
+            <PaperWindHero reducedMotion={reducedMotion} />
             <div className="mb-5 flex items-center gap-3 text-primary"><Target className="h-6 w-6" /><span className="font-semibold">{text('چرخهٔ کوتاه‌تر فهم', 'A shorter path to understanding')}</span></div>
             <div className="space-y-4">
-              {[['۰۱', 'بنویس', 'Write', 'متن و چکیدهٔ روشن'], ['۰۲', 'بساز', 'Build', 'هر ایده در یک اسلاید'], ['۰۳', 'زنده کن', 'Make it live', 'پرسش، پاسخ و برگ افزوده']].map(([number, fa, en, sub]) => (
+              {[
+                ['۰۱', 'بنویس', 'Write', 'متن و چکیدهٔ روشن', 'Clear text and abstract'],
+                ['۰۲', 'بساز', 'Build', 'هر ایده در یک اسلاید', 'One idea per slide'],
+                ['۰۳', 'زنده کن', 'Make it live', 'پرسش، پاسخ و برگ افزوده', 'Questions, answers and addenda'],
+              ].map(([number, fa, en, faSub, enSub]) => (
                 <div key={number} className="kb-step-card flex items-center gap-4 rounded-2xl p-4">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 font-semibold text-primary">{number}</span>
-                  <div><p className="font-semibold">{text(fa, en)}</p><p className="mt-1 text-sm text-muted-foreground">{text(sub, ['Clear text and abstract', 'One idea per slide', 'Questions, answers and addenda'][Number(number) - 1])}</p></div>
+                  <div><p className="font-semibold">{text(fa, en)}</p><p className="mt-1 text-sm text-muted-foreground">{text(faSub, enSub)}</p></div>
                 </div>
               ))}
             </div>

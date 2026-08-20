@@ -447,3 +447,111 @@
     display: none;
   }
 }
+
+
+.kb-paper-wind-hero {
+  position: relative;
+  min-height: 15rem;
+  overflow: hidden;
+  isolation: isolate;
+  --wind-x: 0px;
+  --wind-y: 0px;
+  background:
+    radial-gradient(circle at 76% 24%, hsl(var(--primary) / 0.14), transparent 24%),
+    linear-gradient(145deg, hsl(var(--background) / 0.4), hsl(var(--card) / 0.28));
+}
+
+.kb-paper-wind-hero::before {
+  position: absolute;
+  z-index: 0;
+  inset: 12% 8%;
+  border: 1px solid hsl(var(--primary) / 0.15);
+  border-radius: 48% 52% 46% 54%;
+  content: '';
+  transform: translate3d(var(--wind-x), var(--wind-y), 0) rotate(-8deg);
+  transition: transform 900ms var(--kb-ease-wind);
+}
+
+.kb-paper {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  width: 2rem;
+  height: 2.8rem;
+  border: 1px solid hsl(var(--foreground) / 0.12);
+  background: linear-gradient(135deg, hsl(var(--background) / 0.86), hsl(var(--primary) / 0.13));
+  box-shadow: 0 14px 24px -18px hsl(var(--foreground) / 0.6);
+  opacity: 0.68;
+  transform: translate3d(calc(var(--wind-x) * 0.35), calc(var(--wind-y) * 0.35), 0) rotate(-16deg);
+  transition: transform 700ms var(--kb-ease-wind);
+}
+
+.kb-paper-one { inset: 20% auto auto 14%; }
+.kb-paper-two { inset: auto 22% 14% auto; width: 1.5rem; height: 2.2rem; transform: translate3d(calc(var(--wind-x) * -0.25), calc(var(--wind-y) * -0.25), 0) rotate(24deg); }
+.kb-paper-three { inset: 12% 38% auto auto; width: 1.1rem; height: 1.7rem; opacity: 0.46; transform: translate3d(calc(var(--wind-x) * 0.6), calc(var(--wind-y) * 0.6), 0) rotate(42deg); }
+
+.kb-wind-ring {
+  position: absolute;
+  border: 1px solid hsl(var(--primary) / 0.18);
+  border-inline-start-color: transparent;
+  border-radius: 999px;
+  transform: translate3d(var(--wind-x), var(--wind-y), 0) rotate(-18deg);
+  transition: transform 900ms var(--kb-ease-wind);
+}
+
+.kb-wind-ring-one { inset: 18% 10% auto auto; width: 8rem; height: 4rem; }
+.kb-wind-ring-two { inset: 42% 4% auto auto; width: 11rem; height: 5rem; opacity: 0.6; }
+
+.kb-kite-mark {
+  position: absolute;
+  inset: 20% 18% auto auto;
+  width: 4.4rem;
+  height: 4.4rem;
+  transform: translate3d(calc(var(--wind-x) * 0.8), calc(var(--wind-y) * 0.8), 0) rotate(45deg);
+  transition: transform 900ms var(--kb-ease-wind);
+}
+
+.kb-kite-body {
+  position: absolute;
+  inset: 0.5rem;
+  border: 1px solid hsl(var(--primary) / 0.5);
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.24), hsl(var(--secondary) / 0.22));
+}
+
+.kb-kite-tail {
+  position: absolute;
+  top: 4rem;
+  left: 2.05rem;
+  width: 1px;
+  height: 7rem;
+  background: linear-gradient(to bottom, hsl(var(--primary) / 0.55), transparent);
+  transform: rotate(-18deg);
+  transform-origin: top;
+}
+
+.kb-wind-caption {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.25rem;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kb-paper-wind-hero::before,
+  .kb-paper,
+  .kb-wind-ring,
+  .kb-kite-mark {
+    transform: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .kb-paper-wind-hero { min-height: 12rem; }
+  .kb-kite-mark { inset-inline-end: 12%; transform: scale(0.78) rotate(45deg); }
+  .kb-wind-ring-two { display: none; }
+  .kb-wind-caption { right: 1rem; bottom: 0.75rem; font-size: 0.54rem; }
+}
