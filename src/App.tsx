@@ -23,6 +23,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const CompleteProfile = lazy(() => import("./pages/CompleteProfile"));
 const AboutProject = lazy(() => import("./pages/AboutProject"));
+const Contact = lazy(() => import("./pages/Contact"));
 const Community = lazy(() => import("./pages/Community"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const LiveSessions = lazy(() => import("./pages/LiveSessions"));
@@ -68,10 +69,13 @@ const App = () => (
                     <Route path="/en/media" element={<LocalizedRoute locale="en"><PublicSeoRoute page="media"><Media /></PublicSeoRoute></LocalizedRoute>} />
                     <Route path="/about" element={<PublicSeoRoute page="about"><About /></PublicSeoRoute>} />
                     <Route path="/about-project" element={<AboutProject />} />
+                    <Route path="/contact" element={<PublicSeoRoute page="contact"><Contact /></PublicSeoRoute>} />
                     <Route path="/fa/about" element={<LocalizedRoute locale="fa"><PublicSeoRoute page="about"><About /></PublicSeoRoute></LocalizedRoute>} />
                     <Route path="/en/about" element={<LocalizedRoute locale="en"><PublicSeoRoute page="about"><About /></PublicSeoRoute></LocalizedRoute>} />
                     <Route path="/fa/about-project" element={<LocalizedRoute locale="fa"><AboutProject /></LocalizedRoute>} />
                     <Route path="/en/about-project" element={<LocalizedRoute locale="en"><AboutProject /></LocalizedRoute>} />
+                    <Route path="/fa/contact" element={<LocalizedRoute locale="fa"><PublicSeoRoute page="contact"><Contact /></PublicSeoRoute></LocalizedRoute>} />
+                    <Route path="/en/contact" element={<LocalizedRoute locale="en"><PublicSeoRoute page="contact"><Contact /></PublicSeoRoute></LocalizedRoute>} />
                     <Route path="/community" element={<SeoGuard><Community /></SeoGuard>} />
                     <Route path="/auth" element={<SeoGuard><Auth /></SeoGuard>} />
                     <Route path="/dashboard" element={<SeoGuard><Dashboard /></SeoGuard>} />
