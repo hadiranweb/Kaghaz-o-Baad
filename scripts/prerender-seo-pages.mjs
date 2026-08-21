@@ -91,6 +91,7 @@ const pages = [
   { path: '/', fa: ['کاغذ و باد | پلتفرم نشر آکادمیک', 'پلتفرم دوزبانهٔ نشر آکادمیک، اسلایدهای کوتاه و گفت‌وگوی زنده با نویسنده.'], en: ['KaghazBaad | Academic publishing platform', 'A bilingual academic publishing platform for concise works and live discussion.'] },
   { path: '/about', fa: ['دربارهٔ کاغذ و باد', 'آشنایی با بستر دوزبانهٔ نشر آکادمیک و گفت‌وگوی پس از انتشار.'], en: ['About KaghazBaad', 'Learn about the bilingual academic publishing and post-publication discussion platform.'] },
   { path: '/about-project', fa: ['شرح پروژه — کاغذ و باد', 'کاغذ و باد؛ بستر نشر آکادمیک دوزبانه، اسلایدهای کوتاه و گفت‌وگوی زنده با نویسنده.'], en: ['Project Description — KaghazBaad', 'KaghazBaad is a bilingual academic publishing platform for concise slides and live discussion.'] },
+  { path: '/contact', fa: ['تماس با ما — کاغذ و باد', 'راه‌های ارتباط با تیم کاغذ و باد برای همکاری، پشتیبانی و درخواست دسترسی.'], en: ['Contact — KaghazBaad', 'Contact KaghazBaad for collaboration, support and access requests.'] },
   { path: '/read', fa: ['مقالات — کاغذ و باد', 'مقالات آکادمیک دوزبانه را بخوانید و وارد گفت‌وگوی پیرامون آن‌ها شوید.'], en: ['Read — KaghazBaad', 'Read bilingual academic articles and join the conversation around them.'] },
   { path: '/media', fa: ['رسانه — کاغذ و باد', 'رسانه‌ها و ارائه‌های مرتبط با آثار منتشرشده در کاغذ و باد.'], en: ['Media — KaghazBaad', 'Media and presentations connected to works published on KaghazBaad.'] },
 ];
