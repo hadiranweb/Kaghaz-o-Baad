@@ -1,8 +1,6 @@
-import { useEffect } from 'react';
 import { Mail, MessageCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { setSeoMetadata } from '@/lib/seo';
 
 export default function Contact() {
   const { locale } = useLanguage();
@@ -10,29 +8,6 @@ export default function Contact() {
   const dir = isFa ? 'rtl' : 'ltr';
   const text = (fa: string, en: string) => (isFa ? fa : en);
 
-  useEffect(() => {
-    setSeoMetadata({
-      title: text('تماس با ما — کاغذ و باد', 'Contact — KaghazBaad'),
-      description: text(
-        'راه‌های ارتباط با تیم کاغذ و باد برای همکاری، پشتیبانی و درخواست دسترسی.',
-        'Contact KaghazBaad for collaboration, support and access requests.',
-      ),
-      canonicalPath: `${window.location.pathname.replace(/\/$/, '') || '/contact'}`,
-      locale: isFa ? 'fa_IR' : 'en_US',
-      language: isFa ? 'fa-IR' : 'en-US',
-      structuredData: [
-        {
-          '@type': 'ContactPage',
-          mainEntity: {
-            '@type': 'Organization',
-            name: 'کاغذ و باد | KaghazBaad',
-            url: 'https://kaghazobaad.ir',
-            email: 'mailto:hadiranweb@kaghazobaad.ir',
-          },
-        },
-      ],
-    });
-  }, [isFa]);
 
   const Arrow = isFa ? ArrowLeft : ArrowRight;
 
