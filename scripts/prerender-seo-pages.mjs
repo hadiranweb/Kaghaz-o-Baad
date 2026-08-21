@@ -43,6 +43,7 @@ function headFor({ path, title, description, locale = 'fa_IR', type = 'website',
   const tags = [
     `<title>${escapeHtml(title)}</title>`,
     `<meta name="description" content="${escapeHtml(description)}" />`,
+    `<meta name="enamad" content="9539854" />`,
     `<meta name="robots" content="index,follow,max-image-preview:large" />`,
     `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
     `<link rel="alternate" hreflang="fa" href="${escapeHtml(`${origin}${normalizePath(localizedPath(normalizedPath.replace(/^\/(fa|en)/, '') || '/', 'fa'))}`)}" />`,
