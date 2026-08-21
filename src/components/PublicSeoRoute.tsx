@@ -2,7 +2,7 @@ import { ReactNode, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { setSeoMetadata } from '@/lib/seo';
 
-type PublicPage = 'home' | 'about' | 'read' | 'media';
+type PublicPage = 'home' | 'about' | 'read' | 'media' | 'contact';
 
 const copy: Record<PublicPage, { fa: [string, string]; en: [string, string] }> = {
   home: {
@@ -20,6 +20,10 @@ const copy: Record<PublicPage, { fa: [string, string]; en: [string, string] }> =
   media: {
     fa: ['رسانه — کاغذ و باد', 'رسانه‌ها و ارائه‌های مرتبط با آثار منتشرشده در کاغذ و باد.'],
     en: ['Media — KaghazBaad', 'Media and presentations connected to works published on KaghazBaad.'],
+  },
+  contact: {
+    fa: ['تماس با ما — کاغذ و باد', 'راه‌های ارتباط با تیم کاغذ و باد برای همکاری، پشتیبانی و درخواست دسترسی.'],
+    en: ['Contact — KaghazBaad', 'Contact KaghazBaad for collaboration, support and access requests.'],
   },
 };
 
