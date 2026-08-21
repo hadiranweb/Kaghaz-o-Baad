@@ -189,8 +189,8 @@ export default function ArticleSlides() {
           </h1>
         </div>
         
-        <Button variant="ghost" size="icon" onClick={() => navigate('/read')} className="text-reading-muted hover:text-reading-fg">
-          <X className="h-4 w-4" />
+        <Button variant="ghost" size="icon" onClick={() => navigate('/read')} className="text-reading-muted hover:text-reading-fg" aria-label={locale === 'fa' ? 'بازگشت به مقالات' : 'Back to articles'} title={locale === 'fa' ? 'بازگشت به مقالات' : 'Back to articles'}>
+          <X className="h-4 w-4" aria-hidden="true" />
         </Button>
       </div>
 
@@ -199,7 +199,7 @@ export default function ArticleSlides() {
         <div className="flex-1 relative overflow-hidden cursor-default" onClick={handleSlideClick}>
           {/* Content */}
           <div className="absolute inset-0 flex items-center justify-center p-8 md:p-16 lg:p-24">
-            <div className="max-w-3xl w-full" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
+            <div key={currentSlide} className="creative-page-turn max-w-3xl w-full" dir={locale === 'fa' ? 'rtl' : 'ltr'} aria-live="polite">
               {((locale === 'fa' && slide.title_fa) || (locale === 'en' && slide.title_en)) && (
                 <h2 className="text-2xl md:text-4xl font-semibold mb-8 text-reading-fg leading-relaxed">
                   {locale === 'fa' ? slide.title_fa : slide.title_en}
@@ -233,11 +233,11 @@ export default function ArticleSlides() {
 
       {/* Progress Bar - very subtle */}
       {hasSlides && (
-        <div className="h-0.5 bg-reading-fg/5 shrink-0">
-          <div
-            className="h-full bg-reading-fg/20 transition-all duration-500 ease-out"
-            style={{ width: `${((currentSlide + 1) / articleData.slides.length) * 100}%` }}
-          />
+        <div className="flex items-center gap-4 border-t border-reading-fg/5 px-6 py-2 text-xs text-reading-muted" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
+          <span>{locale === 'fa' ? `اسلاید ${currentSlide + 1} از ${articleData.slides.length}` : `Slide ${currentSlide + 1} of ${articleData.slides.length}`}</span>
+          <div className="h-0.5 flex-1 bg-reading-fg/5" role="progressbar" aria-valuemin={1} aria-valuemax={articleData.slides.length} aria-valuenow={currentSlide + 1} aria-label={locale === 'fa' ? 'پیشرفت اسلایدها' : 'Slide progress'}>
+            <div className="h-full bg-reading-fg/30 transition-all duration-500 ease-out" style={{ width: `${((currentSlide + 1) / articleData.slides.length) * 100}%` }} />
+          </div>
         </div>
       )}
 

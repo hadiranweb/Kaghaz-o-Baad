@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { listPublicArticles, listPublicProfiles, publishArticle } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 import { useCallback, useEffect, useState } from 'react';
+import { RevealOnScroll } from '@/components/creative';
 
 interface AuthorProfile {
   id: string;
@@ -196,19 +197,21 @@ export default function Read() {
 
         {/* Loading State */}
         {loading && (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="mx-auto flex max-w-xl flex-col items-center justify-center gap-3 rounded-3xl border border-border/60 bg-card/40 py-16 text-center" role="status" aria-live="polite">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">{locale === 'fa' ? 'در حال آماده‌سازی آرشیو مقالات…' : 'Preparing the article archive…'}</p>
           </div>
         )}
 
         {/* Articles Grid */}
         {!loading && articles && articles.length > 0 && (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {articles.map((article) => {
                 const isUserArticle = user && article.author_id === user.id;
                 const authProfile = article.author_id ? authors[article.author_id] : undefined;
                 return (
+                  <RevealOnScroll key={article.id} as="article" className="h-full">
                   <Card 
                     key={article.id} 
                     className={`group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
@@ -300,6 +303,7 @@ export default function Read() {
                       )}
                     </CardContent>
                   </Card>
+                  </RevealOnScroll>
                 );
               })}
             </div>
@@ -329,11 +333,14 @@ export default function Read() {
 
         {/* Empty State */}
         {!loading && articles && articles.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            {searchQuery
-              ? (locale === 'fa' ? `نتیجه‌ای برای "${searchQuery}" پیدا نشد` : `No results found for "${searchQuery}"`)
-              : (locale === 'fa' ? 'هنوز مقاله‌ای در این دسته وجود ندارد' : 'No articles in this category yet')
-            }
+          <div className="mx-auto max-w-2xl rounded-[2rem] border border-primary/20 bg-primary/5 px-6 py-14 text-center">
+            <BookOpen className="mx-auto h-10 w-10 text-primary/70" aria-hidden="true" />
+            <h2 className="mt-5 text-2xl font-bold">{searchQuery ? (locale === 'fa' ? `نتیجه‌ای برای «${searchQuery}» پیدا نشد` : `No results found for “${searchQuery}”`) : (locale === 'fa' ? 'آرشیو مقاله‌ها هنوز در حال شکل‌گیری است' : 'The article archive is still taking shape')}</h2>
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-muted-foreground">{searchQuery ? (locale === 'fa' ? 'عبارت دیگری را امتحان کنید یا همهٔ مقاله‌ها را ببینید.' : 'Try another search or browse all articles.') : (locale === 'fa' ? 'در این فاصله با مسیر انتشار و ایدهٔ کاغذ و باد آشنا شوید.' : 'In the meantime, learn about the publishing path and the idea behind KaghazBaad.')}</p>
+            <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+              {searchQuery && <Button variant="outline" onClick={clearSearch}>{locale === 'fa' ? 'نمایش همهٔ مقالات' : 'Browse all articles'}</Button>}
+              <Button variant="ghost-ios" asChild><Link to="/about-project">{locale === 'fa' ? 'شرح پروژه' : 'About the project'}</Link></Button>
+            </div>
           </div>
         )}
       </div>

@@ -44,3 +44,11 @@
 ## gateهای بعدی
 
 پیش از page-turn و WebGL باید `Read.tsx`، `ArticleSlides.tsx` و mobile/RTL behavior با دادهٔ واقعی بررسی شوند. build production موفق است و lint فایل‌های جدید بدون خطا اجرا شده است؛ lint کل repository همچنان خطاهای pre-existing در فایل‌های قدیمی دارد و نباید به‌عنوان regression این branch تلقی شود.
+
+## Verification checkpoint — ۲۱ اوت ۲۰۲۶
+
+- Home در preview محلی با hero دوزبانه، CTAها، search label، search button، کارت‌های مقالات/اسلاید/پخش زنده و ذرات bounded رندر شد.
+- Archive در preview محلی loading state جدید را با role=status نشان داد. در لحظهٔ بررسی درخواست backend هنوز در حالت loading بود؛ empty state کدنویسی و build شده است اما به‌دلیل پاسخ محیط preview، رندر نهایی آن در همین checkpoint دیده نشد.
+- Console فقط warningهای Future Flag مربوط به React Router داشت؛ خطای runtime جدید مشاهده نشد.
+- lint فایل‌های جدید و تغییرکردهٔ Home/Read موفق است. lint کل repository همچنان خطاهای پیشین در فایل‌های قدیمی دارد.
+- production build موفق است؛ هشدارهای chunk بزرگ از baseline پروژه باقی مانده‌اند و در hardening باید جداگانه بررسی شوند.
