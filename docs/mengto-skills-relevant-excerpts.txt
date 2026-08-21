@@ -1,0 +1,2574 @@
+===== agent-skills/web-design/landing-page/SKILL.md =====
+---
+name: landing-page
+description: Use when designing or rewriting a high-converting landing page (single-offer page) for SaaS/apps/services. Covers structure, layout patterns, conversion strategies, copywriting, SEO/AEO, and common pitfalls.
+---
+
+# Landing Page (High‑Conversion) — Web Design Skill
+
+A landing page is not a homepage.
+A homepage serves multiple intents.
+A landing page wins one intent: **one offer → one audience → one primary action**.
+
+## Before you design/write
+Gather (ask if missing):
+
+### 1) Page purpose
+- What is the ONE primary action? (trial, demo, buy, waitlist, download)
+- What’s the offer? (exactly what do they get?)
+- What counts as conversion? (click, signup, purchase)
+
+### 2) Audience + context
+- Who is the ICP?
+- What problem are they trying to solve?
+- Top 3 objections (why they don’t convert today)
+- Traffic source: ads / search / social / email
+- What do visitors already know when they land?
+
+### 3) Proof + assets
+- Any proof points: logos, testimonials, numbers, case studies
+- Screenshots, demo video, product GIFs
+- Guarantees / refund / cancellation terms
+
+### 4) Constraints
+- Brand voice: casual vs professional
+- Design direction: minimal editorial vs playful 3D vs glass UI
+- Mobile priority?
+
+---
+
+## Core structure (what it should include)
+
+### Above the fold (must)
+1) **Headline** (outcome + audience)
+2) **Subheadline** (clarifies “how” + adds specificity)
+3) **Primary CTA** (clear verb + what they get)
+4) **One proof signal** (logo strip / stat / short testimonial)
+5) **Hero visual** (product screenshot/video) *or* a strong illustration
+
+### Mid page (argument)
+6) **Problem → solution** (1 section)
+7) **Benefits** (3–5, outcome-driven)
+8) **How it works** (3 steps)
+9) **Social proof** (testimonials/case study)
+
+### Bottom (objection handling)
+10) **FAQ** (6–12 Q/A)
+11) **Risk reversal** (trial, cancel anytime, guarantee)
+12) **Final CTA** (same as top)
+
+---
+
+## Layout types (pick one)
+
+### A) Classic hero + sections (most common)
+Best when:
+- product is understandable with a hero screenshot
+
+### B) Long-form story (sales page)
+Best when:
+- you need to educate + overcome skepticism
+
+### C) Minimal conversion page
+Best when:
+- high-intent traffic (email → known users)
+- short offer (download, waitlist)
+
+### D) Comparison landing page
+Best when:
+- search intent includes alternatives (“X vs Y”, “best for…”)—usually paired with SEO pages
+
+---
+
+## High‑conversion strategies (practical)
+
+### 1) Match message to source
+If traffic is from ads:
+- mirror the ad headline in the hero
+- use the same promise and visual tone
+
+### 2) Make the next step obvious
+- one primary CTA
+- avoid multiple competing CTAs above the fold
+
+### 3) Write benefit-first
+- Features: what it does
+- Benefits: what that means for them
+
+### 4) Use specificity
+- ❌ “Save time and streamline”
+- ✅ “Cut your weekly reporting from 4 hours to 15 minutes”
+
+### 5) Reduce risk
+Pick at least one:
+- free trial
+- free plan
+- no credit card
+- cancel anytime
+- money-back guarantee
+
+### 6) Objection handling is a section, not a footer
+- add FAQ earlier if it’s a high-friction offer
+- put proof right next to the claim it supports
+
+---
+
+## Copywriting templates
+
+### Headline formulas
+- “{Outcome} without {pain}”
+- “The {category} for {audience}”
+- “Ship {result} in {time}”
+
+### Subheadline rules
+- 1–2 sentences
+- clarify what it is + who it’s for
+
+### CTA rules
+- Verb + what they get
+- Avoid weak CTAs: “Learn more”, “Submit”
+
+Examples:
+- “Start free trial”
+- “Book a demo”
+- “Get the checklist”
+
+### Benefit bullets
+Format:
+- **Benefit** — proof/detail
+
+Example:
+- **Faster iteration** — generate 3 layout variants in one click.
+
+---
+
+## Section-by-section workflow (designer-friendly)
+Work in this order:
+1) Hero
+2) Benefits
+3) How it works
+4) Proof
+5) FAQ
+6) Final CTA
+
+Rule: don’t rebuild the whole page each time.
+Iterate section-by-section to keep control.
+
+---
+
+## SEO + AEO checklist (when relevant)
+
+### When landing pages should NOT be indexed
+- ad-only campaigns
+- highly time-bound offers
+
+Use:
+- `noindex` (or keep it behind a non-indexed path)
+
+### When they SHOULD be indexed
+- evergreen offers
+- search intent matches the promise
+
+Add:
+- clear title + meta
+- internal links from homepage/feature pages
+- FAQ in plain Q/A for AEO
+
+Optional:
+- FAQ schema (if appropriate)
+
+---
+
+## Common pitfalls
+- Too many CTAs above the fold
+- Vague value prop (“streamline”, “optimize”)
+- Big feature list with no outcomes
+- Proof hidden at the bottom
+- Mobile layout breaks readability
+- No clear next step
+
+---
+
+## Output format (when generating a landing page)
+Return:
+1) **Page outline** (sections + order)
+2) **Hero copy** (headline, subheadline, CTA, proof line)
+3) **Benefits section** (3–5 bullets)
+4) **How it works** (3 steps)
+5) **FAQ** (6–12 Q/A)
+6) **SEO/AEO** (indexing recommendation + title/meta if indexed)
+7) **Layout recommendation** (A/B/C/D + why)
+
+---
+
+## Quick questions (if user says “make a landing page”)
+- What’s the ONE primary CTA?
+- Who is the ICP and what’s the main pain?
+- Any proof (numbers/testimonials/logos)?
+- What’s the offer and risk reversal?
+- Where is traffic coming from?
+===== agent-skills/web-design/build-awwwards-quality-sites/SKILL.md =====
+---
+name: build-awwwards-quality-sites
+description: Art-direct and implement distinctive, motion-rich marketing, editorial, portfolio, and landing websites with original reference-inspired imagery, standout heroes, GSAP choreography, one smooth-scroll engine, optional Three.js shaders, honest icon and logo sourcing, photo avatars, accessibility, and performance safeguards. Use when a user asks for an Awwwards-quality, premium, cinematic, interactive, high-concept, or motion-led website, or explicitly requests this visual and motion system.
+---
+
+# Build Awwwards-Quality Sites
+
+Build a cohesive, memorable site whose visual idea, media, typography, and motion tell the same story. Treat “Awwwards quality” as an acceptance bar, never as an award or recognition claim.
+
+## 1. Set the art direction
+
+- Inspect the user's reference evidence completely before implementation. Extract only high-level traits such as hierarchy, pacing, contrast, image treatment, and motion principles.
+- Generate a materially new identity, layout, copy system, imagery, and interaction language. Never reuse, trace, or closely reproduce reference assets, screenshots, source code, identity, or copy.
+- Use Aura.build top asset imagery only when the user requests it or it is relevant and available. Treat it as high-level inspiration, not an asset library.
+- Select and name at least one compatible installed web-design skill. Follow the smallest relevant set and avoid combining unrelated aesthetic systems.
+- Write a compact direction before coding: visual thesis, hero focal asset, type hierarchy, color system, section sequence, motion narrative, chosen smooth-scroll engine, Three.js decision, and asset provenance plan.
+
+## 2. Build an honest asset system
+
+- Generate original hero or project imagery when it materially improves the concept. Use appropriately licensed media when it is stronger, and keep provenance in the site source.
+- Do not draw illustrations with model-authored SVG, CSS, or canvas paths. Use original generated or appropriately licensed transparent PNG cutouts for illustrative elements. Simple authored brand marks, interface icons, data graphics, and a justified Three.js shader canvas are allowed.
+- Use photographs for every avatar. Prefer provided or appropriately licensed photos; never ship initials, illustrated heads, faceless silhouettes, or generated people presented as real customers, staff, or endorsers.
+- Use Solar icons through Iconify for interface symbols. Use Iconify SVG Logos only for legitimate real-company marks in truthful contexts. Use Logo Ipsum only for explicitly disclosed fictional brand specimens, never as customer proof. Omit a logo wall when no honest proof exists.
+- Provide deliberate aspect ratios, crop behavior, alt text, loading behavior, and missing-media fallbacks. Avoid generic stock imagery, copied mockups, watermarks, and decorative media without a narrative role.
+
+## 3. Compose the hero
+
+- Make the first viewport the site's strongest authored moment. Combine a clear message and CTA with original imagery, video, pointer-responsive interaction, or a justified Three.js scene.
+- Create a composed GSAP intro sequence for the hero. Keep navigation, primary message, and CTA readable and usable before the animation completes.
+- Make pointer effects additive. Support touch, keyboard, coarse pointers, window blur, and visibility changes without leaving the interface in an incomplete state.
+- Design a static first frame that remains complete when JavaScript, media playback, WebGL, or motion is unavailable.
+
+## 4. Build the motion system
+
+- Use GSAP as the primary animation system.
+- Evaluate Lenis and Locomotive Scroll, then choose exactly one as the site's sole smooth-scroll engine. Never install or initialize both. Connect the chosen engine correctly to GSAP ScrollTrigger, refresh measurements after media and font changes, and destroy it during cleanup.
+- Bypass smooth scrolling and scrubbed timelines under `prefers-reduced-motion: reduce`. Render final states immediately instead of merely shortening animations.
+- Choreograph the page section by section. Reveal major headings word by word with a restrained stagger, then sequence supporting copy and media.
+- Preserve an unsplit accessible name for staggered text. Hide decorative split words from assistive technology, never split links or meaningful inline markup, and keep the unsplit content visible without JavaScript.
+- Use CSS for simple hover, focus, and tap states. Reserve ScrollTrigger for justified scrubbed or pinned sequences and avoid multiple systems controlling the same property.
+
+## 5. Add Three.js only with purpose
+
+- Use Three.js and custom WebGL shaders when spatial depth, texture transition, displacement, or pointer response materially supports the art direction. Do not add a shader as ornamental background noise.
+- Give the canvas one clear responsibility and keep it subordinate to semantic content and controls.
+- Cap device pixel ratio, pause rendering offscreen or when the document is hidden, throttle pointer input, and avoid per-frame allocation.
+- Provide a static poster and replace the canvas entirely under reduced motion or WebGL failure.
+- Dispose animation frames, observers, event listeners, render targets, textures, geometries, materials, and the renderer. Handle context loss without breaking page content.
+
+## 6. Meet the quality bar
+
+- Build a complete semantic page, not a hero-only concept. Include responsive navigation, coherent section progression, concrete conversion content, final CTA, footer, robust form or control states when present, and visible keyboard focus.
+- Require a distinct art-directed idea, memorable first viewport, disciplined typography and spacing, intentional image crops, authored transitions, and refined hover, focus, active, loading, disabled, error, touch, and reduced-motion behavior.
+- Preserve performance with responsive media, lazy loading below the fold, bounded transforms, limited blur, capped canvas work, and no continuously animated offscreen content.
+- Reject generic gradient blobs, ornamental bento grids, glass applied everywhere, stock component layouts, fake testimonials, invented partnerships, logo-wall theater, and motion with no narrative role.
+- Never describe the result as award-winning or Awwwards-recognized unless the user provides verifiable evidence.
+
+## 7. Validate before handoff
+
+- Run the production build and fix every failure.
+- Check the page at desktop and mobile sizes when browser validation is requested or needed to resolve a blocker.
+- Verify keyboard navigation, visible focus, touch behavior, content with JavaScript unavailable, static media fallbacks, and `prefers-reduced-motion` behavior.
+- Check that only one smooth-scroll engine is installed and initialized, ScrollTrigger integration is correct, and all animation and WebGL resources clean up.
+- Search rendered content and source for placeholders, copied reference identity, unsupported claims, misleading logos, uncredited media, and inaccessible split text.
+- Report the chosen web-design skill, asset sources, motion stack, Three.js decision, validation performed, and any remaining limitation.
+===== agent-skills/web-design/animation-systems/SKILL.md =====
+---
+name: animation-systems
+description: Use when designing or implementing product-grade web motion like Stripe, Linear, Apple, and Vercel. Covers motion principles, easing/duration defaults, choreography patterns, scroll/hover interactions, performance, accessibility (reduced motion), and implementation guidance.
+---
+
+# Animation Systems (Stripe × Linear × Apple × Vercel)
+
+This skill helps you ship **tasteful, product-grade motion**.
+Not “more animation.”
+**Better animation**: clarity, hierarchy, feedback, and delight—without jank.
+
+---
+
+## The goals (why motion exists)
+Use animation to:
+1) **Explain hierarchy** (what matters)
+2) **Confirm action** (feedback)
+3) **Guide attention** (where to look next)
+4) **Maintain continuity** (spatial relationships)
+5) **Add polish** (craft signals)
+
+If an animation doesn’t serve one of these, delete it.
+
+---
+
+## The Stripe/Linear/Apple/Vercel style (shared traits)
+
+### 1) Restraint
+- Fewer animations, better chosen.
+- One strong hero moment; the rest is supporting motion.
+
+### 2) Clear choreography
+- Primary element moves first.
+- Secondary elements follow with small stagger.
+- Motion establishes a “reading order.”
+
+### 3) Physical but not cartoony
+- Use easing that feels **human** (soft acceleration + gentle settle).
+- Avoid bouncy defaults for serious product UI.
+
+### 4) Texture + depth (subtle)
+- Small parallax, soft shadows, blur fades, light beams.
+- Avoid heavy 3D unless it’s the hero.
+
+---
+
+## Motion primitives (build these first)
+Think in primitives you can reuse everywhere.
+
+### A) Fade + rise (default entrance)
+Use for: text blocks, cards, modals.
+- Opacity: 0 → 1
+- Y: 12–24px → 0
+- Duration: 300–700ms depending on size
+
+### B) Scale + fade (micro emphasis)
+Use for: popovers, toasts, selected states.
+- Scale: 0.98 → 1
+- Opacity: 0 → 1
+
+### C) Slide (navigation)
+Use for: drawers, step transitions.
+- Use transform translate; avoid animating layout.
+
+### D) Morph / shared element (high craft)
+Use for: tab indicators, expanding cards.
+- Requires consistent geometry + measured layout.
+
+---
+
+## Defaults (practical numbers)
+Use these as a starting system.
+
+### Durations (rule of thumb)
+- Micro (hover/press): **120–200ms**
+- UI state change (toggle, select): **180–260ms**
+- Small transitions (popover, toast): **220–320ms**
+- Page section entrance: **400–800ms**
+- Hero sequences: **800–1600ms** (with internal beats)
+
+### Easing (safe set)
+Pick a small set and reuse.
+- UI: **ease-out** with gentle settle
+- Emphasis: slightly stronger ease
+- Entering: ease-out
+- Exiting: ease-in (faster)
+
+If implementing:
+- Use your animation library’s “power2.out / expo.out” equivalents.
+- Avoid elastic/bounce unless brand is playful.
+
+### Stagger
+- 40–90ms per element (text lines/cards)
+- Use smaller stagger on mobile
+
+---
+
+## Choreography patterns
+
+### 1) “Hero → supporting elements”
+- Hero visual animates in first.
+- Headline appears next.
+- CTA appears last.
+
+### 2) “Section reveal on scroll”
+- Trigger when section is ~20–30% visible.
+- Animate once (don’t replay on tiny scroll).
+
+### 3) “Hover: lift + glow”
+- Y: -2 to -6px
+- Shadow: subtle increase
+- Optional: border/gradient glow
+
+### 4) “Focus ring + micro shift”
+- For form fields: focus ring + tiny scale/translate for responsiveness.
+
+---
+
+## Performance rules (non‑negotiable)
+
+### Animate the right properties
+Prefer:
+- `transform` (translate/scale/rotate)
+- `opacity`
+
+Avoid (unless necessary):
+- width/height/top/left
+- expensive filters on large areas
+
+### Respect the GPU
+- Clamp device pixel ratio in heavy canvases (1–2)
+- Keep blur subtle and small
+- Avoid many simultaneous animated shadows
+
+### Reduce reflows
+- Don’t measure layout every frame.
+- For scroll effects, use a library that batches reads/writes.
+
+---
+
+## Accessibility: Reduced Motion
+Always support `prefers-reduced-motion`.
+
+Policy:
+- Keep content visible.
+- Replace motion with **instant state** + subtle opacity.
+- Disable scroll-scrub/pin.
+
+Ask the user:
+- “Do you want a reduced-motion mode that disables all non-essential motion?”
+
+---
+
+## Implementation guidance (library-agnostic)
+
+### For simple sites
+- CSS transitions for small hovers/toggles.
+- Use a single motion library (GSAP or Framer Motion) for complex sequences.
+
+### For product sites
+- Create a motion token set:
+  - durations
+  - easing curves
+  - standard offsets (8/16/24px)
+  - stagger defaults
+
+### For hero moments
+- Use timelines (or keyframes) with labeled beats.
+- Lock camera/scene movement first, then layer text.
+
+---
+
+## What to ask the user
+- What’s the brand lane: Stripe (polished), Linear (minimal), Apple (cinematic), Vercel (developer/product)?
+- What are the key moments? (hero, scroll story, hover cards, nav transitions)
+- Any performance constraints? (mobile, low-end devices)
+- Reduced motion requirements?
+
+---
+
+## Output format (when asked to “add Stripe/Linear-style animation”)
+Return:
+1) Motion goals (what we’re trying to communicate)
+2) Motion tokens (durations + easing + offsets)
+3) A choreography plan (timeline beats)
+4) Implementation notes (perf + reduced motion)
+5) A small code recipe (CSS or GSAP/Framer depending on stack)
+===== agent-skills/web-design/cinematic-gsap-lenis-motion-system/SKILL.md =====
+---
+name: cinematic-gsap-lenis-motion-system
+description: Create premium cinematic web motion systems with GSAP, ScrollTrigger, and Lenis. Use for luxury editorial websites, creative studio portfolios, Awwwards-style interactions, smooth scroll reveals, staggered text, parallax, pinned sections, magnetic hover states, custom cursors, and mouse-reactive layered movement.
+---
+
+# Cinematic GSAP Lenis Motion System
+
+## Use When
+- The site needs a full premium motion language, not one isolated animation.
+- Smooth scrolling, scroll reveals, pinned scenes, parallax, hover motion, and cursor behavior should feel connected.
+- The target feel is luxury editorial, Apple-level polish, creative studio portfolio, or immersive cinematic storytelling.
+- The stack can use GSAP, ScrollTrigger, and Lenis.
+
+## Motion Taste
+- Smooth, elegant, slightly delayed, and intentional.
+- Staggered motion should guide reading order.
+- Layered movement should create depth without making the interface feel busy.
+- ScrollTrigger should start scenes when they enter the viewport, not react to every tiny scroll.
+- Prefer subtlety over intensity.
+
+Avoid:
+- Bounce, elastic, springy, or playful motion.
+- Fast abrupt transitions.
+- Large scale jumps.
+- Over-animated UI.
+- Flashy gaming-style effects.
+
+## Base Tokens
+- Eases: `power3.out`, `power4.out`, `expo.out`.
+- Scroll scrub: `scrub: 0.8` to `1.4` for cinematic delay.
+- Reveals: `0.75s` to `1.1s`.
+- Hover: `0.35s` to `0.6s`.
+- Cursor lag: `0.25s` to `0.45s`.
+- Text stagger: words `0.035s` to `0.07s`, lines `0.08s` to `0.14s`.
+- Card stagger: `0.06s` to `0.1s`.
+- Reveal trigger: `start: "top 82%"`.
+- Pin handoff: `anticipatePin: 1`.
+
+## Setup
+
+Install:
+
+```bash
+npm i gsap lenis
+```
+
+Initialize once, after the DOM exists. Lenis drives its RAF through the GSAP ticker so ScrollTrigger and smooth scroll stay synced.
+
+```js
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+gsap.defaults({ ease: "power3.out", duration: 0.85 });
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+let lenis;
+
+if (!reduceMotion) {
+  lenis = new Lenis({
+    lerp: 0.08,
+    smoothWheel: true,
+    wheelMultiplier: 0.9,
+    anchors: true,
+  });
+
+  lenis.on("scroll", ScrollTrigger.update);
+
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+
+  gsap.ticker.lagSmoothing(0);
+}
+
+window.addEventListener("load", () => {
+  ScrollTrigger.refresh();
+});
+```
+
+## Markup API
+
+Use small data attributes so the motion system can be reused across pages.
+
+```html
+<h1 data-motion-text="lines">Digital products with cinematic restraint.</h1>
+<p data-motion-text="words">Every interaction should feel deliberate.</p>
+
+<section data-reveal-group>
+  <article data-reveal="fade-up" data-reveal-item>...</article>
+  <article data-reveal="fade-up" data-reveal-item>...</article>
+</section>
+
+<figure data-image-reveal data-parallax-section>
+  <img data-parallax-image src="/studio.jpg" alt="">
+</figure>
+
+<a data-magnetic data-cursor-label="Explore" href="/work">Explore</a>
+<div data-cursor><span data-cursor-label></span></div>
+```
+
+## CSS Foundation
+
+```css
+html.has-motion [data-motion-text],
+html.has-motion [data-reveal],
+html.has-motion [data-reveal-item],
+html.has-motion [data-image-reveal] {
+  visibility: hidden;
+}
+
+.motion-line-mask,
+.motion-word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.motion-line,
+.motion-word {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+}
+
+[data-image-reveal] {
+  overflow: hidden;
+}
+
+[data-parallax-image] {
+  display: block;
+  width: 100%;
+  height: 115%;
+  object-fit: cover;
+  will-change: transform;
+}
+
+[data-cursor] {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 9999;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  transform: translate3d(-50%, -50%, 0);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  [data-cursor] {
+    display: none;
+  }
+}
+```
+
+## Staggered Text Reveals
+
+Use masked containers for premium text. Prefer manual line wrappers when exact line breaks matter. Use word splitting for flexible responsive text.
+
+```js
+document.documentElement.classList.add("has-motion");
+
+function splitWords(element) {
+  if (element.dataset.motionSplit === "true") return;
+
+  const text = element.textContent || "";
+  const parts = text.split(/(\s+)/);
+
+  element.textContent = "";
+  element.setAttribute("aria-label", text.trim());
+
+  let index = 0;
+  parts.forEach((part) => {
+    if (!part.trim()) {
+      element.appendChild(document.createTextNode(part));
+      return;
+    }
+
+    const mask = document.createElement("span");
+    const word = document.createElement("span");
+
+    mask.className = "motion-word-mask";
+    mask.setAttribute("aria-hidden", "true");
+    word.className = "motion-word";
+    word.textContent = part;
+    word.style.setProperty("--word-index", index);
+
+    mask.appendChild(word);
+    element.appendChild(mask);
+    index += 1;
+  });
+
+  element.dataset.motionSplit = "true";
+}
+
+function splitLines(element) {
+  if (element.dataset.motionLineSplit === "true") return;
+  if (element.querySelector(".motion-line")) return;
+
+  const text = (element.textContent || "").trim();
+  const lines = text.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length < 2) return;
+
+  element.textContent = "";
+  element.setAttribute("aria-label", text);
+
+  lines.forEach((line) => {
+    const mask = document.createElement("span");
+    const inner = document.createElement("span");
+
+    mask.className = "motion-line-mask";
+    mask.setAttribute("aria-hidden", "true");
+    inner.className = "motion-line";
+    inner.textContent = line;
+
+    mask.appendChild(inner);
+    element.appendChild(mask);
+    element.appendChild(document.createTextNode(" "));
+===== agent-skills/web-design/cinematic-scroll-storytelling/SKILL.md =====
+---
+name: cinematic-scroll-storytelling
+description: Create cinematic scroll-driven landing pages with Lenis smooth scrolling, GSAP ScrollTrigger, scroll-linked progression, staggered text reveals, sticky card stacks, parallax backgrounds, scroll-scrubbed transitions, footer reveals, and immersive preloaders. Use when analyzing or building premium editorial scroll experiences, sticky project stacks, kinetic typography, or section-by-section storytelling.
+---
+
+# Cinematic Scroll Storytelling
+
+## Use When
+- A page should feel like a premium editorial story that unfolds as the user scrolls.
+- The user mentions scroll-driven storytelling, scroll-linked animation, sticky card stacks, parallax, split text, preloader, or cinematic progression.
+- A portfolio, studio, product, or landing page needs section-by-section reveals with layered depth.
+- The implementation can use GSAP, ScrollTrigger, and Lenis.
+
+## Effect Vocabulary
+- Scroll-driven storytelling: sections reveal as a sequence while scrolling.
+- Scroll-linked animation: progress is tied directly to scroll with `scrub`.
+- Scroll-triggered motion: animation starts when a section enters the viewport.
+- Staggered reveal: words, lines, cards, or elements enter with small delays.
+- Progressive reveal: opacity, scale, blur, clip, or position changes over scroll progress.
+- Sticky card stack: sticky cards layer, scale, and recede as the next card arrives.
+- Parallax scrolling: background and foreground layers move at different speeds.
+- Scroll scrubbing: animation follows the scrollbar through `scrub: true` or `scrub: 1`.
+- Kinetic typography: masked split-text movement, usually word-by-word or line-by-line.
+- Preloader: opening loading screen, progress bar, and intro transition.
+
+## Target Feel
+- Luxury editorial website.
+- High-end creative studio portfolio.
+- Apple-level motion polish.
+- Modern Awwwards interaction language.
+- Immersive cinematic landing page.
+
+Avoid:
+- Bounce, elastic, or springy motion.
+- Aggressive scale jumps.
+- Flashy gaming-style effects.
+- Too many simultaneous scroll effects.
+- Scroll hijacking that makes the page hard to read.
+
+## Core Stack
+
+```bash
+npm i gsap lenis
+```
+
+```js
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if (!reduceMotion) {
+  const lenis = new Lenis({
+    lerp: 0.08,
+    smoothWheel: true,
+    wheelMultiplier: 0.9,
+  });
+
+  lenis.on("scroll", ScrollTrigger.update);
+
+  gsap.ticker.add((time) => {
+    lenis.raf(time * 1000);
+  });
+
+  gsap.ticker.lagSmoothing(0);
+}
+
+window.addEventListener("load", () => ScrollTrigger.refresh());
+```
+
+## Motion Tokens
+- Enter ease: `power3.out` or `power4.out`.
+- Scrubbed scenes: `ease: "none"` with `scrub: 0.8` to `1.4`.
+- Text reveal duration: `0.8s` to `1.1s`.
+- Card reveal duration: `0.9s` to `1.2s`.
+- Word stagger: `0.035s` to `0.07s`.
+- Line stagger: `0.08s` to `0.14s`.
+- Card stagger: `0.06s` to `0.1s`.
+- Reveal offset: `y: 24` to `48`.
+- Blur: `4px` to `10px`, then `0px`.
+- Sticky card scale depth: `1` down to `0.92`.
+
+## Page Anatomy
+1. Preloader: black screen, progress bar, brand/title, intro fade.
+2. Hero: image parallax, masked headline reveal, subtle scroll cue.
+3. Intro: word-by-word kinetic typography.
+4. Story sections: scroll-triggered fade-up, blur-in, and clip reveals.
+5. Recent Projects: sticky card stack with scale and layered depth.
+6. Gallery or proof: scroll-scrubbed horizontal or progressive reveals.
+7. Footer: parallax reveal or slow upward handoff.
+
+## Markup Pattern
+
+```html
+<div class="preloader" data-preloader>
+  <div class="preloader__bar" data-preloader-bar></div>
+</div>
+
+<main>
+  <section class="hero" data-parallax-section>
+    <img data-parallax-layer data-speed="-0.18" src="/hero.jpg" alt="">
+    <h1 data-split-reveal>Design that unfolds with cinematic restraint.</h1>
+  </section>
+
+  <section data-story-section>
+    <p data-split-reveal="words">Every block arrives with quiet intent.</p>
+  </section>
+
+  <section class="project-stack" data-sticky-stack>
+    <article data-stack-card>Project One</article>
+    <article data-stack-card>Project Two</article>
+    <article data-stack-card>Project Three</article>
+  </section>
+
+  <footer data-footer-parallax>...</footer>
+</main>
+```
+
+## Preloader Sequence
+
+Use a preloader to set the cinematic tone, then hand off into the hero reveal.
+
+```js
+function initPreloader() {
+  const loader = document.querySelector("[data-preloader]");
+  const bar = document.querySelector("[data-preloader-bar]");
+  if (!loader) return Promise.resolve();
+
+  if (reduceMotion) {
+    loader.remove();
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve) => {
+    const tl = gsap.timeline({
+      defaults: { ease: "power3.out" },
+      onComplete: () => {
+        loader.remove();
+        resolve();
+      },
+    });
+
+    tl.fromTo(bar, { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, duration: 1.1 })
+      .to(loader, { yPercent: -100, duration: 0.9, ease: "power4.inOut" }, "+=0.15");
+  });
+}
+```
+
+## Split Text Reveal
+
+Use masked overflow containers. Avoid splitting text that contains links or meaningful inline markup.
+
+```js
+function splitWords(element) {
+  if (element.dataset.splitReady === "true") return;
+
+  const text = element.textContent || "";
+  const parts = text.split(/(\s+)/);
+  element.textContent = "";
+  element.setAttribute("aria-label", text.trim());
+
+  parts.forEach((part) => {
+    if (!part.trim()) {
+      element.appendChild(document.createTextNode(part));
+      return;
+    }
+
+    const mask = document.createElement("span");
+    const word = document.createElement("span");
+    mask.className = "split-word-mask";
+    word.className = "split-word";
+    word.textContent = part;
+    mask.setAttribute("aria-hidden", "true");
+    mask.appendChild(word);
+    element.appendChild(mask);
+  });
+
+  element.dataset.splitReady = "true";
+}
+
+function initSplitReveals() {
+  if (reduceMotion) {
+    gsap.set("[data-split-reveal]", { autoAlpha: 1 });
+    return;
+  }
+
+  gsap.utils.toArray("[data-split-reveal]").forEach((element) => {
+    splitWords(element);
+    const words = element.querySelectorAll(".split-word");
+
+    gsap.fromTo(
+      words,
+      { yPercent: 110, autoAlpha: 0, filter: "blur(8px)" },
+      {
+        yPercent: 0,
+        autoAlpha: 1,
+        filter: "blur(0px)",
+        duration: 0.95,
+        ease: "power4.out",
+        stagger: 0.05,
+        scrollTrigger: {
+          trigger: element,
+          start: "top 82%",
+          once: true,
+        },
+      }
+    );
+  });
+}
+```
+
+```css
+.split-word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+===== agent-skills/web-design/masked-reveal/SKILL.md =====
+---
+name: masked-reveal
+description: Create masked staggered word reveals on scroll with GSAP ScrollTrigger. Use when headings, hero copy, section titles, or editorial text should reveal word-by-word through an overflow mask as they enter the viewport.
+---
+
+# Masked Reveal
+
+## Use When
+- A headline or short text block needs a premium reveal on scroll.
+- Words should rise through an invisible mask with a staggered sequence.
+- The project already uses GSAP or needs ScrollTrigger-based motion.
+
+## Motion Defaults
+- Trigger: start when the text top reaches `82%` of the viewport.
+- Duration: `0.7s` to `0.9s`.
+- Stagger: `0.025s` to `0.045s` per word.
+- Offset: `yPercent: 110` to `0`.
+- Ease: `power3.out` or `expo.out`.
+- Replay: reveal once by default.
+
+## HTML
+
+```html
+<h1 class="masked-reveal" data-masked-reveal>
+  Design systems that feel alive from the first scroll.
+</h1>
+```
+
+## CSS Mask
+
+```css
+.masked-reveal {
+  visibility: visible;
+}
+
+html.js .masked-reveal[data-masked-reveal] {
+  visibility: hidden;
+}
+
+html.js .masked-reveal.is-split {
+  visibility: visible;
+}
+
+.masked-reveal .word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.masked-reveal .word {
+  display: inline-block;
+  transform: translateY(110%);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .masked-reveal[data-masked-reveal] {
+    visibility: visible;
+  }
+
+  .masked-reveal .word {
+    transform: none;
+  }
+}
+```
+
+## GSAP ScrollTrigger
+This helper avoids the paid SplitText plugin and keeps spaces intact.
+
+```js
+document.documentElement.classList.add("js");
+gsap.registerPlugin(ScrollTrigger);
+
+function escapeHTML(value) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function splitMaskedReveal(element) {
+  if (element.dataset.maskedRevealReady === "true") return;
+
+  const text = element.textContent.trim();
+  element.setAttribute("aria-label", text);
+  element.innerHTML = text
+    .split(/(\s+)/)
+    .map((part) => {
+      if (!part.trim()) return part;
+      return `<span class="word-mask" aria-hidden="true"><span class="word">${escapeHTML(part)}</span></span>`;
+    })
+    .join("");
+  element.dataset.maskedRevealReady = "true";
+  element.classList.add("is-split");
+}
+
+function initMaskedReveals(selector = "[data-masked-reveal]") {
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  document.querySelectorAll(selector).forEach((element) => {
+    splitMaskedReveal(element);
+    const words = element.querySelectorAll(".word");
+
+    gsap.set(element, { autoAlpha: 1 });
+    gsap.fromTo(
+      words,
+      { yPercent: 110 },
+      {
+        yPercent: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.035,
+        scrollTrigger: {
+          trigger: element,
+          start: "top 82%",
+          once: true,
+        },
+      }
+    );
+  });
+}
+
+initMaskedReveals();
+```
+
+## React Cleanup Pattern
+
+```js
+useLayoutEffect(() => {
+  const ctx = gsap.context(() => {
+    initMaskedReveals("[data-masked-reveal]");
+  }, rootRef);
+
+  return () => ctx.revert();
+}, []);
+```
+
+## Taste Rules
+- Use on short headlines, labels, and section intros; avoid long paragraphs.
+- Keep the vertical offset clean. Do not combine with blur unless the style explicitly calls for it.
+- Stagger by word, not letter, for a calmer editorial feel.
+- Initialize after fonts are loaded if line wrapping is critical.
+- Use `ScrollTrigger.refresh()` after late-loading images or layout shifts.
+- Do not split text that contains links, buttons, or meaningful inline markup.
+
+## Quick Checks
+- Text is hidden before GSAP initializes, then becomes visible with `autoAlpha: 1`.
+- Screen readers get the original full text through `aria-label`.
+- Spaces between words are preserved.
+- Reduced-motion users see static text.
+- ScrollTrigger is cleaned up in SPA routes.
+===== agent-skills/web-design/staggered-word-reveal/SKILL.md =====
+---
+name: staggered-word-reveal
+description: Create subtle editorial word-by-word text reveal animations where each word fades and rises into place once it enters the viewport. Use for premium portfolio headlines, hero copy, section intros, and short marketing text that needs a cinematic staggered reveal with IntersectionObserver or in-view detection.
+---
+
+# Staggered Word Reveal
+
+## Use When
+- A short headline, intro, or pull quote should reveal word by word.
+- The motion should feel editorial, premium, and restrained.
+- The reveal should trigger only once when the text enters the viewport.
+- The project does not need heavy GSAP SplitText behavior.
+
+## Motion Defaults
+- Initial state: `opacity: 0`, `transform: translateY(20px)`.
+- Final state: `opacity: 1`, `transform: translateY(0)`.
+- Duration: `0.8s`.
+- Ease: `cubic-bezier(0.16, 1, 0.3, 1)`.
+- Stagger: `0.06s` to `0.08s` per word. Default to `0.07s`.
+- Trigger: start around `20%` visible, with a slight lower viewport bias.
+- Replay: once only.
+
+## HTML
+
+```html
+<h1 class="word-reveal" data-word-reveal>
+  Build interfaces that feel calm, cinematic, and alive.
+</h1>
+```
+
+## CSS
+
+Keep no-JS content visible. Hide only after JavaScript is active and before the text has been split.
+
+```css
+.word-reveal {
+  visibility: visible;
+}
+
+html.js .word-reveal[data-word-reveal]:not(.is-ready) {
+  opacity: 0;
+}
+
+.word-reveal__word {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--word-index) * 0.07s);
+  will-change: opacity, transform;
+}
+
+.word-reveal.is-visible .word-reveal__word {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .word-reveal[data-word-reveal]:not(.is-ready),
+  .word-reveal__word {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+```
+
+## JavaScript
+
+This splitter preserves spaces, avoids `innerHTML`, exposes the original sentence to screen readers, and unobserves after the first reveal.
+
+```js
+document.documentElement.classList.add("js");
+
+function splitWordReveal(element) {
+  if (element.dataset.wordRevealReady === "true") return;
+
+  const text = element.textContent || "";
+  const parts = text.split(/(\s+)/);
+  let wordIndex = 0;
+
+  element.textContent = "";
+  element.setAttribute("aria-label", text.trim());
+
+  parts.forEach((part) => {
+    if (!part.trim()) {
+      element.appendChild(document.createTextNode(part));
+      return;
+    }
+
+    const word = document.createElement("span");
+    word.className = "word-reveal__word";
+    word.setAttribute("aria-hidden", "true");
+    word.style.setProperty("--word-index", wordIndex);
+    word.textContent = part;
+
+    element.appendChild(word);
+    wordIndex += 1;
+  });
+
+  element.dataset.wordRevealReady = "true";
+  element.classList.add("is-ready");
+}
+
+function initWordReveals(selector = "[data-word-reveal]") {
+  const elements = Array.from(document.querySelectorAll(selector));
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    elements.forEach((element) => {
+      element.classList.add("is-ready", "is-visible");
+    });
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries, io) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.add("is-visible");
+        io.unobserve(entry.target);
+      });
+    },
+    {
+      threshold: 0.2,
+      rootMargin: "0px 0px -10% 0px",
+    }
+  );
+
+  elements.forEach((element) => {
+    splitWordReveal(element);
+    observer.observe(element);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initWordReveals();
+});
+```
+
+## Framework Notes
+- React/Vue/Svelte: run the splitter after mount, then clean up observer instances on route changes.
+- Framer Motion: keep the same tokens: `y: 20`, `opacity: 0`, duration `0.8`, ease `[0.16, 1, 0.3, 1]`, stagger `0.06` to `0.08`, `once: true`.
+- GSAP: use `fromTo(words, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: "expo.out", stagger: 0.07 })`.
+
+## Taste Rules
+- Use on short text: headlines, subheads, labels, and quotes. Avoid long paragraphs.
+- Stagger words, not letters, for a calmer premium feel.
+- Keep the offset subtle. Do not add bounce, rotation, or large blur.
+- Animate `transform` and `opacity` only.
+- Do not split text containing links, buttons, or meaningful inline markup.
+- If wrapping is important, initialize after web fonts are ready.
+
+## Quick Checks
+- Text is visible when JavaScript is disabled.
+- Words begin at `translateY(20px)` and `opacity: 0`.
+- Each word reveals once with a `0.06s` to `0.08s` delay.
+- Repeated scrolling does not replay the animation.
+- Reduced-motion users see static readable text.
+===== agent-skills/web-design/ambient-section-particles/SKILL.md =====
+---
+name: ambient-section-particles
+description: Add a restrained particle atmosphere inside one section with configurable shapes, density, gravity, wind, sway, rotation, recycling or settling, pointer disturbance, visibility pausing, responsive limits, and reduced-motion fallbacks. Use for petals, leaves, snow, sparks, confetti, dots, paper, icons, or brand fragments that support a section's mood without obscuring content.
+---
+
+# Ambient Section Particles
+
+Build particles as a bounded atmosphere layer, not as a page-wide screensaver. Keep the content primary and stop work when the effect cannot be seen.
+
+## Choose the renderer
+
+- Use canvas for roughly 40 or more small particles, frequent motion, pointer forces, or simple procedural shapes.
+- Use DOM or inline SVG for a small count of branded fragments that need individual styling or semantic labels.
+- Use WebGL only for thousands of particles, depth, shaders, or real 3D behavior. Cap device pixel ratio and provide a static fallback.
+
+Start with the least expensive renderer that preserves the desired shape language.
+
+## Define one configuration
+
+```js
+const particles = {
+  count: 54,
+  gravity: 7,
+  wind: -3,
+  sway: 16,
+  speed: [8, 18],
+  size: [4, 12],
+  opacity: [0.18, 0.62],
+  rotation: [-0.8, 0.8],
+  mode: "recycle",
+  pointerRadius: 110,
+  maxDpr: 2
+};
+```
+
+Scale density by container area, then clamp it for mobile and low-power devices. Do not derive count from viewport width alone.
+
+## Layer the section
+
+1. Give the section a positioning context and clip overflow when particles should remain bounded.
+2. Place the particle surface behind content but above the background.
+3. Set the layer to `pointer-events: none`; listen for pointer movement on the section.
+4. Reserve a quiet content zone or lower density behind long text and controls.
+5. Keep controls and links in normal DOM stacking with visible focus.
+
+## Run the simulation
+
+- Seed particles inside or just above the container bounds.
+- Update gravity, wind, phase-based sway, rotation, opacity, and position from elapsed time.
+- Clamp large time deltas after background tabs or stalled frames.
+- Use one `requestAnimationFrame` loop for the whole layer.
+- Resize with `ResizeObserver`; cap canvas backing resolution at `min(devicePixelRatio, maxDpr)`.
+- For pointer disturbance, apply a small distance-based force and let particles settle back naturally. Never attach a listener per particle.
+
+Support explicit end modes:
+
+- `recycle`: return particles above the section after exit.
+- `exit`: remove particles after they leave the bounds.
+- `settle`: resolve into a shallow visual pile with a strict height cap.
+- `static`: render a deterministic still composition.
+
+## Stop invisible work
+
+Use IntersectionObserver to start only when the section is visible. Cancel animation frames when it exits or `document.hidden` becomes true. Resume from the current simulation state instead of spawning a second loop.
+
+On teardown, disconnect observers, remove resize and pointer listeners, cancel the frame, and release renderer resources.
+
+## Respect the reader
+
+- Under `prefers-reduced-motion: reduce`, render a sparse static arrangement or remove the layer.
+- Keep particles decorative and hidden from assistive technology.
+- Control opacity and contrast so motion never crosses the legibility threshold.
+- Avoid full-screen pointer repulsion, rapid direction changes, flashes, and large objects crossing form controls.
+- Pause decorative motion while a modal or critical task in the section is active when it competes for attention.
+
+## Verify
+
+Test entry and exit pausing, background-tab recovery, fast resize, 390/768/1440 widths, device pixel ratio, pointer and touch input, reduced motion, section overflow, content focus, long text, route cleanup, and console errors. Confirm only one animation loop survives repeated mounts.
+
+Use [demo/index.html](demo/index.html) as the working reference and [demo/PROMPT.md](demo/PROMPT.md) to recreate or remix it. Keep [REFERENCES.md](REFERENCES.md) as the links-only implementation source list.
+===== agent-skills/web-design/falling-leaves/SKILL.md =====
+---
+name: falling-leaves
+description: Build falling leaves that read as leaves, with each one tumbling on its own axis so it presents a face, thins to an edge, and opens out again, and with its sideways slip driven by that same tumble. Covers the 2-D canvas build and the instanced-3-D variant, where leaves are recycled from, density-versus-count maths, depth layering, colour under a tone-mapped composite, reduced motion, and visibility pausing. Use for autumn maple, sakura petals, blossom, ash, snowfall shapes, or any drifting foliage where a generic particle field reads as confetti.
+---
+
+# Falling Leaves
+
+Make the falling thing read as a leaf. Reach for `ambient-section-particles` when you want a bounded atmosphere of generic motes. Reach for this when the shape has to be recognisable.
+
+## Build the tumble first
+
+Turn each leaf about its own long axis so it shows its face, thins to nothing edge-on, then opens out on the other side. That instant of near-disappearance is what the eye reads as "leaf". A sprite that only spins in the picture plane reads as confetti, a coin, or a paper scrap, however good the artwork is.
+
+On 2-D canvas the tumble is a horizontal scale that crosses zero:
+
+```js
+ctx.save();
+ctx.translate(l.x, l.y);
+ctx.rotate(l.roll);              // long axis drifting in-plane
+ctx.scale(Math.cos(l.spin), 1);  // the tumble: cos crosses 0, edge-on
+ctx.globalAlpha = l.alpha;
+ctx.drawImage(sprite, -w / 2, -h / 2, w, h);
+ctx.restore();
+```
+
+Drive two axes, not one. `roll` turns the leaf within the picture plane; `spin` turns it through the plane. Give each its own rate per leaf, or the motion reads as mechanical however you ease it.
+
+In 3-D, instance **quads**, never point sprites. A point sprite always faces the camera and can never turn away, so it can never go edge-on. That single constraint decides the whole implementation.
+
+## Couple the slip to the tumble
+
+Drive lateral motion from the same angle as the tumble, ninety degrees out of phase. A leaf slides sideways when it knifes through the air edge-on and stalls when it presents its face flat:
+
+```js
+l.x += Math.sin(l.spin) * l.slip * dt;   // fastest when cos(spin) ≈ 0
+l.y += l.fall * dt;
+```
+
+Do not put an independent sine on `x`. It reads as wind or as an easing bug. This coupling costs one term and is what makes the path look aerodynamic.
+
+## Bake both faces
+
+Bake two sprites per colour and pick by the sign of the tumble:
+
+```js
+const img = Math.cos(l.spin) < 0 ? sprite.back : sprite.face;
+```
+
+Make the back duller and paler than the front. Without this the leaf reads as a flat cut-out spinning; with it, as a solid object with a front and a back. It is the cheapest realism in the system.
+
+## Vary every parameter per leaf
+
+Randomise fall speed, tumble rate, roll rate, slip amount, phase, scale, and opacity at spawn. Share any one of them and the field stops being leaves and becomes a texture scrolling down the screen. The eye finds the common rhythm in about two seconds.
+
+## Choose where leaves come back from
+
+This decides how many leaves are actually on screen.
+
+**In 2-D**, recycle across the viewport. When a leaf passes the bottom, respawn it above the top at a new random x. Wrap x as well, so wind does not empty one side.
+
+**In 3-D**, recycle *ahead of the camera*, not around it. A band centred on the camera spends nearly all its volume behind and beside the frustum; on a 36° camera, a couple of hundred leaves put barely a dozen in frame. Drop them into a disc hung down the camera's own sight line instead and the same count appears several times over:
+
+```js
+camera.getWorldDirection(fwd); fwd.y = 0; fwd.normalize();
+const cx = camera.position.x + fwd.x * AHEAD;
+const cz = camera.position.z + fwd.z * AHEAD;
+const a = Math.random() * TAU, r = Math.sqrt(Math.random()) * SPREAD;
+l.x = cx + Math.cos(a) * r;  l.z = cz + Math.sin(a) * r;  l.y = camera.position.y + 16;
+```
+
+Keep a far wrap as a backstop for a camera that walks out from under its own weather, and put it well outside the fog so nothing is seen to jump.
+
+## Set density by band area, not by count
+
+On-screen density goes as count ÷ band area. Tighten the band before raising the count:
+
+- Halving the recycle radius quadruples on-screen density at the same count.
+- Doubling the count doubles draw cost for the same on-screen gain.
+
+Scale an authored count by viewport area rather than taking it literally, or a figure that reads as a drift on desktop arrives as a blizzard on a phone:
+
+```js
+const k = clamp(Math.sqrt((W * H) / (1440 * 900)), .5, 1.3);
+const n = Math.round(authored * layerShare * k);
+```
+
+## Layer for depth
+
+Use two or three layers, each with its own scale, speed, opacity, and blur:
+
+| layer | scale | fall | opacity | note |
+| --- | --- | --- | --- | --- |
+| far | 0.3–0.5 | slow | 0.22–0.40 | drawn first, may sit behind content |
+| mid | 0.5–0.85 | medium | 0.46–0.78 | the body of the effect |
+| near | 1.05–1.9 | fast | 0.50–0.82 | few, optionally blurred, drawn over content |
+
+Cross the near layer *in front* of the type. That crossing is the depth cue. Use two or three leaves there, not a curtain.
+
+## Handle colour and light
+
+- Sample each leaf from a small ramp — deep oxblood through vermilion to dry amber — and vary saturation per leaf. One red for every leaf is the giveaway.
+- Alpha-test rather than alpha-blend for 3-D leaves so they sort correctly at any angle without a per-frame depth sort.
+- **An emissive red comes back out of a tone-mapped composite pink.** If leaves self-illuminate in a dark scene, drive green and blue to zero (`0x780200`, not `0x8c1410`), or the whole fall turns candy-coloured.
+
+## Budget the cost
+
+The per-leaf update is free; a few hundred leaves of trigonometry does not register above a CPU profiler's sampling floor. The cost is fill and draw:
+
+- 2-D canvas: one `drawImage` per leaf. Pre-render the sprite once at the largest size you will draw. Never re-path the leaf per frame.
+- 3-D: one `InstancedMesh`, matrices composed into a shared `Matrix4`. Hoist scratch `Matrix4`/`Quaternion`/`Euler`/`Vector3` to module scope.
+- Alpha-tested leaves lose early-Z, so they cost more per pixel than their triangle count suggests. Prefer more, smaller leaves to fewer huge ones.
+
+## Stop invisible work
+
+- Pause on `document.hidden` and when the section leaves the viewport (`IntersectionObserver`). Reset `lastTime` on resume so the first frame after does not integrate the whole pause.
+- Clamp `dt` to about 1/30 s so a stall does not teleport the field.
+- Cap device pixel ratio at 2.
+- Size from a `ResizeObserver` on the root element, not from a one-shot measurement at script time. A page laid out later leaves the canvas 0×0 forever, because the resize event it was waiting for has already fired.
+- Guard the build against a zero viewport. Controls that wire up by running once reach the builder before first layout and otherwise spawn the whole field stacked at the origin.
+
+## Respect the reader
+
+Under `prefers-reduced-motion: reduce`, render one still, well-composed frame and do not animate. Do not simply hide the leaves; the composition was designed with them in it. Redraw that still when a control changes so the controls still do something.
+
+## Verify
+
+- [ ] Tumble crosses edge-on; leaves visibly thin and vanish once per turn
+- [ ] Slip is driven by the tumble angle, not an independent sine
+- [ ] Front and back faces differ
+- [ ] Every parameter varies per leaf
+- [ ] Recycle band is as tight as the composition allows before count goes up
+- [ ] 3-D: recycled ahead of the camera, not around it
+- [ ] 3-D: emissive reds have green and blue at zero
+- [ ] Count scales with viewport area; the readout reports what was actually built
+- [ ] Paused when hidden or off-screen; `dt` clamped; DPR capped at 2
+- [ ] A designed still frame under reduced motion
+- [ ] Console clean at 390px and 1440px
+===== agent-skills/web-design/pointer-trail-emitter/SKILL.md =====
+---
+name: pointer-trail-emitter
+description: Build a cursor trail whose spacing stays constant at any hand speed, by emitting motes per unit of distance travelled rather than on a timer, so a flick draws the same continuous ribbon as a crawl instead of breaking into scattered dots. Covers sub-segment placement, the ring-buffer ordering trap, the idle breath a distance emitter needs, anchoring the trail to the screen in a 3-D scene, scaling scatter against the plane it hangs on, coasting instead of stopping dead, touch and reduced-motion fallbacks, and why moving the emitter to a DOM overlay to raise its z-index costs more than it buys. Use for cursor wisps, pointer sparks, embers, magic trails, comet tails, plankton, dust, or any mote trail that must stay legible however fast the hand moves.
+---
+
+# Pointer Trail Emitter
+
+Build the emitter yourself when the trail's density has to respond to how fast the hand is moving.
+
+Reach for `add-shader-cursor-trail` or `shaders-cursor-ripples` when you want the packaged WebGPU looks from the Shaders library. Reach for `reveal-hover-effect` when the cursor exposes a second image through a mask. Reach for `ambient-section-particles` when motes fill a section and the pointer only disturbs them. Reach for this when the pointer *lays* them.
+
+The bundled demo keeps the stage intentionally neutral. A plain dark field makes spacing, scatter, and coast easy to judge without a background image competing with the trail. The wisps are dependency-free Vanilla JavaScript rendered through the Canvas 2D API; CSS styles the interface only. There are no shaders, WebGL, or Three.js. Keep the live canvas separate from the interface so the emitter stays testable rather than baked into a composition.
+
+## Emit by distance, not by time
+
+This is the whole mechanism. Accumulate the distance the emitter has moved and spend it in fixed steps:
+
+```js
+E.acc += moved;
+let guard = 0;
+while (E.acc >= STEP && guard++ < 14) {
+  E.acc -= STEP;
+  spawn(/* … */);
+}
+```
+
+Spacing along the path is then `STEP`, whatever the hand is doing, so the trail reads as one continuous ribbon at a crawl and at a flick alike.
+
+Tie emission to a timer instead and spacing becomes proportional to speed — the pointer covers `speed × interval` between spawns. **A flick breaks the line into scattered dots, and a resting hand piles every mote on one spot.** That is the failure this prevents, and it is worth building the toggle to see it once.
+
+Measured over one fixed path: distance emission laid 1885 motes slowly and 1738 quickly, a 1.08× spread — the count follows the path. The same two sweeps on a timer laid 2537 and 1545, a 1.64× spread — the count follows the clock.
+
+Cap the loop. A window blur, a tab restore, or a teleporting pointer can hand you a single enormous `moved`, and without the guard that one frame spawns thousands of motes and stalls.
+
+## Place each mote where it is owed
+
+Spawning every mote of a frame at the pointer's current position clumps them at one end of the segment. A flick then reads as a blob with a gap behind it. Lay each at its own distance along the segment:
+
+```js
+const t = moved > 1e-6 ? Math.min(1, guard * STEP / moved) : 0;
+spawn(E.lx + dx * t, E.ly + dy * t, ang);
+```
+
+## Take the ring-buffer slot before advancing it
+
+```js
+const i = E.i; E.i = (i + 1) % N;   // correct
+```
+
+Advancing first writes the position into the next slot and the life into this one, so **every mote appears where the previous one started.** Dense trails hide it; sparse ones show it on every spawn. Symptom to recognise: motes that look one step behind the cursor and pop rather than fade in.
+
+## Lag the emitter behind the pointer
+
+Damp the emitter toward the pointer instead of pinning it:
+
+```js
+E.x = damp(E.x, px, 16, dt);
+```
+
+A rigidly pinned emitter makes a fast flick look like the trail is welded to the cursor. The lag is what gives the drift its slack.
+
+## Anchor the trail to the screen, not the world
+
+For an in-scene 3-D trail, parent the points to the **camera** and work in camera space. Map the pointer through the frustum's own half-height:
+
+```js
+const hh = Math.tan(camera.fov * Math.PI / 360) * D;
+const x = nx * hh * camera.aspect, y = ny * hh;
+```
+
+Unprojecting to a world plane instead pins the trail to the set: the moment the rig drifts or parallaxes, the trail swims across the screen rather than staying under the hand.
+
+Use quads or points that ignore depth (`depthTest:false`, `depthWrite:false`) and give them their own render order. If the scene has secondary passes — a mirror, a reflection probe — put the trail on its own layer so it never appears in them.
+
+## Scale the scatter against the plane it hangs on
+
+Spread is meaningless as an absolute. At a distance of 3.4 units with a 36° camera, the plane the trail hangs on is only about **2.2 units tall** — so ±0.03 units of jitter is a thread stitched to the cursor, not a drift.
+
+Compute the plane extent, then express scatter as a fraction of it. The same number that reads as a soft cloud on one camera is a hard line on another.
+
+## Let them coast
+
+Damping matters more than initial velocity. At `1 - 1.1 * dt` every mote stops within a tenth of a unit of where it spawned and the trail never opens out; halve it and the scatter carries.
+
+Add a slow curl so the drift frays instead of blowing along one straight line, and a small constant rise so it behaves like something buoyant rather than something thrown.
+
+## Drop what round motes do not need
+
+A round sprite has no orientation. Remove the per-particle angle attribute and the rotated `gl_PointCoord` lookup entirely rather than leaving them at zero — that is one attribute, one upload, and several instructions per fragment for a rotation nobody can see.
+
+Keep the motes small: a few pixels of core inside a faint halo. Small sprites are what let the count go up without paying the additive fill a screenful of large ones costs.
+
+## Keep a breath when the hand is still
+
+Distance emission means a stationary pointer travels nothing and therefore emits nothing — the trail dies under a resting hand. So add a slow idle emission on a timer purely for that case.
+
+**Rarely** is the operative word: one every ~0.4s. Emit often from a stationary pointer and it grows a permanent column of smoke up the middle of the frame — which is the timer failure the mechanism exists to avoid, reintroduced by hand.
+
+## Numbers
+
+Tuned on a trail hanging 3.4 units from a 36° camera, on a plane ≈2.2 units tall. Scale the spatial values by your own plane extent.
+
+| parameter | value | note |
+| --- | --- | --- |
+| emission step | 0.030 units | distance between spawns |
+| spawns per frame cap | 14 | the teleport guard |
+| emitter damping | `damp(…, 16, dt)` | the lag behind the pointer |
+| scatter | ±0.30 units | ≈13% of the plane height |
+| depth jitter | ±0.45 units | breaks the flat sheet |
+| life | 1.45–2.75 s | idle motes 2.1–3.4 s |
+| launch velocity | −0.09 along travel, ±0.19 lateral | against the direction of motion |
+| coast damping | `1 − 0.5 * dt` | halved from 1.1; see above |
+| buoyancy | +0.022 · dt | |
+| curl | `sin(t·1.3 + φ)·0.17`, `cos(t·1.1 + 1.7φ)·0.14` | per-mote phase φ |
+| size | 0.018–0.050, ×(1 + 0.55u) | a mote softens, it does not swell |
+| opacity | in over u 0–0.12, out over 0.22–1, ×0.9 | |
+| count | 190 desktop, 90 on a low tier | |
+| idle emission | every 0.42 s | |
+
+## Do not move it to a DOM overlay to raise its z-index
+
+Nothing inside the WebGL canvas can rise above the page — the canvas is one element at its own stacking tier — so a 2-D overlay canvas looks like the only way to get the layer. It is, and it still is not worth it.
+
+The port costs the post chain: the motes come out as hard points with no bloom, and a wider fainter second copy is not the same thing. Every constant also has to be converted rather than re-picked — `px_per_unit = (innerHeight / 2) / (tan(fov / 2) * D)`, sprite diameter `innerHeight * size / D` — and rebuilding the look by eye instead of translating it produces a different effect that has to be re-approved.
+
+If the layer is genuinely required, port it as a pure translation and diff the frames against the old build before showing anyone.
+
+## State the cost from a profile
+
+The per-mote update is free. A CPU profile of a 190-mote trail showed the update at **0.00% of samples** — below the profiler's sampling floor. The cost is entirely additive fill, so the levers are sprite size and count, in that order.
+
+Measure before reporting a regression. A frame-time comparison on this trail once showed a 20–30% p90 rise that turned out to be noise: three runs of *identical* code gave 226 / 374 / 243 ms. Run it more than once before you believe it.
+
+## Lifecycle and reduced motion
+
+- Gate on `matchMedia('(hover: none)')`. On touch there is no hover position to follow; park the emitter or drive it from `pointermove` during a drag only, or a stationary emitter grows a permanent plume.
+- Under `prefers-reduced-motion: reduce`, render a **designed still frame** — a composed trail already laid across the frame — rather than hiding it. Keep controls live so they redraw that frame.
+- Pause on `document.hidden`, reset the time base on resume, clamp `dt` to ≈1/30 s, and cap DPR at 2.
+- Nothing may depend on the pointer alone. Give the emitter a keyboard path so the effect is complete and operable without a mouse.
+
+## Verify
+
+- [ ] The trail is legible on a neutral field before the pointer moves
+- [ ] The demo does not rely on background imagery to make the effect look complete
+- [ ] Spacing along the path is constant; a flick and a crawl draw the same ribbon
+- [ ] Measured, not assumed: mote count over a fixed path barely moves with speed
+- [ ] A flick lays motes along the whole segment, not clumped at one end
+- [ ] Ring-buffer slot is taken before the index advances
+- [ ] 3-D: parented to the camera, and the trail stays under the hand while the rig drifts
+- [ ] Scatter is expressed against the plane extent, not as an absolute
+- [ ] Motes coast rather than stopping within a fraction of their spawn point
+- [ ] A stationary pointer keeps an aura without growing a column
+- [ ] No per-particle angle attribute on round sprites
+- [ ] Spawn loop is capped against a teleporting pointer
+- [ ] Operable from the keyboard; touch path does not plume
+- [ ] Reduced motion renders a designed still, not a hidden layer
+- [ ] Cost claims came from a profile, and any regression was re-run before it was reported
+===== agent-skills/web-design/scroll-progress-timeline/SKILL.md =====
+---
+name: scroll-progress-timeline
+description: Turn any ordered process into a data-driven vertical or horizontal scroll story with a base line, progress fill, active step states, responsive collapse, semantic fallback, and reduced-motion behavior. Use for onboarding, checkout, roadmaps, recipes, case studies, service processes, histories, or narratives where progress through the sequence should become visible while scrolling.
+---
+
+# Scroll Progress Timeline
+
+Use one progress line to connect ordered information. The sequence must remain complete, readable, and navigable before animation is added.
+
+## Model the steps
+
+Keep the content data-driven:
+
+```js
+const steps = [
+  { id: "brief", number: "01", title: "Set the direction", body: "..." },
+  { id: "build", number: "02", title: "Make the system", body: "..." },
+  { id: "ship", number: "03", title: "Release and learn", body: "..." }
+];
+```
+
+Render it as an ordered list with real headings. The line, dots, media, and active state enhance that structure; they do not replace it.
+
+## Build the line
+
+1. Render a quiet base line behind every point.
+2. Place one progress line on top with `transform-origin: top` for vertical or `left` for horizontal.
+3. Measure the first and last point centers, not arbitrary section edges.
+4. Normalize scroll position between those centers.
+5. Apply `scaleY(progress)` or `scaleX(progress)` so updates stay on the compositor.
+6. Mark a step active when the progress head crosses its center.
+
+```js
+const progress = Math.min(1, Math.max(0,
+  (viewportAnchor - lineStart) / (lineEnd - lineStart)
+));
+line.style.transform = `scaleY(${progress})`;
+```
+
+Schedule DOM writes in one animation frame. Recalculate geometry after font and image loading, resize, orientation changes, and content mutation.
+
+## Choose the layout
+
+- Use a centered alternating timeline only when both sides have enough width and similar content weight.
+- Use a left rail for long copy, compact steps, or mixed card heights.
+- Use a horizontal line for short sequences with concise labels and explicit keyboard-safe overflow.
+- Use pinned full-screen chapters only when each step carries a distinct visual state. Keep the pin finite and release before the next section.
+- Collapse to a simple left rail on small screens. Do not preserve alternation at the expense of reading order.
+
+## Animate step state
+
+Use small opacity, translate, scale, blur, color, or media transitions. Keep every step readable while inactive. Expose active index with `aria-current="step"` only when that state is meaningful and current; do not announce every scroll update with a live region.
+
+Use IntersectionObserver for simple active-state entry. Use a normalized scroll measurement or GSAP ScrollTrigger when the line must fill continuously or coordinate pinned media.
+
+## Handle navigation
+
+- Make step links real anchors when users can jump within the process.
+- Add `scroll-margin` for sticky headers.
+- Preserve focus and do not move it during passive scrolling.
+- Keep URLs and browser history stable unless the user explicitly selects a step.
+- If steps are interactive, use buttons or links with visible focus; never make a decorative dot the only control.
+
+## Reduce motion
+
+Under `prefers-reduced-motion: reduce`, show the complete line or discrete reached states without scrubbed interpolation, blur, pinning, or large transforms. Keep ordinary document flow and all step content.
+
+## Verify
+
+Test variable step counts, uneven card heights, missing media, long translations, 390/768/1024/1440 widths, 200% zoom, fast forward and reverse scrolling, direct anchor navigation, keyboard order, reduced motion, late font/image layout, route cleanup, and console errors. The active step and line head must agree at every boundary.
+
+Use [demo/index.html](demo/index.html) as the working reference and [demo/PROMPT.md](demo/PROMPT.md) to recreate or remix it. Keep [REFERENCES.md](REFERENCES.md) as the links-only implementation source list.
+===== agent-skills/web-design/scroll-scrubbed-word-reveal/SKILL.md =====
+---
+name: scroll-scrubbed-word-reveal
+description: Reveal marked-up text word by word as scroll progress advances, while preserving semantic inline links, emphasis, responsive line wrapping, and reduced-motion readability. Use for headlines, quotes, manifestos, product statements, onboarding messages, or editorial passages where scrolling should pace comprehension rather than simulate typing.
+---
+
+# Scroll-Scrubbed Word Reveal
+
+Make reading progress visible without replacing real text, breaking inline markup, or depending on a fixed line count.
+
+## Prepare the text
+
+1. Keep one untouched accessible text source in the DOM.
+2. Walk text nodes with `TreeWalker`; do not flatten the container with `textContent` or `innerHTML`.
+3. Skip `script`, `style`, form controls, and elements marked with `[data-no-split]`.
+4. Replace only non-whitespace tokens with spans and preserve whitespace nodes exactly.
+5. Mark generated spans `aria-hidden="true"` only when an equivalent unsplit accessible copy remains available.
+
+Preferred structure:
+
+```html
+<p class="reveal" data-reveal>
+  Motion should <em>explain</em> the next state, not decorate it.
+</p>
+```
+
+Avoid line-based splitting. Browser line wraps must remain free to change with container width, language, zoom, and font loading.
+
+## Map scroll to words
+
+Use section progress as the single source of truth:
+
+```js
+const reveal = Math.min(1, Math.max(0, progress));
+const local = Math.min(1, Math.max(0, reveal * wordCount - index));
+word.style.setProperty("--word-progress", local);
+```
+
+Interpolate hidden opacity, blur, and vertical offset from `--word-progress`. Keep the visible state identical to normal typography.
+
+Use GSAP ScrollTrigger with `scrub` when precise starts, ends, refresh, or a shared timeline is needed. Use a dependency-free scroll measurement plus `requestAnimationFrame` for a standalone section.
+
+## Set useful defaults
+
+- Hidden opacity: `0.12–0.3`
+- Blur: `4–10px`
+- Vertical offset: `0.08–0.22em`
+- Reveal span: `120–220%` of the viewport for a paragraph
+- Direct word overlap: `10–30%`
+- Easing: none for the scroll mapping; ease only the visual interpolation when needed
+
+Expose the values as CSS custom properties. Scale the scroll span from text length rather than assuming one duration fits every passage.
+
+## Preserve emphasis
+
+- Let links, `strong`, `em`, marks, and accent spans keep their semantics and styling.
+- Use inherited color by default; style accents on the original element, not on token indexes.
+- Do not reveal essential links only on hover or after the reader has passed them.
+- Re-split only when the source text changes. Responsive wrapping does not require rebuilding tokens.
+- Store enough state to restore the original DOM during cleanup.
+
+## Keep it readable
+
+- Use real document flow; pin only when the copy and evidence justify a short deliberate reading beat.
+- Do not use a typewriter cursor, random delays, or autoplay unless explicitly requested.
+- Under `prefers-reduced-motion: reduce`, show every word immediately, remove blur and transforms, and remove any pinning.
+- Keep screen-reader output natural and avoid announcing each word.
+- Verify contrast in both the hidden and final states; hidden words may be quiet but the final text must meet the normal reading contract.
+
+## Clean up
+
+Kill ScrollTriggers, remove scroll and resize listeners, cancel animation frames, and restore the original marked-up subtree on route change or component unmount. Refresh measurements after fonts load if start or end positions depend on text geometry.
+
+## Verify
+
+Test inline links and emphasis, punctuation, repeated spaces, long words, 200% zoom, 390/768/1440 widths, content changes, forward and reverse scrolling, reduced motion, keyboard focus, screen-reader reading order, and teardown. The final DOM must still communicate the complete sentence with JavaScript disabled.
+
+Use [demo/index.html](demo/index.html) as the working reference and [demo/PROMPT.md](demo/PROMPT.md) to recreate or remix it. Keep [REFERENCES.md](REFERENCES.md) as the links-only implementation source list.
+===== agent-skills/web-design/scroll-scrubbed-visual-sequence/SKILL.md =====
+---
+name: scroll-scrubbed-visual-sequence
+description: Build reversible scroll-controlled visual transformations with a pinned or sticky stage, normalized progress, and video, image-sequence, canvas, SVG, or DOM renderers. Use for hero transformations, product assembly, interface state walkthroughs, object rotation, diagrams, or photo sequences that must move forward and backward with native scrolling.
+---
+
+# Scroll-Scrubbed Visual Sequence
+
+Turn one visual transformation into a responsive scroll instrument. Keep the page usable without motion and keep the renderer replaceable.
+
+## Define the sequence
+
+Write the visual states before coding:
+
+```js
+const sequence = {
+  scrollVh: 280,
+  frameCount: 96,
+  fit: "contain",
+  posterFrame: 0,
+  reducedMotionFrame: 95,
+  copyStops: [0, 0.42, 0.78]
+};
+```
+
+Use one normalized value for every renderer:
+
+```js
+const progress = Math.min(1, Math.max(0,
+  (viewportTop - sectionTop) / (sectionHeight - viewportHeight)
+));
+```
+
+Never make wheel delta, elapsed time, or autoplay the source of truth. Native scroll position must determine the exact visual state in both directions.
+
+## Choose the renderer
+
+- Use video when the sequence is continuous, photographic, or expensive to render live. Encode frequent keyframes, preload metadata, reserve the aspect ratio, and coalesce `currentTime` writes in `requestAnimationFrame`.
+- Use an image sequence when exact art-directed frames matter. Preload the current frame first, then nearby frames; never block first paint on the whole set.
+- Use canvas for procedural drawing or compositing. Cap device pixel ratio at 2 and redraw only when progress changes.
+- Use SVG or DOM for diagrams, product cards, interface states, and accessible text. Drive transforms, opacity, clip paths, and CSS variables instead of layout-heavy properties.
+- Use WebGL only when depth, lighting, or a real 3D camera materially strengthens the idea. Provide a static poster and dispose resources.
+
+## Build the scroll stage
+
+1. Keep the section in normal document flow and set its height from `scrollVh`.
+2. Put the visual in a `position: sticky` stage sized to the viewport.
+3. Keep copy and controls in a separate layer. Do not bake essential text into frames.
+4. Map progress to the renderer with no implicit easing. Add optional smoothing after correctness is proven.
+5. Refresh measurements after fonts and intrinsic media sizes settle.
+6. Release the sticky stage cleanly before the next section and keep the footer reachable.
+
+Use GSAP ScrollTrigger when the project already uses GSAP or needs exact pin, refresh, and timeline coordination:
+
+```js
+ScrollTrigger.create({
+  trigger: section,
+  start: "top top",
+  end: () => `+=${innerHeight * 2.8}`,
+  pin: stage,
+  scrub: true,
+  invalidateOnRefresh: true,
+  onUpdate: ({ progress }) => render(progress)
+});
+```
+
+For a dependency-free implementation, measure the section on scroll and resize, then schedule one render per animation frame.
+
+## Handle media safely
+
+- Keep a poster visible until the first real frame paints.
+- Clamp frame indexes to `0...frameCount - 1`.
+- Cancel stale image requests and never queue every seek during fast scrolling.
+- Use `object-fit` and an explicit focal point so the subject survives mobile crops.
+- Pause decoding, rendering, and observation while the section is offscreen or the document is hidden.
+- Clean up ScrollTriggers, observers, listeners, animation frames, Blob URLs, and renderer resources on route change or unmount.
+
+## Preserve access and control
+
+- Keep headings, copy, captions, and the CTA in semantic HTML.
+- Do not trap scrolling, block keyboard navigation, or require precise pointer input.
+- Under `prefers-reduced-motion: reduce`, remove pinning and scrubbing, render the selected static frame, and restore ordinary document flow.
+- If the sequence communicates ordered information, expose the same states as text or a list.
+
+## Tune deliberately
+
+Expose scroll distance, renderer, frame count, poster frame, media fit, focal point, copy stops, overlay strength, smoothing, and reduced-motion state as configuration. Avoid magic numbers distributed across event handlers.
+
+## Verify
+
+Check forward and reverse scrolling, fast flicks, resize while active, 390/768/1024/1440 widths, unloaded frames, blocked video, reduced motion, keyboard order, route cleanup, and console errors. The same scroll position must always reproduce the same state.
+
+Use [demo/index.html](demo/index.html) as the working reference and [demo/PROMPT.md](demo/PROMPT.md) to recreate or remix it. Keep [REFERENCES.md](REFERENCES.md) as the links-only implementation source list.
+===== agent-skills/web-design/scroll-world-storytelling/SKILL.md =====
+---
+name: scroll-world-storytelling
+description: "Turn an article, case study, brand narrative, product journey, or long-form story into a cinematic scroll-driven landing page using one of three renderers: scrubbed video, a real-time Three.js world, or semantic HTML/SVG data and typography. Use when the user asks for a scroll world, fly-through landing page, article-to-website transformation, animated planet, data scrollytelling, video-scrubbed page, connected visual journey, or story-led alternative to ordinary stacked sections."
+---
+
+# Scroll World Storytelling
+
+Turn source material into one connected journey. Scroll advances a visual world and the copy reveals the story in deliberate beats.
+
+The skill has exactly three production modes. Choose one primary mode before building:
+
+1. **Video scrub** — generated or filmed footage, mapped to scroll.
+2. **Three.js world** — a real-time 3D object, place, planet, or system.
+3. **HTML / data / type** — semantic DOM, SVG charts, metrics, and kinetic typography.
+
+Do not mix modes by default. A focused renderer produces a clearer concept, smaller test surface, and more reliable fallback.
+
+## Start with the contract
+
+Write these blocks before implementation.
+
+### Goal
+
+> Turn the supplied story into a one-page journey with 5–7 memorable beats and one final action. A first-time visitor should understand the thesis, tension, mechanism, proof, and payoff without reading the source.
+
+### House rules
+
+- Preserve the source thesis, sequence, facts, and caveats. Never invent proof.
+- Use one connected world, one dominant motion grammar, and one art direction.
+- Let motion carry transitions; let copy explain meaning.
+- Keep one primary CTA. Keep navigation and utility controls quiet.
+- Keep native, reversible document scrolling. Never hijack the wheel.
+- Never spend generation credits, publish, deploy, or replace production files without approval.
+- Keep builder and verifier separate when agents are available.
+
+### Bar
+
+- A visitor can explain the arc after one pass.
+- Scrolling works forward, backward, slowly, and with a fast flick.
+- No visible jump, flash, or unintended reversal at a seam.
+- The page remains legible on mobile and with reduced motion.
+- Every completion claim includes browser, console, responsive, and asset evidence.
+
+## Read the whole source
+
+1. Read the complete article or narrative.
+2. Inspect the target repo, framework, asset pipeline, and current page.
+3. Separate source facts from presentation ideas.
+4. Collect supplied brand assets and 2–3 references when available.
+5. Identify the one action the story should earn.
+
+If a local daily-inspiration archive exists, inspect the latest one or two capture articles, their stills, and representative local motion files before choosing the art direction. Extract principles such as palette, hierarchy, material, composition, and motion; do not copy layouts literally or upload local reference files to an external generator without explicit approval.
+
+When reuse rights are unclear, paraphrase the source and keep quotations short. Never fabricate testimonials, metrics, or customer claims.
+
+## Build the story map
+
+Reduce the source to 5–7 beats:
+
+1. **Hook** — the promise or surprising thesis.
+2. **Old way** — the friction or belief being rejected.
+3. **New rule** — the idea that changes the route.
+4. **Mechanism** — how the system works.
+5. **Proof** — the strongest evidence.
+6. **Payoff** — the transformed end state.
+7. **Action** — one next step.
+
+Create a beat ledger before code:
+
+| Field | Constraint |
+| --- | --- |
+| id | short stable slug |
+| scene | what exists in the visual world |
+| eyebrow | 2–4 words |
+| headline | 3–8 words |
+| body | one sentence, ideally under 24 words |
+| evidence | exact source fact or asset |
+| motion | one clear verb phrase |
+| scroll weight | 0.7–1.8 viewport heights |
+| CTA | final beat only unless required earlier |
+
+Combine repeated arguments. Do not turn every paragraph into a scene.
+
+## Write the style bible
+
+Define:
+
+- Mood: three precise adjectives.
+- World metaphor: one place or system that can hold every beat.
+- Palette: 4–6 named colors with one dominant field and one accent.
+- Typography: one display voice and one reading voice.
+- Material language: one system such as paper, glass, clay, photographic, or mechanical.
+- Motion grammar: forward glide, orbit, crane, lateral track, dive, or staged reveal.
+- Pacing: where the story pauses and where it moves quickly.
+- Exclusions: three visual clichés to avoid.
+
+For generated media, reuse the style preamble byte-for-byte in every asset prompt.
+
+## Choose one mode
+
+| Choose | Best for | Strength | Main cost |
+| --- | --- | --- | --- |
+| Video scrub | cinematic realism, places, products, pre-rendered camera moves | exact art direction and photographic finish | heavier assets and seek tuning |
+| Three.js world | planets, objects, maps, systems, spatial interaction | real-time depth and responsive camera control | WebGL performance and fallback work |
+| HTML / data / type | reports, launches, metrics, editorial stories | accessible, crisp, lightweight, content-first | less photographic spectacle |
+
+If the story is primarily proof and numbers, prefer HTML/data. If the central metaphor is spatial and interactive, prefer Three.js. If cinematic imagery is the idea, prefer video.
+
+## Mode 1 — Video scrub
+
+Use [demo/video/index.html](demo/video/index.html) and [demo/video/PROMPT.md](demo/video/PROMPT.md).
+
+### Generate the source clip
+
+1. Choose one continuous 6–15 second camera move. Avoid cuts.
+2. Write three materially different style studies before generating: change the dominant field, material language, lighting, and composition—not just the accent color.
+3. Keep important subjects near center with usable headline space.
+4. Generate a short calibration clip before the final render when paid tools are used.
+5. For multi-leg journeys, start each leg from the previous leg's actual rendered last frame.
+6. Keep raw masters and record provider, model, prompt, seed, duration, aspect ratio, and rights.
+
+When the user requests Grok Imagine, use its current video interface or API, choose Video, set the requested aspect ratio, duration, and resolution, and generate the approved style studies. Prefer 16:9, 6–10 seconds, and 720p for a first landing-page pass unless the brief requires otherwise. Never substitute a procedural placeholder and call it generated footage.
+
+Preferred prompt shape:
+
+> Single continuous [camera move], no cuts. Travel through [world metaphor] from [opening] to [payoff]. [Exact scene sequence]. [Byte-identical style preamble]. Center-safe composition, quiet negative space for editorial copy, no text, no logos, no captions.
+
+Do not promise seamless connectors unless the model accepts the required start frame, or both endpoints for a connector.
+
+### Encode for scrubbing
+
+~~~bash
+ffmpeg -i source.mp4 -an \
+  -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p \
+  -g 8 -keyint_min 8 -sc_threshold 0 \
+  -movflags +faststart output.mp4
+~~~
+
+- Use one codec and encode profile across every clip.
+- Strip audio unless the experience explicitly includes it.
+- Keep small GOPs for responsive seeking.
+- Use byte-range hosting or fetch to a Blob URL before scrubbing.
+- Keep the first frame as a poster until video paints.
+- Map one normalized scroll value to `currentTime`; coalesce seeks in `requestAnimationFrame`.
+- Reduced motion uses the poster or ordered stills with ordinary document flow.
+
+## Mode 2 — Three.js world
+
+Use [demo/threejs/index.html](demo/threejs/index.html) and [demo/threejs/PROMPT.md](demo/threejs/PROMPT.md).
+
+1. Produce three art-direction studies before committing. Each must change the field color, object material, light behavior, typography relationship, and composition—not just shader colors.
+2. Reject the generic default of a glowing blue planet in dark space unless the source specifically earns it.
+3. Create one scene, perspective camera, renderer, and world group.
+4. Make the hero object carry the metaphor: sculpture, machine, archive, constellation, city, product, or a non-literal planetary system.
+5. Map scroll progress to camera position, camera target, object rotation, lights, and scene states.
+6. Keep ambient motion subtle; scroll must remain the primary conductor.
+7. Cap device pixel ratio at 2 and update renderer and camera on resize.
+8. Pause continuous rendering when the page is hidden or off-screen.
+9. Dispose geometries, materials, textures, and listeners during teardown.
+10. Provide a static CSS/SVG poster when WebGL fails or reduced motion is requested.
+
+Use local, pinned Three.js files in portable demos. Do not depend on a remote CDN for the core renderer.
+
+## Mode 3 — HTML / data / type
+
+Use [demo/html-data/index.html](demo/html-data/index.html) and [demo/html-data/PROMPT.md](demo/html-data/PROMPT.md).
+
+1. Start with semantic headings, paragraphs, lists, tables, and real links.
+2. Turn the strongest evidence into one chart grammar: bars, line, range, slope, or comparison.
+3. Use inline SVG only when a DOM chart needs paths or axes; keep labels as selectable text.
+4. Drive CSS custom properties from one normalized scroll value.
+5. Animate transforms, opacity, clip paths, counters, and SVG stroke offsets.
+6. Keep chart scales truthful and expose values in accessible text or a table.
+7. Let the page remain complete and readable when JavaScript is disabled.
+8. Reduced motion removes interpolation while preserving state changes and order.
+
+This mode should not secretly become Canvas or WebGL. Its advantage is native layout, accessibility, and sharp responsive typography.
+
+## Shared page contract
+
+Keep content separate from renderer code:
+
+~~~js
+const story = {
+  title: "The journey",
+  cta: { label: "Begin", href: "#begin" },
+  sections: [
+    {
+      id: "hook",
+      eyebrow: "01 / Premise",
+      title: "A destination, not a route.",
+      body: "Define arrival clearly and let the system find the path.",
+      evidence: null,
+      scroll: 1.4
+    }
+  ]
+};
+~~~
+
+Every runtime needs:
+
+- A pinned or sticky visual stage.
+- One scroll conductor and config-driven chapters.
+- Native reversible scrolling and keyboard focus.
+- Local easing without changing scene endpoints.
+- Work that stops when settled, unless ambient motion is visibly required.
+- Lazy loading for heavy current and next assets.
+- Semantic headings, one real CTA, and visible focus.
+- A reduced-motion version with ordinary document flow.
+
+## Verify with a fresh pass
+
+Check:
+
+1. **Story** — every beat advances the thesis.
+2. **Timing** — the right state is active at each scroll position.
+3. **Reverse** — backward scroll restores the exact prior state.
+4. **Performance** — no unnecessary work after settling; no decoder or WebGL backlog.
+5. **Responsive** — verify 390, 768, 1024, and 1440 pixel widths.
+6. **Mobile** — fast flick, orientation change, safe areas, and readable copy.
+===== agent-skills/web-design/book-serif-index/SKILL.md =====
+---
+name: book-serif-index
+description: "Create an archival book-reader design system with serif-led pages, mono index navigation, aged paper surfaces, margin notes, and a premium catalog frame."
+---
+
+# Book Serif Index Skill
+
+## Use When
+- Create an archival book-reader design system with serif-led pages, mono index navigation, aged paper surfaces, margin notes, and a premium catalog frame.
+
+## Workflow
+
+## Scope
+- Apply this as a full design-system direction when the interface should feel like a curated archival reader, manuscript viewer, or premium literary catalog.
+- Use it for editorial experiences, story-driven product pages, archives, research interfaces, lore systems, or reading-centric layouts that need bookish structure and index navigation.
+- This is not generic blog styling; it should combine immersive book surfaces with a technical or catalog-like outer frame.
+
+## Visual target
+- Create a central reading surface that feels like an open book, folio spread, or archival document laid within a darker surrounding interface shell.
+- Let typography lead the experience: display serif or gothic-inspired headings, readable serif body text, and mono utility labels for navigation, metadata, and indexing.
+- Use aged paper tones, subtle texture, crease shadows, edge shading, and light wear so the main content surface feels tactile and collected.
+- Surround the reading area with restrained index or catalog UI: sidebar sections, chapter markers, section lists, archive labels, or mono navigation rails.
+- Keep the palette restrained and atmospheric: dark outer shell, warm paper interior, muted ink tones, and one selective accent color derived from the design. If no brand accent exists, a subdued oxblood, bronze, or antique gold is acceptable.
+
+## Implementation guidance
+- Prefer a two-zone composition: a darker outer interface frame plus a lighter book-like content surface centered inside it.
+- Use serif body copy with generous line height for readability, then pair it with mono labels, tracking-heavy section names, and quiet metadata for contrast.
+- Build the book surface with gradients, inset shadows, subtle center crease treatment, edge shadows, and light paper texture so it reads as layered material rather than a flat beige card.
+- Include index-like navigation patterns such as chapter lists, section trees, archive groupings, or sidebar entries with active states and small markers.
+- Add scholarly details like drop caps, marginalia boxes, block labels, annotations, citations, folio markers, or footer metadata to reinforce the editorial system.
+- Motion should stay calm and literary: masked text reveals, gentle entrance motion, slow ambient background drift, and restrained hover cues.
+
+## Recommended patterns
+- Outer shell: dark full-screen container with thin frame lines, subtle vertical rails, and muted corner markers.
+- Book spread: two-page or dual-panel reading region with center crease, paper gradients, soft edge shadows, and slight tonal variation between pages.
+- Index navigation: mono sidebar with grouped headings, active bullets, archive sections, or chapter entries arranged like a catalog.
+- Reading details: drop caps, pull quotes, annotation cards, marginal notes, image plates with thin framed borders, and bottom folio labels.
+- Typography system: decorative serif display, highly readable serif body, and mono metadata used sparingly for structure.
+
+## Tuning knobs
+- Antiquity: increase or reduce the amount of paper texture, warm tint, and wear depending on how historical versus contemporary the interface should feel.
+- Technical overlay: add or remove catalog rails, index labels, and metadata so the design can lean more archival or more system-like.
+- Book realism: tune crease depth, page shadows, and paper contrast so the surface feels tactile without becoming skeuomorphic overload.
+- Accent use: keep accent color concentrated in headings, active index states, callouts, or notes instead of spreading it across the whole spread.
+- Density: choose between airy museum-like composition or denser scholarly indexing depending on the content.
+
+## Avoid
+- Flat cream cards with serif text but no convincing book or archive structure.
+- Generic publishing layouts that omit index rails, metadata, and material depth.
+- Bright modern SaaS color systems that break the archival tone.
+- Excessive distressed effects that make the interface dirty or hard to read.
+- Overly ornate fantasy styling without the disciplined catalog and editorial framework.
+===== agent-skills/web-design/editorial-tech/SKILL.md =====
+---
+name: editorial-tech
+description: "Blend editorial magazine composition with precision product-tech detailing using asymmetrical grids, cinematic media bands, mono utility labels, and restrained accent color."
+---
+
+# Editorial Tech Skill
+
+## Use When
+- Blend editorial magazine composition with precision product-tech detailing using asymmetrical grids, cinematic media bands, mono utility labels, and restrained accent color.
+
+## Workflow
+
+## Scope
+- Apply this as a full design-system style direction across layout, typography, surfaces, media treatment, navigation, and motion.
+- Use it when the design should feel like a premium editorial spread merged with a high-end technology product interface.
+- This is not generic corporate SaaS and not pure magazine minimalism; it should sit in the middle with narrative composition plus precise technical detailing.
+
+## Visual target
+- Build asymmetrical editorial compositions with strong column structure, deliberate negative space, and clear spatial rhythm.
+- Pair large expressive headline moments with quieter utility text, mono labels, small metadata, and measured supporting copy.
+- Use cinematic media bands, panoramic image strips, inset photography panels, or immersive visual slices to create narrative flow across the layout.
+- Add fine divider lines, grid traces, subtle borders, section rules, and technical markers so the page feels engineered rather than soft or lifestyle-first.
+- Keep the palette restrained: mostly dark neutrals or controlled light neutrals, with one active accent color derived from the brand or design system.
+
+## Implementation guidance
+- Favor multi-column layouts, offset alignment, and editorial cropping instead of centered generic SaaS hero blocks.
+- Use one display-oriented type treatment for hero or section headlines, then support it with clean sans-serif or mono utility text for labels, steps, timestamps, and UI annotations.
+- Surfaces should feel premium and quiet: dark panels, muted fills, thin strokes, gradient-border shells, or lightly luminous overlays instead of loud glassmorphism.
+- Introduce cinematic horizontal bands or framed media regions that can cut across the grid and overlap adjacent columns in a controlled way.
+- Add subtle motion such as masked text reveals, calm parallax, slow media drift, or hover-state line brightening. Motion should feel intentional and technical, never playful or bouncy.
+- Accent color use should be selective: active states, numeric highlights, current steps, progress indicators, focal separators, or key call-to-action surfaces.
+
+## Recommended patterns
+- Navigation: sparse top bars with wide spacing, muted links, and a precise central mark or framed logo treatment.
+- Hero sections: oversized editorial headline on one side, compact supporting copy on another, then a cinematic band or inset media strip crossing the composition.
+- Information modules: step lists, chapter markers, mono counters, timeline ticks, bordered pills, and compact metadata clusters.
+- Containers: thin-framed panels, controlled image crops, subtle glow accents, and structural lines that reinforce the grid.
+- CTAs: simple but premium controls with crisp geometry, dark/light contrast, and restrained accent emphasis rather than oversized marketing buttons.
+
+## Tuning knobs
+- Editorial intensity: increase or reduce asymmetry and overlap depending on how dramatic the composition should feel.
+- Technical density: add or remove rules, markers, mono labels, and interface metadata to control how product-like the page becomes.
+- Accent restraint: keep color usage sparse so the system stays premium and not over-styled.
+- Media prominence: tune how much cinematic imagery or visual bands dominate compared with pure typography.
+- Contrast: preserve strong readability even when using moody dark surfaces and layered image treatments.
+
+## Avoid
+- Generic centered SaaS layouts with interchangeable cards and stock gradients.
+- Overdecorated sci-fi chrome, excessive neon, or noisy HUD overlays.
+- Bright multi-color palettes that break the restrained editorial tone.
+- Treating it as plain magazine design without any technical precision cues.
+- Using the accent color everywhere instead of letting it punctuate the composition.
+===== agent-skills/web-design/light-mode-paper-technical/SKILL.md =====
+---
+name: light-mode-paper-technical
+description: "Create a light-mode technical design system with warm paper surfaces, dark outer framing, subtle diagonal texture, precise bracketed geometry, and restrained accent signals."
+---
+
+# Light Mode Paper Technical Skill
+
+## Use When
+- Create a light-mode technical design system with warm paper surfaces, dark outer framing, subtle diagonal texture, precise bracketed geometry, and restrained accent signals.
+
+## Workflow
+
+## Scope
+- Apply this as a full design-system direction across shell, layout, typography, navigation, cards, mockups, background treatment, and motion.
+- Use it when the interface should feel bright, refined, and technical, but warmer and more tactile than a cold white enterprise dashboard.
+- This is not plain minimal light mode and not editorial paper alone. It should combine paper-like surfaces with precise product-tech framing.
+
+## Visual target
+- Build the main experience on warm off-white, parchment, or soft paper-toned surfaces instead of stark white.
+- Wrap the lighter interior inside a darker outer shell or surrounding field so the content area feels framed, elevated, and intentional.
+- Add subtle technical structure: thin borders, inset rules, L-brackets, tiny corner details, diagonal background texture, and measured spatial guides.
+- Use one restrained accent color for active states, labels, progress, or focal details. The accent should punctuate the system rather than dominate it.
+- Keep the overall result premium and contemporary: rounded container shells are acceptable, but internal layout logic should remain crisp and technical.
+
+## Implementation guidance
+- Prefer a framed master container with generous radius, soft shadow, and a light paper interior placed against a darker page background.
+- Use warm neutrals for primary surfaces, then separate layers with slightly darker paper tones, soft borders, and gentle contrast instead of bright white-on-gray UI.
+- Add low-contrast diagonal texture or fine patterning to large paper regions so the background feels material and lightly engineered.
+- Use clean sans-serif typography for interface content and optional mono utility text for timestamps, captions, browser chrome, transcript cues, or metadata.
+- Build product surfaces such as app mockups, transcript panes, sidebars, or session cards with bright clean interiors, careful spacing, and delicate border hierarchy.
+- Motion should stay calm and polished: masked headline reveals, fade-up sections, controlled card entrance, and subtle activity indicators are appropriate.
+
+## Recommended patterns
+- Dark outer page with a large light rounded container holding the whole experience.
+- Inner framing system using inset border rectangles, small corner brackets, and quiet technical lines over paper-toned backgrounds.
+- Warm light app panels with browser chrome, transcript windows, sidebars, or dashboard modules nested inside the main shell.
+- Accent-driven live states such as active bullets, tiny dividers, progress marks, highlighted words, or primary call-to-action buttons.
+- Paper-technical contrast: soft, readable, welcoming surfaces paired with precise geometry and system-level visual discipline.
+
+## Tuning knobs
+- Paper warmth: shift between cooler stone paper and warmer parchment depending on the brand mood.
+- Framing strength: add or reduce brackets, boundary lines, and technical rules depending on how instrumented the design should feel.
+- Roundness: keep outer shells softly rounded, but avoid over-softening inner layout structures.
+- Accent intensity: keep the accent crisp and memorable, but let warm neutrals carry most of the interface.
+- Texture amount: maintain subtle patterning so the paper feel reads without becoming noisy or vintage.
+
+## Avoid
+- Flat plain white SaaS layouts with no material warmth or framing logic.
+- Heavy vintage paper distressing that makes the interface feel old or dirty.
+- Cold enterprise blue-gray systems that lose the soft paper character.
+- Overusing rounded blobs or generic consumer-app softness that fights the technical structure.
+- Excessive accent usage that turns the paper system into a loud marketing palette.
+===== agent-skills/web-design/dark-blue-contrasting-clean/SKILL.md =====
+---
+name: dark-blue-contrasting-clean
+description: "Create a dark-blue clean design system with strong contrast, cobalt gradient feature blocks, crisp framed structure, and restrained premium glow."
+---
+
+# Dark Blue Contrasting Clean Skill
+
+## Use When
+- Create a dark-blue clean design system with strong contrast, cobalt gradient feature blocks, crisp framed structure, and restrained premium glow.
+
+## Workflow
+
+## Scope
+- Apply this as a full design-system direction across page background, framing rails, hero or CTA bands, cards, link groups, navigation, and motion.
+- Use it when the interface should feel premium, dark, crisp, and blue-led, with strong contrast between deep navy surfaces and brighter cobalt focal regions.
+- This is not an airy cloud-blue system and not loud neon sci-fi. It should stay clean, architectural, and high-contrast.
+
+## Visual target
+- Build the page on a near-black navy base, using dark blue-black backgrounds with subtle tonal variation rather than flat pure black.
+- Introduce one or more prominent cobalt or royal-blue feature blocks as contrast moments, such as hero banners, CTA bands, spotlight cards, or product sections.
+- Use white typography and pale-blue support text over the dark system so the contrast feels sharp, readable, and premium.
+- Add thin outer rails, border-x container lines, small corner squares, and quiet framing detail so the layout feels disciplined and engineered.
+- Let blue glow stay soft and localized, appearing in background blooms, button emphasis, or tiny live indicators instead of flooding the whole page.
+
+## Implementation guidance
+- Prefer a framed max-width shell or inner container with vertical boundary lines and subtle corner markers holding the composition together.
+- Use border-gradient wrappers for premium blue feature blocks and dark cards, then place cleaner inner fills inside them so the edge treatment stays crisp.
+- Organize the layout in clean stacked zones: a high-impact contrast block, then quieter index or navigation areas, followed by a restrained legal or footer zone.
+- Buttons and CTA cards should feel firm and premium, using dark translucent fills, blue-tinted borders, pale-blue copy, and hover states that brighten slightly.
+- Typography should remain light and elegant: thin to regular sans-serif weights, generous spacing, and small uppercase utility lines for section numbering or metadata.
+- Use subtle abstract blue light fields, large blurred glows, circular traces, or soft overlay washes to add atmosphere without weakening the clean structure.
+- Motion should stay calm and premium: masked word reveals, fade-up sections, quiet icon drift, and gentle hover translation are appropriate.
+
+## Recommended patterns
+- Large cobalt gradient banner or CTA block nested inside a dark framed container, with white headline and pale-blue support copy.
+- Dark navy page shell with border-x rails and tiny corner squares marking the main content bounds.
+- Clean multi-column link or info index using white headings, muted gray-blue links, and tiny numeric utility labels.
+- Premium contact or action cards built from blue-to-transparent gradient wrappers and dark inner panels.
+- Small live dots, section counters, or glow markers using bright blue as selective signal detail.
+- Footer or lower-page legal area separated with thin white-alpha rules and minimal technical iconography.
+
+## Tuning knobs
+- Blue intensity: shift between richer royal blue and darker steel-blue depending on how bold the system should feel.
+- Contrast strength: keep text, dividers, and key blocks crisp against the dark base, but avoid harsh overexposure.
+- Glow amount: use blur and bloom sparingly so the page feels atmospheric without becoming soft or hazy.
+- Frame density: add or reduce rails, corner squares, and divider lines depending on how structured the layout should feel.
+- Banner dominance: let the blue feature block act as the hero centerpiece or a secondary conversion zone depending on page needs.
+
+## Avoid
+- Treating it like a light sky-blue or cloudy product page.
+- Full-screen electric blue washes that destroy contrast and refinement.
+- Flat dark layouts with blue text but no meaningful framed structure or contrast block.
+- Overdecorating every card with glow, gradients, or glass effects.
+- Heavy enterprise dashboard clutter that fights the clean architectural tone.
+===== agent-skills/web-design/threejs/SKILL.md =====
+---
+name: threejs
+description: Use when building or debugging interactive 3D scenes on the web with Three.js (scene/camera/renderer, lights/materials, GLTF loading, controls, performance). Helpful for designers shipping 3D UI moments.
+---
+
+# Three.js — WebGL 3D Scenes Skill
+
+## When to use
+- Real 3D: product spins, interactive hero scenes, shaders/material effects, 3D data viz
+- You need full control beyond “background effects”
+- You can budget time for asset pipeline + performance tuning
+
+## Core mental model
+- Create:
+  - `Scene` (root graph)
+  - `Camera` (Perspective/Orthographic)
+  - `Renderer` (`WebGLRenderer`)
+  - `Mesh` = `Geometry` + `Material`
+  - Lights (if using non-unlit materials)
+- Render loop:
+  - `requestAnimationFrame(animate)`
+  - Update time-based animations, controls, mixers, then `renderer.render(scene, camera)`
+
+## Key APIs/patterns
+- Setup:
+  - `const renderer = new THREE.WebGLRenderer({ canvas, antialias, alpha })`
+  - `renderer.setSize(width, height, false)`
+  - `renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))`
+- Camera:
+  - `camera.aspect = width / height; camera.updateProjectionMatrix()`
+- Scene graph:
+  - `scene.add(object)` / `object.position/rotation/scale`
+- Loading assets:
+  - `GLTFLoader` (models), `TextureLoader` (images), `DRACOLoader` (compressed glTF)
+- Controls (common):
+  - `OrbitControls` (debug/product), `PointerLockControls` (FPS), custom pointer handlers
+- Cleanup (important in SPAs):
+  - `geometry.dispose()`, `material.dispose()`, `texture.dispose()`, `renderer.dispose()`
+  - Remove event listeners; cancel RAF.
+
+## Common pitfalls
+- Not handling resize → stretched/cropped rendering
+- Too high devicePixelRatio → mobile GPU meltdown
+- Leaking WebGL resources (not disposing) → crashes after route changes
+- Loading huge textures/models → slow start; use compressed textures, Draco/KTX2, smaller maps
+- Using too many lights/shadows → expensive; fake lighting with baked textures when possible
+
+## Quick recipes
+
+### 1) Minimal spinning cube
+```js
+import * as THREE from "three";
+
+const canvas = document.querySelector("#c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+camera.position.set(0, 0, 4);
+
+const geom = new THREE.BoxGeometry(1, 1, 1);
+const mat = new THREE.MeshStandardMaterial({ color: 0x7c3aed });
+const mesh = new THREE.Mesh(geom, mat);
+scene.add(mesh);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+dir.position.set(2, 2, 2);
+scene.add(dir);
+
+function resize() {
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", resize);
+resize();
+
+function animate(t) {
+  mesh.rotation.y = t * 0.0006;
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+```
+
+### 2) Respect reduced motion
+- If `prefers-reduced-motion: reduce`, render a still frame (no RAF) or slow updates.
+
+## What to ask the user
+- Is this decorative (hero) or functional 3D (product viewer)?
+- Target devices: mobile? older iPhones?
+- Asset format availability (glTF, HDRI, textures) and file size constraints
+- Accessibility/reduced motion requirements
+===== agent-skills/web-design/webgl-3d-object/SKILL.md =====
+---
+name: webgl-3d-object
+description: Create a real 3D WebGL object with geometric mesh depth, physically based material, directional and ambient lighting, perspective camera, subtle rotation, and floating motion. Use when a page needs a faceted 3D hero object or product-like visual with real lighting instead of CSS transform tricks.
+---
+
+# WebGL 3D Object
+
+## Use When
+- A hero, feature block, or product moment needs one strong 3D object.
+- The visual should show real geometry, lighting, highlights, and edges.
+- A faceted mesh should float or rotate subtly inside a web layout.
+- CSS transforms, SVG illusions, or flat gradients are not enough.
+
+## Rules
+1. Use real 3D geometry: `IcosahedronGeometry`, `DodecahedronGeometry`, `BoxGeometry`, custom `BufferGeometry`, or a glTF mesh.
+2. Use a perspective camera so the object has depth and scale.
+3. Use PBR material: `MeshStandardMaterial` or `MeshPhysicalMaterial`.
+4. Tune `metalness`, `roughness`, and `emissive` to match the brand mood.
+5. Light the object with at least one directional light plus ambient or hemisphere fill.
+6. Animate transforms only: subtle rotation, bobbing, or parallax.
+7. Handle resize and dispose geometry/material/renderer on teardown.
+
+## HTML And CSS
+
+```html
+<div class="webgl-object-shell">
+  <canvas class="webgl-object-canvas" data-webgl-3d-object></canvas>
+</div>
+```
+
+```css
+.webgl-object-shell {
+  position: relative;
+  width: min(100%, 720px);
+  aspect-ratio: 1 / 1;
+}
+
+.webgl-object-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+```
+
+## Three.js Object Recipe
+
+```js
+import * as THREE from "three";
+
+function initWebGL3DObject(canvas, options = {}) {
+  if (!canvas) return () => {};
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+  });
+  renderer.setClearColor(0x000000, 0);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, options.maxDpr || 1.75));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = options.exposure || 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0, 0.15, 5.2);
+
+  const geometry = new THREE.IcosahedronGeometry(options.radius || 1.35, options.detail || 1);
+  const material = new THREE.MeshStandardMaterial({
+    color: options.color || 0x8aa4ff,
+    metalness: options.metalness ?? 0.48,
+    roughness: options.roughness ?? 0.34,
+    emissive: options.emissive || 0x101833,
+    emissiveIntensity: options.emissiveIntensity ?? 0.22,
+    flatShading: true,
+  });
+
+  const object = new THREE.Mesh(geometry, material);
+  object.castShadow = true;
+  object.receiveShadow = true;
+  scene.add(object);
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.38);
+  scene.add(ambient);
+
+  const key = new THREE.DirectionalLight(0xffffff, 2.15);
+  key.position.set(3.4, 4.2, 4.8);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  scene.add(key);
+
+  const rim = new THREE.DirectionalLight(options.rimColor || 0x7dd3fc, 0.82);
+  rim.position.set(-4.2, 1.2, -2.8);
+  scene.add(rim);
+
+  const shadowPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(5.2, 5.2),
+    new THREE.ShadowMaterial({ opacity: 0.18 })
+  );
+  shadowPlane.position.set(0, -1.65, 0);
+  shadowPlane.rotation.x = -Math.PI / 2;
+  shadowPlane.receiveShadow = true;
+  scene.add(shadowPlane);
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let rafId = 0;
+
+  function resize() {
+    const width = Math.max(1, canvas.clientWidth);
+    const height = Math.max(1, canvas.clientHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, options.maxDpr || 1.75));
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  }
+
+  function render(time = 0) {
+    const t = time * 0.001;
+    object.rotation.x = -0.16 + Math.sin(t * 0.45) * 0.06;
+    object.rotation.y = t * 0.28;
+    object.rotation.z = Math.sin(t * 0.32) * 0.08;
+    object.position.y = reduceMotion ? 0 : Math.sin(t * 0.8) * 0.08;
+
+    renderer.render(scene, camera);
+    if (!reduceMotion) rafId = requestAnimationFrame(render);
+  }
+
+  function handleResize() {
+    cancelAnimationFrame(rafId);
+    resize();
+    render();
+  }
+
+  resize();
+  render();
+  window.addEventListener("resize", handleResize);
+
+  return () => {
+    cancelAnimationFrame(rafId);
+    window.removeEventListener("resize", handleResize);
+    geometry.dispose();
+    material.dispose();
+    shadowPlane.geometry.dispose();
+    shadowPlane.material.dispose();
+    renderer.dispose();
+  };
+}
+
+const cleanupObject = initWebGL3DObject(
+  document.querySelector("[data-webgl-3d-object]"),
+  {
+    color: 0x8aa4ff,
+    rimColor: 0x7dd3fc,
+    metalness: 0.48,
+    roughness: 0.34,
+    emissive: 0x101833,
+  }
+);
+```
+
+## Material Defaults
+- Premium metal: `metalness: 0.45-0.7`, `roughness: 0.25-0.45`.
+- Soft ceramic: `metalness: 0.0-0.15`, `roughness: 0.38-0.62`.
+- Glow-tinted tech object: low `emissive` with `emissiveIntensity: 0.12-0.35`.
+- Faceted object: set `flatShading: true`; smooth product object: set it to `false`.
+
+## Lighting Defaults
+- Key light: directional, high front-side angle, strongest source.
+- Ambient fill: low intensity so shadows stay visible.
+- Rim light: brand-tinted or cool light from behind to reveal edges.
+- Shadows: enable only when the object needs grounded depth; keep map size moderate.
+
+## Motion Defaults
+- Rotation: slow, continuous, and secondary to the page content.
+- Floating: `0.04` to `0.12` units on Y.
+- Reduced motion: render a still frame or only allow direct interaction.
+- Avoid camera movement unless the object is the main interaction.
+
+## Avoid
+- CSS 3D transforms pretending to be WebGL.
+- Unlit materials when the ask is real lighting and depth.
+- Flat planes with gradients instead of actual geometry.
+- Strong bloom or particles that hide the form.
+- High DPR, huge shadow maps, or too many lights on mobile.
+- Letting the object compete with foreground copy or CTAs.
+
+## Quick Checks
+- The object has visible form, edges, highlights, and shadows.
+- The material uses `metalness`, `roughness`, and optional `emissive`.
+- Directional and ambient lights are both present.
+- The camera is perspective, not orthographic by accident.
+- Resize does not stretch the object.
+- Geometry, material, event listeners, RAF, and renderer are cleaned up.

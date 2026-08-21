@@ -447,3 +447,98 @@
     display: none;
   }
 }
+
+/* MengTo Skills-inspired presentation primitives — adapted for React/RTL. */
+.creative-section {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+}
+
+.creative-section > :not(canvas) {
+  position: relative;
+  z-index: 1;
+}
+
+.creative-reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 560ms ease, transform 700ms cubic-bezier(.2,.7,.2,1);
+}
+
+.creative-reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.creative-chapter-progress {
+  display: grid;
+  gap: .45rem;
+}
+
+.creative-chapter-progress a {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  color: hsl(var(--muted-foreground));
+  font-size: .75rem;
+  line-height: 1.4;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.creative-chapter-progress a:hover,
+.creative-chapter-progress a:focus-visible,
+.creative-chapter-progress a.is-active {
+  color: hsl(var(--primary));
+  transform: translateX(-2px);
+}
+
+[dir="ltr"] .creative-chapter-progress a:hover,
+[dir="ltr"] .creative-chapter-progress a:focus-visible,
+[dir="ltr"] .creative-chapter-progress a.is-active {
+  transform: translateX(2px);
+}
+
+.creative-chapter-progress a > span:first-child {
+  display: inline-grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.creative-chapter-progress a.is-active > span:first-child {
+  border-color: hsl(var(--primary));
+  background: hsl(var(--primary) / .12);
+}
+
+.kb-skill-card {
+  border: 1px solid hsl(var(--border) / .72);
+  background: linear-gradient(145deg, hsl(var(--card) / .82), hsl(var(--background) / .38));
+  box-shadow: 0 14px 36px -24px hsl(var(--foreground) / .36);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.kb-skill-card:hover,
+.kb-skill-card:focus-within {
+  transform: translateY(-3px);
+  border-color: hsl(var(--primary) / .45);
+  box-shadow: 0 20px 40px -24px hsl(var(--primary) / .35);
+}
+
+@media (max-width: 640px) {
+  .creative-reveal { transform: translateY(10px); }
+  .creative-chapter-progress { display: flex; overflow-x: auto; padding-bottom: .25rem; scrollbar-width: none; }
+  .creative-chapter-progress::-webkit-scrollbar { display: none; }
+  .creative-chapter-progress a { flex: 0 0 auto; }
+  .kb-skill-card:hover { transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creative-reveal,
+  .creative-reveal.is-visible,
+  .creative-chapter-progress a,
+  .kb-skill-card { opacity: 1; transform: none; transition: none; }
+}
