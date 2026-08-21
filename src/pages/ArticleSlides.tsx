@@ -8,6 +8,7 @@ import { getPublicArticleBySlug, listArticleSlides, listPublicProfiles } from '@
 import ArticleComments from '@/components/ArticleComments';
 import MDEditor from '@uiw/react-md-editor';
 import { setNoIndexMetadata, setSeoMetadata } from '@/lib/seo';
+import { normalizeSlides, localizedSlideBody, localizedSlideTitle, localizedArticleTitle, localizedArticleSummary } from '@/lib/article-reader';
 
 export default function ArticleSlides() {
   const { slug } = useParams();
@@ -46,13 +47,7 @@ export default function ArticleSlides() {
         published_at: article.published_at,
         updated_at: article.updated_at,
         title_fa: article.title_fa,
-        slides: backendSlides.map((slide) => ({
-          ...slide,
-          title_en: slide.title,
-          title_fa: slide.title,
-          body_en: typeof slide.content.body_en === 'string' ? slide.content.body_en : '',
-          body_fa: typeof slide.content.body_fa === 'string' ? slide.content.body_fa : '',
-        })),
+        slides: normalizeSlides(backendSlides),
         author,
       };
     },
@@ -95,8 +90,8 @@ export default function ArticleSlides() {
 
     const prefix = window.location.pathname.startsWith('/fa/') ? '/fa' : window.location.pathname.startsWith('/en/') ? '/en' : '';
     const canonicalPath = `${prefix}/read/${encodeURIComponent(articleData.slug)}`;
-    const title = locale === 'fa' ? articleData.title_fa || articleData.title_en : articleData.title_en || articleData.title_fa;
-    const description = locale === 'fa' ? articleData.summary_fa || articleData.summary_en || title : articleData.summary_en || articleData.summary_fa || title;
+    const title = localizedArticleTitle(articleData, locale);
+    const description = localizedArticleSummary(articleData, locale) || title;
     const authorName = articleData.author ? [articleData.author.first_name, articleData.author.last_name].filter(Boolean).join(' ') : 'کاغذ و باد';
     setSeoMetadata({
       title: `${title} — کاغذ و باد`,
@@ -200,14 +195,14 @@ export default function ArticleSlides() {
           {/* Content */}
           <div className="absolute inset-0 flex items-center justify-center p-8 md:p-16 lg:p-24">
             <div key={currentSlide} className="creative-page-turn max-w-3xl w-full" dir={locale === 'fa' ? 'rtl' : 'ltr'} aria-live="polite">
-              {((locale === 'fa' && slide.title_fa) || (locale === 'en' && slide.title_en)) && (
+              {localizedSlideTitle(slide, locale) && (
                 <h2 className="text-2xl md:text-4xl font-semibold mb-8 text-reading-fg leading-relaxed">
-                  {locale === 'fa' ? slide.title_fa : slide.title_en}
+                  {localizedSlideTitle(slide, locale)}
                 </h2>
               )}
               
               <div className="prose-reading" data-color-mode="light">
-                <MDEditor.Markdown source={locale === 'fa' ? (slide.body_fa || '') : (slide.body_en || '')} />
+                <MDEditor.Markdown source={localizedSlideBody(slide, locale)} />
               </div>
             </div>
           </div>
@@ -238,6 +233,20 @@ export default function ArticleSlides() {
           <div className="h-0.5 flex-1 bg-reading-fg/5" role="progressbar" aria-valuemin={1} aria-valuemax={articleData.slides.length} aria-valuenow={currentSlide + 1} aria-label={locale === 'fa' ? 'پیشرفت اسلایدها' : 'Slide progress'}>
             <div className="h-full bg-reading-fg/30 transition-all duration-500 ease-out" style={{ width: `${((currentSlide + 1) / articleData.slides.length) * 100}%` }} />
           </div>
+        </div>
+      )}
+
+      {hasSlides && (
+        <div className="flex items-center justify-between gap-3 px-6 py-3" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
+          <Button variant="ghost" size="sm" onClick={goToPrevSlide} disabled={currentSlide === 0} aria-label={locale === 'fa' ? 'اسلاید قبلی' : 'Previous slide'}>
+            <ChevronLeft className={`h-4 w-4 ${direction === 'rtl' ? 'rotate-180' : ''}`} aria-hidden="true" />
+            {locale === 'fa' ? 'قبلی' : 'Previous'}
+          </Button>
+          <span className="text-xs text-reading-muted">{locale === 'fa' ? 'برای جابه‌جایی از کلیدهای جهت‌نما هم استفاده کنید' : 'You can also use the arrow keys to navigate'}</span>
+          <Button variant="ghost" size="sm" onClick={goToNextSlide} disabled={currentSlide === articleData.slides.length - 1} aria-label={locale === 'fa' ? 'اسلاید بعدی' : 'Next slide'}>
+            {locale === 'fa' ? 'بعدی' : 'Next'}
+            <ChevronRight className={`h-4 w-4 ${direction === 'rtl' ? 'rotate-180' : ''}`} aria-hidden="true" />
+          </Button>
         </div>
       )}
 

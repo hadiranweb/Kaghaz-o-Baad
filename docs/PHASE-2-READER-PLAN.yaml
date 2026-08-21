@@ -1,0 +1,96 @@
+phase: 2
+name: real-data-page-turn-reader
+status: in_progress
+goal: >-
+  Connect the public article and slide APIs to a semantic, interactive reader
+  without changing backend contracts.
+branch: feat/comprehensive-mengto-skills-ui
+source_contracts:
+  article:
+    endpoint: GET /public/articles/by-slug/:slug
+    fields:
+      - id
+      - slug
+      - title_fa
+      - title_en
+      - summary_fa
+      - summary_en
+      - cover_url
+      - author_id
+      - published_at
+      - updated_at
+  slides:
+    endpoint: GET /articles/:articleId/slides
+    fields:
+      - id
+      - article_id
+      - title
+      - content
+      - sort_order
+    content_fields:
+      title_fa: string
+      title_en: string
+      body_fa: markdown
+      body_en: markdown
+      markdown_fa: markdown
+      markdown_en: markdown
+      body: markdown
+view_model:
+  reader_article:
+    slides: "normalizeSlides(backendSlides)"
+    sort: "sort_order ASC, id ASC"
+    locale_fallback: "requested locale -> other locale -> empty string"
+  reader_slide:
+    id: string
+    article_id: string
+    sort_order: number
+    title_fa: string
+    title_en: string
+    body_fa: string
+    body_en: string
+state_machine:
+  - archive
+  - preview
+  - reading
+  - slides
+  - references
+  - discussion
+reader_controls:
+  pointer:
+    click_left_or_right_half: navigate_by_direction
+    swipe: previous_or_next
+  keyboard:
+    ArrowLeft: locale_aware_previous_or_next
+    ArrowRight: locale_aware_next_or_previous
+    Escape: return_to_archive
+  semantic:
+    progressbar: true
+    aria_live_slide_content: true
+    direct_text_fallback: true
+    visible_exit_label: true
+performance:
+  default_renderer: DOM_and_Markdown
+  animation: CSS_page_turn_only
+  canvas: not_required
+  webgl: not_required
+  lazy_route: true
+  fallback_on_reduced_motion: static_content
+quality_gates:
+  - production_build_passes
+  - focused_lint_passes
+  - rtl_ltr_navigation_verified
+  - empty_slides_state_verified
+  - long_markdown_does_not_overflow_viewport
+  - route_cleanup_has_no_console_error
+  - article_content_remains_indexable
+provenance:
+  interaction_reference:
+    - https://github.com/MengTo/complete-shelf
+    - https://github.com/MengTo/sketchbook
+  implementation_policy: rewrite_logic_in_project_architecture
+  asset_policy: no_unlicensed_reference_assets
+next:
+  - add explicit previous/next buttons to reader chrome
+  - add touch pointer gesture thresholds and cancel handling
+  - add chapter navigation for article body/references
+  - verify against published article with multiple slides
