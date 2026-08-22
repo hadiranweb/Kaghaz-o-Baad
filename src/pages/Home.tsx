@@ -5,7 +5,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { backendRequest } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 import { BrainAnimation } from '@/components/BrainAnimation';
-import { AmbientPaperParticles, MaskedReveal, RevealOnScroll, StaggeredWordReveal, StaggerGroup } from '@/components/creative';
+import { DeferredAmbientParticles } from '@/components/creative/DeferredAmbientParticles';
+import { MaskedReveal } from '@/components/creative/MaskedReveal';
+import { RevealOnScroll } from '@/components/creative/RevealOnScroll';
+import { StaggeredWordReveal } from '@/components/creative/StaggeredWordReveal';
+import { StaggerGroup } from '@/components/creative/StaggerGroup';
 import { usePointerIntent } from '@/hooks/useCreativeInteraction';
 
 export default function Home() {
@@ -107,7 +111,7 @@ export default function Home() {
           <span>{t('شمارهٔ ۰۱ · بهار ۱۴۰۵', 'Issue 01 · Spring 2026')}</span>
           <span className="hidden sm:inline">{t('یک بایگانی زنده از ایده‌ها', 'A living archive of ideas')}</span>
         </div>
-        <AmbientPaperParticles count={30} />
+        <DeferredAmbientParticles count={30} />
         <div className="container relative z-10 mx-auto grid min-h-[calc(100vh-3.5rem)] max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:py-20">
           <div className="max-w-2xl text-center lg:text-start">
             <MaskedReveal as="p" className="kb-kicker mb-5 text-xs font-semibold uppercase tracking-[.2em] text-primary">{t('دفترِ بازِ کاغذ و باد', 'The open desk of KaghazBaad')}</MaskedReveal>
