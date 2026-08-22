@@ -33,7 +33,7 @@ const Rewrite = lazy(() => import("./pages/Rewrite"));
 const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 
 const RouteFallback = () => (
-  <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+  <div className="flex min-h-[calc(100vh-5.5rem)] items-center justify-center text-sm text-muted-foreground" aria-busy="true">
     در حال بارگذاری…
   </div>
 );
@@ -52,7 +52,7 @@ const App = () => (
             <AuthProvider>
             <div className="flex flex-col min-h-screen">
               <Header />
-              <main className="flex-1">
+              <main className="flex-1 min-h-[calc(100vh-5.5rem)]">
                 <ErrorBoundary>
                   <Suspense fallback={<RouteFallback />}>
                     <Routes>

@@ -1,0 +1,141 @@
+{
+  "shifts": [
+    {
+      "startTime": 22370.699999928474,
+      "value": 0.001005375,
+      "sources": [
+        {
+          "selector": "nav.kb-editorial-dock hidden md:flex",
+          "previousRect": {},
+          "currentRect": {}
+        }
+      ]
+    },
+    {
+      "startTime": 23305.399999976158,
+      "value": 0.000175281982421875,
+      "sources": [
+        {
+          "selector": "nav.kb-editorial-dock hidden md:flex",
+          "previousRect": {},
+          "currentRect": {}
+        },
+        {
+          "selector": "a.kb-dock-item",
+          "previousRect": {},
+          "currentRect": {}
+        }
+      ]
+    },
+    {
+      "startTime": 23338.299999952316,
+      "value": 0.00015162231445312502,
+      "sources": [
+        {
+          "selector": "button.inline-flex items-center justify-center gap-2 whitespace-nowrap text-[15px] font-semibold tracking-[0.1px] ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-35 [&_svg]:pointer-events-none [&_svg]:size-[18px] [&_svg]:shrink-0 hover:bg-accent/10 h-10 w-10 rounded-[12px] text-foreground/70 hover:text-foreground",
+          "previousRect": {},
+          "currentRect": {}
+        },
+        {
+          "selector": "a.items-center justify-center gap-2 whitespace-nowrap text-[15px] font-semibold tracking-[0.1px] ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-35 [&_svg]:pointer-events-none [&_svg]:size-[18px] [&_svg]:shrink-0 hover:bg-accent/10 hover:text-accent-foreground h-10 w-10 rounded-[12px] hidden md:inline-flex",
+          "previousRect": {},
+          "currentRect": {}
+        },
+        {
+          "selector": "a.hover:text-foreground transition-colors font-light underline-offset-4 hover:underline",
+          "previousRect": {},
+          "currentRect": {}
+        },
+        {
+          "selector": "a.hover:text-foreground transition-colors font-light underline-offset-4 hover:underline",
+          "previousRect": {},
+          "currentRect": {}
+        }
+      ]
+    },
+    {
+      "startTime": 23516,
+      "value": 0.03833333333333333,
+      "sources": [
+        {
+          "selector": "footer.mt-auto min-h-[5.5rem] border-t border-border/40 bg-background/50 backdrop-blur-[12px]",
+          "previousRect": {},
+          "currentRect": {}
+        }
+      ]
+    }
+  ],
+  "total": 0.03966561263020833,
+  "startedAt": 200.19999992847443,
+  "navigation": {
+    "name": "http://localhost:8080/",
+    "entryType": "navigation",
+    "startTime": 0,
+    "duration": 21802.299999952316,
+    "navigationId": 4484,
+    "initiatorType": "navigation",
+    "deliveryType": "",
+    "nextHopProtocol": "http/1.1",
+    "renderBlockingStatus": "non-blocking",
+    "contentType": "text/html",
+    "contentEncoding": "",
+    "workerStart": 0,
+    "workerRouterEvaluationStart": 0,
+    "workerCacheLookupStart": 0,
+    "workerMatchedSourceType": "",
+    "workerFinalSourceType": "",
+    "redirectStart": 0,
+    "redirectEnd": 0,
+    "fetchStart": 1.0999999046325684,
+    "domainLookupStart": 1.0999999046325684,
+    "domainLookupEnd": 1.0999999046325684,
+    "connectStart": 1.0999999046325684,
+    "secureConnectionStart": 0,
+    "connectEnd": 1.0999999046325684,
+    "requestStart": 2.6999999284744263,
+    "responseStart": 10.099999904632568,
+    "firstInterimResponseStart": 0,
+    "finalResponseHeadersStart": 10.099999904632568,
+    "responseEnd": 176,
+    "transferSize": 3501,
+    "encodedBodySize": 3201,
+    "decodedBodySize": 3201,
+    "responseStatus": 200,
+    "serverTiming": [],
+    "unloadEventStart": 0,
+    "unloadEventEnd": 0,
+    "domInteractive": 215.19999992847443,
+    "domContentLoadedEventStart": 21785.5,
+    "domContentLoadedEventEnd": 21785.599999904633,
+    "domComplete": 21802.199999928474,
+    "loadEventStart": 21802.299999952316,
+    "loadEventEnd": 21802.299999952316,
+    "type": "navigate",
+    "redirectCount": 0,
+    "activationStart": 0,
+    "criticalCHRestart": 0,
+    "notRestoredReasons": null,
+    "confidence": {}
+  },
+  "footer": {
+    "x": 0,
+    "y": 2286.203125,
+    "width": 800,
+    "height": 88,
+    "top": 2286.203125,
+    "right": 800,
+    "bottom": 2374.203125,
+    "left": 0
+  },
+  "main": {
+    "x": 0,
+    "y": 65,
+    "width": 800,
+    "height": 2221.203125,
+    "top": 65,
+    "right": 800,
+    "bottom": 2286.203125,
+    "left": 0
+  },
+  "url": "http://localhost:8080/"
+}
