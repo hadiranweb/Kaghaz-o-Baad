@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { listPublicArticles, listPublicProfiles, publishArticle } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 import { useCallback, useEffect, useState } from 'react';
-import { RevealOnScroll } from '@/components/creative';
+import { ArticleShelf, RevealOnScroll } from '@/components/creative';
 
 interface AuthorProfile {
   id: string;
@@ -206,7 +206,7 @@ export default function Read() {
         {/* Articles Grid */}
         {!loading && articles && articles.length > 0 && (
           <>
-            <div className="creative-shelf grid gap-6 md:grid-cols-2 lg:flex lg:flex-nowrap lg:gap-7 lg:overflow-x-auto lg:overscroll-x-contain lg:pb-4" role="list" aria-label={locale === 'fa' ? 'قفسهٔ مقالات' : 'Article shelf'}>
+            <ArticleShelf direction={locale === 'fa' ? 'rtl' : 'ltr'} label={locale === 'fa' ? 'قفسهٔ مقالات' : 'Article shelf'}>
               {articles.map((article) => {
                 const isUserArticle = user && article.author_id === user.id;
                 const authProfile = article.author_id ? authors[article.author_id] : undefined;
@@ -215,6 +215,8 @@ export default function Read() {
                   <Card 
                     key={article.id} 
                     role="listitem"
+                    tabIndex={0}
+                    data-shelf-card="true"
                     className={`group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
                       isUserArticle ? 'ring-1 ring-accent/30' : ''
                     }`}
@@ -307,7 +309,7 @@ export default function Read() {
                   </RevealOnScroll>
                 );
               })}
-            </div>
+            </ArticleShelf>
 
             {hasMore && (
               <div className="mt-10 flex justify-center">

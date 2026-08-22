@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useReducer } from 'react';
+import { useEffect, useCallback, useReducer, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,6 @@ import ArticleComments from '@/components/ArticleComments';
 import MDEditor from '@uiw/react-md-editor';
 import { setNoIndexMetadata, setSeoMetadata } from '@/lib/seo';
 import { normalizeSlides, localizedSlideBody, localizedSlideTitle, localizedArticleTitle, localizedArticleSummary } from '@/lib/article-reader';
-import { useSwipeGesture } from '@/hooks/useCreativeInteraction';
 import { createReaderState, readerReducer } from '@/lib/reader-state';
 
 export default function ArticleSlides() {
@@ -18,6 +17,8 @@ export default function ArticleSlides() {
   const { locale, direction } = useLanguage();
   const [readerState, dispatchReader] = useReducer(readerReducer, undefined, createReaderState);
   const currentSlide = readerState.index;
+  const curlRef = useRef<{ startX: number; startY: number; pointerId: number; width: number } | null>(null);
+  const suppressClickRef = useRef(false);
 
   const { data: articleData, isLoading, error } = useQuery({
     queryKey: ['article-slides', slug],
@@ -77,11 +78,54 @@ export default function ArticleSlides() {
     dispatchReader({ type: 'TURN_COMMIT', index: currentSlide - 1 });
   }, [currentSlide]);
 
-  const handleSwipe = useCallback((swipeDirection: 'next' | 'previous') => {
-    if (swipeDirection === 'next') goToNextSlide();
-    else goToPrevSlide();
+  const handleCurlPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    curlRef.current = { startX: event.clientX, startY: event.clientY, pointerId: event.pointerId, width: rect.width };
+    suppressClickRef.current = false;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    dispatchReader({ type: 'DRAG', progress: 0 });
+  }, []);
+
+  const handleCurlPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = curlRef.current;
+    if (!start || event.pointerId !== start.pointerId) return;
+    const dx = event.clientX - start.startX;
+    const dy = event.clientY - start.startY;
+    const horizontal = Math.abs(dx);
+    if (horizontal < Math.abs(dy) * 1.05) return;
+    const rawProgress = dx / Math.max(start.width, 1);
+    const resistance = Math.sign(rawProgress) * Math.min(Math.abs(rawProgress), 0.34) * (Math.abs(rawProgress) > 0.22 ? 0.72 : 1);
+    dispatchReader({ type: 'DRAG', progress: resistance });
+  }, []);
+
+  const handleCurlPointerUp = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    const start = curlRef.current;
+    curlRef.current = null;
+    if (!start || event.pointerId !== start.pointerId) return;
+    const dx = event.clientX - start.startX;
+    const dy = event.clientY - start.startY;
+    const progress = dx / Math.max(start.width, 1);
+    if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.05) {
+      suppressClickRef.current = true;
+      if (progress < 0) goToNextSlide();
+      else goToPrevSlide();
+    } else {
+      dispatchReader({ type: 'TURN_CANCEL' });
+    }
   }, [goToNextSlide, goToPrevSlide]);
-  const swipeGesture = useSwipeGesture({ onSwipe: handleSwipe, threshold: 48, dominanceRatio: 1.15 });
+
+  const handleCurlPointerCancel = useCallback(() => {
+    curlRef.current = null;
+    dispatchReader({ type: 'TURN_CANCEL' });
+  }, []);
+
+  const handleClickCapture = useCallback((event: React.MouseEvent<HTMLDivElement>) => {
+    if (!suppressClickRef.current) return;
+    suppressClickRef.current = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
 
   // Click navigation: left half = prev, right half = next
   const handleSlideClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -208,10 +252,10 @@ export default function ArticleSlides() {
 
       {/* Slide Content - clickable halves for navigation */}
       {hasSlides && slide ? (
-        <div className="flex-1 relative overflow-hidden cursor-default touch-pan-y" onClick={handleSlideClick} onClickCapture={swipeGesture.onClickCapture} onPointerDown={swipeGesture.onPointerDown} onPointerUp={swipeGesture.onPointerUp} onPointerCancel={swipeGesture.onPointerCancel} role="region" aria-label={locale === 'fa' ? 'صفحهٔ مطالعهٔ مقاله' : 'Article reading page'}>
+        <div className="flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing touch-pan-y" onClick={handleSlideClick} onClickCapture={handleClickCapture} onPointerDown={handleCurlPointerDown} onPointerMove={handleCurlPointerMove} onPointerUp={handleCurlPointerUp} onPointerCancel={handleCurlPointerCancel} role="region" aria-label={locale === 'fa' ? 'صفحهٔ مطالعهٔ مقاله؛ برای ورق‌زدن بکشید' : 'Article reading page; drag to turn'}>
           {/* Content */}
           <div className="absolute inset-0 flex items-center justify-center p-8 md:p-16 lg:p-24">
-            <div key={currentSlide} className="creative-page-turn max-w-3xl w-full" dir={locale === 'fa' ? 'rtl' : 'ltr'} aria-live="polite">
+            <div key={currentSlide} className="creative-page-turn max-w-3xl w-full" dir={locale === 'fa' ? 'rtl' : 'ltr'} aria-live="polite" style={{ '--curl-progress': readerState.dragProgress, transform: `perspective(1200px) rotateY(${readerState.dragProgress * -10}deg) translateX(${readerState.dragProgress * 18}px)`, boxShadow: `${readerState.dragProgress * -28}px 0 32px -28px hsl(var(--reading-fg) / ${Math.min(Math.abs(readerState.dragProgress) * 1.8, .32)})` } as React.CSSProperties}>
               {localizedSlideTitle(slide, locale) && (
                 <h2 className="text-2xl md:text-4xl font-semibold mb-8 text-reading-fg leading-relaxed">
                   {localizedSlideTitle(slide, locale)}
