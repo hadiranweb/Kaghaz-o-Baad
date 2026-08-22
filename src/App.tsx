@@ -31,6 +31,7 @@ const LiveRoomPage = lazy(() => import("./pages/LiveRoomPage"));
 const LiveSessionNew = lazy(() => import("./pages/LiveSessionNew"));
 const Rewrite = lazy(() => import("./pages/Rewrite"));
 const ChangePassword = lazy(() => import("./pages/ChangePassword"));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
 const RouteFallback = () => (
   <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
@@ -78,6 +79,7 @@ const App = () => (
                     <Route path="/en/contact" element={<LocalizedRoute locale="en"><PublicSeoRoute page="contact"><Contact /></PublicSeoRoute></LocalizedRoute>} />
                     <Route path="/community" element={<SeoGuard><Community /></SeoGuard>} />
                     <Route path="/auth" element={<SeoGuard><Auth /></SeoGuard>} />
+                    <Route path="/auth/verify-email" element={<SeoGuard><VerifyEmail /></SeoGuard>} />
                     <Route path="/dashboard" element={<SeoGuard><Dashboard /></SeoGuard>} />
                     <Route path="/admin" element={<SeoGuard><AdminDashboard /></SeoGuard>} />
                     <Route path="/complete-profile" element={<SeoGuard><CompleteProfile /></SeoGuard>} />
