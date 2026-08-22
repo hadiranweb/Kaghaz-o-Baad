@@ -1,74 +1,59 @@
-import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type PropsWithChildren } from 'react';
+import { useCallback, useEffect, useId, useReducer, useRef, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type PropsWithChildren } from 'react';
 import { useMotion } from './MotionContext';
+import { shelfReducer, type ShelfState } from './shelf-state';
 
-export type ShelfPhase = 'idle' | 'focused' | 'opening' | 'open' | 'reading' | 'closing';
-
-type ArticleShelfProps = PropsWithChildren<{
-  direction?: 'ltr' | 'rtl';
-  label: string;
-}>;
+type ArticleShelfProps = PropsWithChildren<{ direction?: 'ltr' | 'rtl'; label: string }>;
 
 export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShelfProps) {
   const shelfRef = useRef<HTMLDivElement>(null);
   const instructionsId = useId();
   const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pointerRef = useRef<{ id: number; x: number; y: number; index: number } | null>(null);
   const { reducedMotion } = useMotion();
-  const [phase, setPhase] = useState<ShelfPhase>('idle');
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [state, dispatch] = useReducer(shelfReducer, { phase: 'idle', activeIndex: null, intentId: 0 } satisfies ShelfState);
 
   const cards = useCallback(() => Array.from(shelfRef.current?.querySelectorAll<HTMLElement>('[data-shelf-card]') ?? []), []);
-  const scrollCard = useCallback((offset: number) => {
+  const focusCard = useCallback((index: number, behavior: ScrollBehavior = reducedMotion ? 'auto' : 'smooth') => {
     const items = cards();
     if (!items.length) return;
-    const current = activeIndex ?? 0;
-    const next = Math.min(Math.max(current + offset, 0), items.length - 1);
-    setActiveIndex(next);
-    setPhase('focused');
+    const next = Math.min(Math.max(index, 0), items.length - 1);
+    dispatch({ type: 'FOCUS_CARD', index: next });
     items[next]?.focus({ preventScroll: true });
-    items[next]?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'nearest' });
-  }, [activeIndex, cards, reducedMotion]);
+    items[next]?.scrollIntoView({ behavior, block: 'nearest', inline: 'nearest' });
+  }, [cards, reducedMotion]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const forward = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
     const backward = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
-    if (event.key === forward) { event.preventDefault(); scrollCard(1); }
-    if (event.key === backward) { event.preventDefault(); scrollCard(-1); }
-    if (event.key === 'Home') { event.preventDefault(); setActiveIndex(0); cards()[0]?.focus(); }
-    if (event.key === 'End') { event.preventDefault(); const items = cards(); setActiveIndex(items.length - 1); items.at(-1)?.focus(); }
-    if (event.key === 'Enter') {
-      const current = cards()[activeIndex ?? 0];
-      current?.querySelector<HTMLElement>('a,button')?.click();
-    }
-    if (event.key === 'Escape') setPhase('idle');
+    const index = state.activeIndex ?? 0;
+    if (event.key === forward) { event.preventDefault(); focusCard(index + 1); }
+    else if (event.key === backward) { event.preventDefault(); focusCard(index - 1); }
+    else if (event.key === 'Home') { event.preventDefault(); focusCard(0, 'auto'); }
+    else if (event.key === 'End') { event.preventDefault(); focusCard(cards().length - 1, 'auto'); }
+    else if (event.key === 'Enter') { event.preventDefault(); cards()[index]?.querySelector<HTMLElement>('a,button')?.click(); dispatch({ type: 'READ_START', index }); }
+    else if (event.key === 'Escape') dispatch({ type: 'RESET' });
   };
 
-  useEffect(() => {
-    const node = shelfRef.current;
-    if (!node) return;
-    const onFocusIn = (event: FocusEvent) => {
-      const card = (event.target as HTMLElement).closest('[data-shelf-card]');
-      if (!card) return;
-      setActiveIndex(cards().indexOf(card as HTMLElement));
-      setPhase('focused');
-    };
-    const onPointerDown = (event: PointerEvent) => {
-      const card = (event.target as HTMLElement).closest('[data-shelf-card]');
-      if (!card) return;
-      setPhase('opening');
-      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
-      transitionTimerRef.current = setTimeout(() => setPhase('open'), reducedMotion ? 0 : 280);
-    };
-    const onPointerUp = () => setPhase((previous) => previous === 'opening' ? 'open' : previous);
-    node.addEventListener('focusin', onFocusIn);
-    node.addEventListener('pointerdown', onPointerDown);
-    node.addEventListener('pointerup', onPointerUp);
-    return () => {
-      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
-      node.removeEventListener('focusin', onFocusIn);
-      node.removeEventListener('pointerdown', onPointerDown);
-      node.removeEventListener('pointerup', onPointerUp);
-    };
-  }, [cards, reducedMotion]);
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const card = (event.target as HTMLElement).closest<HTMLElement>('[data-shelf-card]');
+    if (!card) return;
+    const index = cards().indexOf(card);
+    pointerRef.current = { id: event.pointerId, x: event.clientX, y: event.clientY, index };
+    card.setPointerCapture?.(event.pointerId);
+    dispatch({ type: 'POINTER_DOWN', index });
+    if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+    transitionTimerRef.current = setTimeout(() => dispatch({ type: 'OPEN_SUCCESS', index }), reducedMotion ? 0 : 280);
+  };
+
+  const handlePointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const pointer = pointerRef.current;
+    pointerRef.current = null;
+    if (!pointer || pointer.id !== event.pointerId) return;
+    const moved = Math.hypot(event.clientX - pointer.x, event.clientY - pointer.y);
+    if (moved > 12) dispatch({ type: 'OPEN_CANCEL' });
+  };
+
+  useEffect(() => () => { if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current); }, []);
 
   return (
     <div
@@ -77,19 +62,19 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
       role="list"
       aria-label={label}
       aria-describedby={instructionsId}
-      data-shelf-phase={phase}
-      data-shelf-active={activeIndex ?? undefined}
+      data-shelf-phase={state.phase}
+      data-shelf-active={state.activeIndex ?? undefined}
+      data-shelf-intent={state.intentId}
       dir={direction}
       onKeyDown={handleKeyDown}
-      onMouseLeave={() => setPhase('idle')}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={() => { pointerRef.current = null; dispatch({ type: 'OPEN_CANCEL' }); }}
+      onMouseLeave={() => dispatch({ type: 'RESET' })}
     >
       {children}
-      <span id={instructionsId} className="sr-only">
-        Use the arrow keys to move between articles, Home and End to jump to the shelf boundaries, and Enter to open a focused action.
-      </span>
-      <span className="sr-only" role="status" aria-live="polite">
-        {activeIndex === null ? '' : `Article ${activeIndex + 1} focused`}
-      </span>
+      <span id={instructionsId} className="sr-only">Use arrow keys, Home and End to move between articles. Press Enter to open the focused article. Press Escape to cancel.</span>
+      <span className="sr-only" role="status" aria-live="polite">{state.activeIndex === null ? '' : `Article ${state.activeIndex + 1} ${state.phase}`}</span>
     </div>
   );
 }
