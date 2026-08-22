@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PropsWithChildren } from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type PropsWithChildren } from 'react';
+import { useMotion } from './MotionProvider';
 
 export type ShelfPhase = 'idle' | 'focused' | 'opening' | 'open' | 'reading' | 'closing';
 
@@ -9,6 +10,9 @@ type ArticleShelfProps = PropsWithChildren<{
 
 export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShelfProps) {
   const shelfRef = useRef<HTMLDivElement>(null);
+  const instructionsId = useId();
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { reducedMotion } = useMotion();
   const [phase, setPhase] = useState<ShelfPhase>('idle');
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -21,8 +25,8 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
     setActiveIndex(next);
     setPhase('focused');
     items[next]?.focus({ preventScroll: true });
-    items[next]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-  }, [activeIndex, cards]);
+    items[next]?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'nearest', inline: 'nearest' });
+  }, [activeIndex, cards, reducedMotion]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const forward = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
@@ -31,6 +35,10 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
     if (event.key === backward) { event.preventDefault(); scrollCard(-1); }
     if (event.key === 'Home') { event.preventDefault(); setActiveIndex(0); cards()[0]?.focus(); }
     if (event.key === 'End') { event.preventDefault(); const items = cards(); setActiveIndex(items.length - 1); items.at(-1)?.focus(); }
+    if (event.key === 'Enter') {
+      const current = cards()[activeIndex ?? 0];
+      current?.querySelector<HTMLElement>('a,button')?.click();
+    }
     if (event.key === 'Escape') setPhase('idle');
   };
 
@@ -45,18 +53,22 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
     };
     const onPointerDown = (event: PointerEvent) => {
       const card = (event.target as HTMLElement).closest('[data-shelf-card]');
-      if (card) setPhase('opening');
+      if (!card) return;
+      setPhase('opening');
+      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = setTimeout(() => setPhase('open'), reducedMotion ? 0 : 280);
     };
     const onPointerUp = () => setPhase((previous) => previous === 'opening' ? 'open' : previous);
     node.addEventListener('focusin', onFocusIn);
     node.addEventListener('pointerdown', onPointerDown);
     node.addEventListener('pointerup', onPointerUp);
     return () => {
+      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
       node.removeEventListener('focusin', onFocusIn);
       node.removeEventListener('pointerdown', onPointerDown);
       node.removeEventListener('pointerup', onPointerUp);
     };
-  }, [cards]);
+  }, [cards, reducedMotion]);
 
   return (
     <div
@@ -64,7 +76,7 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
       className="creative-shelf grid gap-6 md:grid-cols-2 lg:flex lg:flex-nowrap lg:gap-7 lg:overflow-x-auto lg:overscroll-x-contain lg:pb-4"
       role="list"
       aria-label={label}
-      aria-describedby="article-shelf-instructions"
+      aria-describedby={instructionsId}
       data-shelf-phase={phase}
       data-shelf-active={activeIndex ?? undefined}
       dir={direction}
@@ -72,7 +84,7 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
       onMouseLeave={() => setPhase('idle')}
     >
       {children}
-      <span id="article-shelf-instructions" className="sr-only">
+      <span id={instructionsId} className="sr-only">
         Use the arrow keys to move between articles, Home and End to jump to the shelf boundaries, and Enter to open a focused action.
       </span>
       <span className="sr-only" role="status" aria-live="polite">

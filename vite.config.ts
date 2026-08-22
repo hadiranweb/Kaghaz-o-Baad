@@ -17,6 +17,13 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/pdfjs-dist')) return 'pdf-vendor';
           if (id.includes('node_modules/@livekit') || id.includes('node_modules/livekit-client')) return 'livekit-vendor';
           if (id.includes('node_modules/react') || id.includes('node_modules/react-dom') || id.includes('node_modules/react-router')) return 'react-vendor';
+          if (id.includes('node_modules/@radix-ui')) return 'radix-vendor';
+          if (id.includes('node_modules/lucide-react')) return 'icons-vendor';
+          if (id.includes('node_modules/@tanstack') || id.includes('node_modules/react-query')) return 'query-vendor';
+          if (id.includes('node_modules/react-hook-form') || id.includes('node_modules/@hookform') || id.includes('node_modules/zod')) return 'forms-vendor';
+          if (id.includes('node_modules/react-markdown') || id.includes('node_modules/remark') || id.includes('node_modules/unified') || id.includes('node_modules/hast')) return 'markdown-vendor';
+          if (id.includes('node_modules/recharts')) return 'charts-vendor';
+          if (id.includes('node_modules/date-fns')) return 'date-vendor';
           return undefined;
         },
       },
