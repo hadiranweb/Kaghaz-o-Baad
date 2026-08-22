@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useReducer } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,14 @@ import MDEditor from '@uiw/react-md-editor';
 import { setNoIndexMetadata, setSeoMetadata } from '@/lib/seo';
 import { normalizeSlides, localizedSlideBody, localizedSlideTitle, localizedArticleTitle, localizedArticleSummary } from '@/lib/article-reader';
 import { useSwipeGesture } from '@/hooks/useCreativeInteraction';
+import { createReaderState, readerReducer } from '@/lib/reader-state';
 
 export default function ArticleSlides() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { locale, direction } = useLanguage();
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [readerState, dispatchReader] = useReducer(readerReducer, undefined, createReaderState);
+  const currentSlide = readerState.index;
 
   const { data: articleData, isLoading, error } = useQuery({
     queryKey: ['article-slides', slug],
@@ -56,23 +58,24 @@ export default function ArticleSlides() {
   });
 
   useEffect(() => {
-    if (!articleData?.slides.length) {
-      setCurrentSlide(0);
+    if (!articleData) {
+      dispatchReader({ type: 'DATA_LOADING' });
       return;
     }
-    setCurrentSlide((prev) => Math.min(prev, articleData.slides.length - 1));
+    dispatchReader({ type: articleData.slides.length ? 'DATA_READY' : 'DATA_EMPTY', count: articleData.slides.length });
   }, [articleData]);
 
   const goToNextSlide = useCallback(() => {
-    setCurrentSlide((prev) => {
-      const lastSlide = (articleData?.slides.length ?? 1) - 1;
-      return prev < lastSlide ? prev + 1 : prev;
-    });
-  }, [articleData]);
+    if (currentSlide >= (articleData?.slides.length ?? 1) - 1) return;
+    dispatchReader({ type: 'NEXT_START' });
+    dispatchReader({ type: 'TURN_COMMIT', index: currentSlide + 1 });
+  }, [articleData, currentSlide]);
 
   const goToPrevSlide = useCallback(() => {
-    setCurrentSlide((prev) => prev > 0 ? prev - 1 : prev);
-  }, []);
+    if (currentSlide <= 0) return;
+    dispatchReader({ type: 'PREVIOUS_START' });
+    dispatchReader({ type: 'TURN_COMMIT', index: currentSlide - 1 });
+  }, [currentSlide]);
 
   const handleSwipe = useCallback((swipeDirection: 'next' | 'previous') => {
     if (swipeDirection === 'next') goToNextSlide();
@@ -181,7 +184,7 @@ export default function ArticleSlides() {
   }
 
   const slide = articleData.slides[currentSlide];
-  const hasSlides = articleData.slides.length > 0;
+  const hasSlides = articleData.slides.length > 0 && Boolean(slide);
 
   return (
     <div className="fixed inset-0 bg-reading-bg z-50 flex flex-col">
