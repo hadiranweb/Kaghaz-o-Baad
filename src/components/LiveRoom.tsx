@@ -30,7 +30,7 @@ import {
   MessageSquare, Users, Copy, LogOut, KeyRound, FileText, Download,
   Wifi, WifiOff, PlayCircle, MonitorX, Loader2, ArrowRight,
 } from 'lucide-react';
-import MDEditor from '@uiw/react-md-editor';
+import { MarkdownReadonly } from '@/components/MarkdownReadonly';
 import type { LiveKitTokenResponse, LiveRole, PresentationKind } from '@/hooks/useLiveKitToken';
 import type { SlideItem } from '@/pages/LiveRoomPage';
 import LiveHostControls from '@/components/LiveHostControls';
@@ -934,7 +934,7 @@ function RoomBody({
             <CardContent className="py-6 flex-1 overflow-y-auto max-h-[560px]">
               <div className="prose prose-sm md:prose-base max-w-none dark:prose-invert">
                 <div data-color-mode="light">
-                  <MDEditor.Markdown source={(fa ? currentSlide.body_fa : currentSlide.body_en) || ''} />
+                  <MarkdownReadonly source={(fa ? currentSlide.body_fa : currentSlide.body_en) || ''} dir={fa ? 'rtl' : 'ltr'} />
                 </div>
               </div>
             </CardContent>

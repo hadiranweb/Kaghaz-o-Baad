@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight, X, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getPublicArticleBySlug, listArticleSlides, listPublicProfiles } from '@/lib/backend-api';
 import ArticleComments from '@/components/ArticleComments';
-import MDEditor from '@uiw/react-md-editor';
+import { MarkdownReadonly } from '@/components/MarkdownReadonly';
 import { setNoIndexMetadata, setSeoMetadata } from '@/lib/seo';
 import { normalizeSlides, localizedSlideBody, localizedSlideTitle, localizedArticleTitle, localizedArticleSummary } from '@/lib/article-reader';
 import { createReaderState, readerReducer } from '@/lib/reader-state';
@@ -266,7 +266,7 @@ export default function ArticleSlides() {
               )}
               
               <div className="prose-reading" data-color-mode="light">
-                <MDEditor.Markdown source={localizedSlideBody(slide, locale)} />
+                <MarkdownReadonly source={localizedSlideBody(slide, locale)} dir={locale === 'fa' ? 'rtl' : 'ltr'} />
               </div>
             </div>
           </div>

@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [react()].filter(Boolean),
   build: {
+    modulePreload: {
+      resolveDependencies: (_hostId, deps) => deps.filter((dependency) => !dependency.includes('markdown-vendor')),
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {

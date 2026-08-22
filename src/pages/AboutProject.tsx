@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownReadonly } from '@/components/MarkdownReadonly';
 import {
   ArrowLeft,
   ArrowRight,
@@ -206,7 +206,7 @@ export default function AboutProject() {
 
         <section id="faq" className="scroll-mt-24"><div className="mb-8"><p className="text-sm font-semibold text-primary">FAQ</p><h2 className="mt-2 font-[IRANSharp] text-3xl font-bold">{text('پرسش‌های مهم پیش از ورود', 'Questions worth answering before joining')}</h2></div><div className="grid gap-3 md:grid-cols-2">{faqs.map(({ faQ, enQ, faA, enA }) => <details key={enQ} className="group rounded-2xl border border-border/70 bg-card/40 p-5"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold"><span>{text(faQ, enQ)}</span><ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition group-open:rotate-180" /></summary><p className="mt-4 text-sm leading-7 text-muted-foreground">{text(faA, enA)}</p></details>)}</div></section>
 
-        <section className="rounded-3xl border border-border/70 bg-muted/20 p-5"><details><summary className="flex cursor-pointer list-none items-center gap-3 font-semibold"><Cpu className="h-5 w-5 text-primary" />{text('جزئیات فنی برای توسعه‌دهندگان', 'Technical details for developers')}<ChevronDown className="ms-auto h-4 w-4 text-muted-foreground transition group-open:rotate-180" /></summary><div className="prose prose-sm mt-6 max-w-none dark:prose-invert"><ReactMarkdown>{technicalDetails}</ReactMarkdown></div></details></section>
+        <section className="rounded-3xl border border-border/70 bg-muted/20 p-5"><details><summary className="flex cursor-pointer list-none items-center gap-3 font-semibold"><Cpu className="h-5 w-5 text-primary" />{text('جزئیات فنی برای توسعه‌دهندگان', 'Technical details for developers')}<ChevronDown className="ms-auto h-4 w-4 text-muted-foreground transition group-open:rotate-180" /></summary><div className="prose prose-sm mt-6 max-w-none dark:prose-invert"><MarkdownReadonly source={technicalDetails} dir={locale === 'fa' ? 'rtl' : 'ltr'} /></div></details></section>
 
         <section className="rounded-3xl bg-primary px-6 py-10 text-center text-primary-foreground md:px-12"><h2 className="font-[IRANSharp] text-3xl font-bold">{text('مقاله‌ای بسازید که واقعاً خوانده و وارد گفت‌وگو شود.', 'Publish work that is actually read and enters the conversation.')}</h2><p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-primary-foreground/80">{text('کاغذ می‌ماند؛ باد می‌وزد؛ فهم میان این دو ادامه پیدا می‌کند.', 'Paper remains; wind moves; understanding continues between the two.')}</p><div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row"><Link to="/auth" className="inline-flex items-center justify-center gap-2 rounded-xl bg-background px-5 py-3 text-sm font-semibold text-foreground transition hover:bg-background/90">{text('شروع کنید', 'Get started')}<ButtonArrow rtl={isFa} /></Link><Link to="/read" className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary-foreground/30 px-5 py-3 text-sm font-semibold transition hover:bg-primary-foreground/10">{text('دیدن نمونه‌ها', 'See examples')}<ButtonArrow rtl={isFa} /></Link></div></section>
 
