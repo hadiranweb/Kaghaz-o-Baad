@@ -1,5 +1,5 @@
 import { Children, cloneElement, isValidElement, type ReactNode } from 'react';
-import { useMotion } from './MotionProvider';
+import { useMotion } from './MotionContext';
 
 type StaggerGroupProps = {
   children: ReactNode;

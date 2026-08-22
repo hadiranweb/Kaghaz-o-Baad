@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type PropsWithChildren } from 'react';
-import { useMotion } from './MotionProvider';
+import { useMotion } from './MotionContext';
 
 export type ShelfPhase = 'idle' | 'focused' | 'opening' | 'open' | 'reading' | 'closing';
 

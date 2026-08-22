@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ElementType, type ReactNode } from 'react';
-import { useMotion } from './MotionProvider';
+import { useMotion } from './MotionContext';
 
 type MaskedRevealProps = {
   children: ReactNode;
