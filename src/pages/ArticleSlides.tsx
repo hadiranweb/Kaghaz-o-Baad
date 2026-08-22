@@ -10,6 +10,7 @@ import MDEditor from '@uiw/react-md-editor';
 import { setNoIndexMetadata, setSeoMetadata } from '@/lib/seo';
 import { normalizeSlides, localizedSlideBody, localizedSlideTitle, localizedArticleTitle, localizedArticleSummary } from '@/lib/article-reader';
 import { createReaderState, readerReducer } from '@/lib/reader-state';
+import { useReducedMotion } from '@/hooks/useCreativeInteraction';
 
 export default function ArticleSlides() {
   const { slug } = useParams();
@@ -17,6 +18,7 @@ export default function ArticleSlides() {
   const { locale, direction } = useLanguage();
   const [readerState, dispatchReader] = useReducer(readerReducer, undefined, createReaderState);
   const currentSlide = readerState.index;
+  const reducedMotion = useReducedMotion();
   const curlRef = useRef<{ startX: number; startY: number; pointerId: number; width: number } | null>(null);
   const suppressClickRef = useRef(false);
 
@@ -79,13 +81,13 @@ export default function ArticleSlides() {
   }, [currentSlide]);
 
   const handleCurlPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
-    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (reducedMotion || (event.pointerType === 'mouse' && event.button !== 0)) return;
     const rect = event.currentTarget.getBoundingClientRect();
     curlRef.current = { startX: event.clientX, startY: event.clientY, pointerId: event.pointerId, width: rect.width };
     suppressClickRef.current = false;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     dispatchReader({ type: 'DRAG', progress: 0 });
-  }, []);
+  }, [reducedMotion]);
 
   const handleCurlPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     const start = curlRef.current;
@@ -206,15 +208,16 @@ export default function ArticleSlides() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-reading-bg">
-        <Loader2 className="h-12 w-12 animate-spin text-reading-fg/40" />
+      <div className="min-h-screen flex items-center justify-center bg-reading-bg" role="status" aria-live="polite">
+          <Loader2 className="h-12 w-12 animate-spin text-reading-fg/40" aria-hidden="true" />
+          <span className="sr-only">{locale === 'fa' ? 'در حال بارگذاری مقاله…' : 'Loading article…'}</span>
       </div>
     );
   }
 
   if (error || !articleData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-reading-bg">
+      <div className="min-h-screen flex items-center justify-center bg-reading-bg" role="alert">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-4 text-reading-fg">
             {locale === 'fa' ? 'مقاله یافت نشد' : 'Article Not Found'}
@@ -255,7 +258,7 @@ export default function ArticleSlides() {
         <div className="flex-1 relative overflow-hidden cursor-grab active:cursor-grabbing touch-pan-y" onClick={handleSlideClick} onClickCapture={handleClickCapture} onPointerDown={handleCurlPointerDown} onPointerMove={handleCurlPointerMove} onPointerUp={handleCurlPointerUp} onPointerCancel={handleCurlPointerCancel} role="region" aria-label={locale === 'fa' ? 'صفحهٔ مطالعهٔ مقاله؛ برای ورق‌زدن بکشید' : 'Article reading page; drag to turn'}>
           {/* Content */}
           <div className="absolute inset-0 flex items-center justify-center p-8 md:p-16 lg:p-24">
-            <div key={currentSlide} className="creative-page-turn max-w-3xl w-full" dir={locale === 'fa' ? 'rtl' : 'ltr'} aria-live="polite" style={{ '--curl-progress': readerState.dragProgress, transform: `perspective(1200px) rotateY(${readerState.dragProgress * -10}deg) translateX(${readerState.dragProgress * 18}px)`, boxShadow: `${readerState.dragProgress * -28}px 0 32px -28px hsl(var(--reading-fg) / ${Math.min(Math.abs(readerState.dragProgress) * 1.8, .32)})` } as React.CSSProperties}>
+            <div key={currentSlide} className="creative-page-turn max-w-3xl w-full" dir={locale === 'fa' ? 'rtl' : 'ltr'} aria-live="polite" style={!reducedMotion ? { '--curl-progress': readerState.dragProgress, transform: `perspective(1200px) rotateY(${readerState.dragProgress * -10}deg) translateX(${readerState.dragProgress * 18}px)`, boxShadow: `${readerState.dragProgress * -28}px 0 32px -28px hsl(var(--reading-fg) / ${Math.min(Math.abs(readerState.dragProgress) * 1.8, .32)})` } as React.CSSProperties : undefined}>
               {localizedSlideTitle(slide, locale) && (
                 <h2 className="text-2xl md:text-4xl font-semibold mb-8 text-reading-fg leading-relaxed">
                   {localizedSlideTitle(slide, locale)}

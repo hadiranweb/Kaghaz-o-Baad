@@ -64,6 +64,7 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
       className="creative-shelf grid gap-6 md:grid-cols-2 lg:flex lg:flex-nowrap lg:gap-7 lg:overflow-x-auto lg:overscroll-x-contain lg:pb-4"
       role="list"
       aria-label={label}
+      aria-describedby="article-shelf-instructions"
       data-shelf-phase={phase}
       data-shelf-active={activeIndex ?? undefined}
       dir={direction}
@@ -71,6 +72,12 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
       onMouseLeave={() => setPhase('idle')}
     >
       {children}
+      <span id="article-shelf-instructions" className="sr-only">
+        Use the arrow keys to move between articles, Home and End to jump to the shelf boundaries, and Enter to open a focused action.
+      </span>
+      <span className="sr-only" role="status" aria-live="polite">
+        {activeIndex === null ? '' : `Article ${activeIndex + 1} focused`}
+      </span>
     </div>
   );
 }
