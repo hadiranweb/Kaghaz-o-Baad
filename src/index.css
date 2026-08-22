@@ -799,3 +799,97 @@
 @media (max-width: 767px) {
   .kb-hero-art { min-height: 26rem; }
 }
+
+
+/* === MengTo web-design foundation contract: KaghazBaad semantic tokens === */
+:root {
+  --ds-color-bg: hsl(var(--background));
+  --ds-color-surface: hsl(var(--card));
+  --ds-color-surface-raised: hsl(var(--popover));
+  --ds-color-ink: hsl(var(--foreground));
+  --ds-color-ink-muted: hsl(var(--muted-foreground));
+  --ds-color-brand: hsl(var(--primary));
+  --ds-color-accent: hsl(var(--accent));
+  --ds-color-line: hsl(var(--border));
+  --ds-color-focus: hsl(var(--ring));
+  --ds-type-display: clamp(2.75rem, 8vw, 7rem);
+  --ds-type-title: clamp(2rem, 5vw, 4.5rem);
+  --ds-type-section: clamp(1.5rem, 3vw, 2.75rem);
+  --ds-type-body: 1rem;
+  --ds-type-meta: 0.6875rem;
+  --ds-leading-display: 1.08;
+  --ds-leading-copy: 1.9;
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-5: 1.5rem;
+  --ds-space-6: 2rem;
+  --ds-space-7: 3rem;
+  --ds-space-8: 5rem;
+  --ds-container-gutter: clamp(1rem, 4vw, 2rem);
+  --ds-container-max: 78rem;
+  --ds-radius-sm: 0.5rem;
+  --ds-radius-md: 0.875rem;
+  --ds-radius-lg: 1.5rem;
+  --ds-radius-pill: 999px;
+  --ds-border-thin: 1px;
+  --ds-border-strong: 2px;
+  --ds-shadow-paper: 0 18px 45px -24px hsl(var(--foreground) / 0.42);
+  --ds-shadow-lift: 0 26px 60px -30px hsl(var(--foreground) / 0.6);
+  --ds-shadow-inset: inset 0 1px 0 hsl(var(--foreground) / 0.08);
+  --ds-blur-surface: 18px;
+  --ds-blur-progressive: 28px;
+  --ds-z-base: 0;
+  --ds-z-content: 10;
+  --ds-z-header: 50;
+  --ds-z-overlay: 100;
+  --ds-motion-instant: 0ms;
+  --ds-motion-fast: 180ms;
+  --ds-motion-base: 420ms;
+  --ds-motion-slow: 760ms;
+  --ds-ease-editorial: cubic-bezier(0.23, 1, 0.32, 1);
+  --ds-ease-standard: cubic-bezier(0.2, 0.65, 0.3, 1);
+}
+
+.dark {
+  --ds-shadow-paper: 0 18px 45px -24px hsl(0 0% 0% / 0.7);
+  --ds-shadow-lift: 0 30px 70px -30px hsl(0 0% 0% / 0.82);
+  --ds-shadow-inset: inset 0 1px 0 hsl(var(--foreground) / 0.07);
+}
+
+@layer components {
+  .ds-container {
+    width: min(100% - (2 * var(--ds-container-gutter)), var(--ds-container-max));
+    margin-inline: auto;
+  }
+
+  .ds-paper-surface {
+    background: hsl(var(--card));
+    border: var(--ds-border-thin) solid var(--ds-color-line);
+    border-radius: var(--ds-radius-lg);
+    box-shadow: var(--ds-shadow-paper), var(--ds-shadow-inset);
+  }
+
+  .ds-editorial-rule {
+    height: var(--ds-border-thin);
+    background: linear-gradient(90deg, transparent, var(--ds-color-line), transparent);
+  }
+
+  .ds-focus-ring:focus-visible {
+    outline: var(--ds-border-strong) solid var(--ds-color-focus);
+    outline-offset: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ds-motion-fast: 0ms;
+    --ds-motion-base: 0ms;
+    --ds-motion-slow: 0ms;
+  }
+}
+
+@media (pointer: coarse) {
+  :root { --ds-blur-surface: 10px; }
+}
