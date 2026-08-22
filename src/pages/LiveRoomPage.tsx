@@ -202,9 +202,9 @@ export default function LiveRoomPage() {
                 {fa ? 'راه‌اندازی سرور زنده:' : 'LiveKit setup:'}
               </div>
               <ol className="list-decimal pr-4 space-y-1 font-mono">
-                <li>supabase secrets set LIVEKIT_URL=wss://… LIVEKIT_API_KEY=… LIVEKIT_API_SECRET=…</li>
-                <li>supabase functions deploy livekit-token</li>
-                <li>supabase db push</li>
+                <li>Liara: متغیرهای LIVEKIT_URL، LIVEKIT_API_KEY و LIVEKIT_API_SECRET را در backend ثبت کنید.</li>
+                <li>backend: سرویس را با آخرین release استقرار دهید تا endpoint مستقل livekit-token فعال شود.</li>
+                <li>PostgreSQL: migrationهای backend را با migration runner اجرا و وضعیت schema_migrations را بررسی کنید.</li>
               </ol>
             </div>
           )}
