@@ -594,3 +594,65 @@
   .kb-parallax-layer--deep,
   .kb-parallax-layer--near { opacity: 1; transform: none; transition: none; animation: none; }
 }
+
+/* === Editorial Homepage / navigation layer === */
+.kb-masthead {
+  box-shadow: 0 1px 0 hsl(var(--border)), 0 12px 32px -28px hsl(var(--foreground) / 0.45);
+}
+.kb-brand-mark {
+  position: relative;
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid hsl(var(--primary) / 0.35);
+  border-radius: 999px;
+  background: hsl(var(--primary) / 0.06);
+  transform: rotate(-8deg);
+  transition: transform 240ms ease, background-color 240ms ease;
+}
+.kb-brand-mark::before,
+.kb-brand-mark::after,
+.kb-brand-mark > span {
+  position: absolute;
+  display: block;
+  width: 1.05rem;
+  height: 1px;
+  background: hsl(var(--primary));
+  content: '';
+}
+.kb-brand-mark::before { transform: translateY(-4px) rotate(28deg); }
+.kb-brand-mark::after { transform: translateY(4px) rotate(-28deg); }
+.kb-brand-mark > span { width: .35rem; height: .35rem; border-radius: 999px; }
+.kb-brand-lockup:hover .kb-brand-mark { background: hsl(var(--accent) / 0.16); transform: rotate(4deg) scale(1.04); }
+.kb-brand-caption { font-family: Inter, sans-serif; }
+.kb-nav-link,
+.kb-primary-nav [data-state="open"] { position: relative; }
+.kb-nav-link::after,
+.kb-primary-nav [data-state="open"]::after {
+  position: absolute;
+  right: .75rem;
+  bottom: .35rem;
+  left: .75rem;
+  height: 1px;
+  background: hsl(var(--accent));
+  content: '';
+  opacity: 0;
+  transform: scaleX(.2);
+  transform-origin: center;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.kb-nav-link:hover::after,
+.kb-nav-link.is-active::after,
+.kb-primary-nav [data-state="open"]::after { opacity: 1; transform: scaleX(1); }
+.kb-display-title { text-wrap: balance; }
+.kb-kicker { font-family: Inter, 'IRANSharp', sans-serif; }
+.kb-issue-bar { font-family: Inter, 'IRANSharp', sans-serif; }
+.kb-editorial-rule { font-family: Inter, 'IRANSharp', sans-serif; }
+.kb-mobile-nav { box-shadow: 0 24px 40px -28px hsl(var(--foreground) / .55); }
+@media (prefers-reduced-motion: reduce) {
+  .kb-brand-mark,
+  .kb-brand-lockup:hover .kb-brand-mark,
+  .kb-nav-link::after,
+  .kb-primary-nav [data-state="open"]::after { transition: none; transform: none; }
+}

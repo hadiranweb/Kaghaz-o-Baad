@@ -103,14 +103,19 @@ export default function Home() {
   return (
     <main dir={isFa ? 'rtl' : 'ltr'} className="min-h-screen bg-background">
       <section className="creative-section kb-hero relative border-b border-border/60">
+        <div className="kb-issue-bar container relative z-20 mx-auto flex max-w-6xl items-center justify-between px-4 pt-5 text-[10px] uppercase tracking-[.18em] text-muted-foreground lg:px-8" aria-label={t('اطلاعات شمارهٔ جاری', 'Current issue information')}>
+          <span>{t('شمارهٔ ۰۱ · بهار ۱۴۰۵', 'Issue 01 · Spring 2026')}</span>
+          <span className="hidden sm:inline">{t('یک بایگانی زنده از ایده‌ها', 'A living archive of ideas')}</span>
+        </div>
         <AmbientPaperParticles count={30} />
         <div className="container relative z-10 mx-auto grid min-h-[calc(100vh-3.5rem)] max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:py-20">
           <div className="max-w-2xl text-center lg:text-start">
+            <p className="kb-kicker mb-5 text-xs font-semibold uppercase tracking-[.2em] text-primary">{t('دفترِ بازِ کاغذ و باد', 'The open desk of KaghazBaad')}</p>
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-background/65 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm">
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               {t('نشر آکادمیک دوزبانه', 'Bilingual academic publishing')}
             </div>
-            <h1 className="max-w-3xl text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+            <h1 className="kb-display-title max-w-3xl text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
               {t('دانش را بنویس، به گفت‌وگو برگردان.', 'Write knowledge. Bring it back to conversation.')}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-9 text-foreground/75 md:text-xl">
@@ -166,7 +171,7 @@ export default function Home() {
               </form>
             </div>
           </div>
-          <div className="kb-hero-art relative mx-auto w-full max-w-md rounded-[2rem] border border-primary/20 p-8 shadow-elegant lg:p-10" onPointerMove={onPointerMove} onPointerLeave={onPointerLeave} style={{ '--pointer-x': pointerPoint.x, '--pointer-y': pointerPoint.y } as React.CSSProperties}>
+          <div className="kb-hero-art relative mx-auto w-full max-w-md rounded-[2rem] border border-primary/20 p-8 shadow-elegant lg:p-10" aria-label={t('کارت روایت کاغذ و باد', 'KaghazBaad story card')} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave} style={{ '--pointer-x': pointerPoint.x, '--pointer-y': pointerPoint.y } as React.CSSProperties}>
             <div className="kb-parallax-layer kb-parallax-layer--deep relative mx-auto mb-8 max-w-[16rem]" aria-label={t('نشانهٔ تصویری کاغذ و باد', 'KaghazBaad visual mark')}>
               <BrainAnimation />
             </div>
@@ -183,6 +188,7 @@ export default function Home() {
       </section>
 
       <RevealOnScroll className="container mx-auto max-w-6xl px-4 py-16 lg:px-8">
+        <div className="kb-editorial-rule mb-8 flex items-center gap-4 text-[10px] uppercase tracking-[.2em] text-muted-foreground"><span>{t('فهرست تجربه‌ها', 'Index of experiences')}</span><span className="h-px flex-1 bg-border/70" /></div>
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div><p className="kb-section-label">{t('از اینجا شروع کنید', 'Start here')}</p><h2 className="mt-2 text-3xl font-bold md:text-4xl">{t('سه راه برای ورود به کاغذ و باد', 'Three ways into KaghazBaad')}</h2></div>
           <p className="max-w-md text-sm leading-7 text-muted-foreground">{t('مسیر مناسب خود را انتخاب کنید؛ هر تجربه به مسیر بعدی متصل است.', 'Choose your path; each experience connects to the next.')}</p>
