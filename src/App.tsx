@@ -13,6 +13,7 @@ import { Footer } from "@/components/Footer";
 import { LocalizedRoute } from "@/components/LocalizedRoute";
 import { SeoGuard } from "@/components/SeoGuard";
 import { PublicSeoRoute } from "@/components/PublicSeoRoute";
+import { MotionProvider } from "@/components/creative";
 const Home = lazy(() => import("./pages/Home"));
 const Read = lazy(() => import("./pages/Read"));
 const ArticleSlides = lazy(() => import("./pages/ArticleSlides"));
@@ -43,6 +44,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
       <LanguageProvider>
+        <MotionProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -92,8 +94,10 @@ const App = () => (
             </div>
           </AuthProvider>
         </BrowserRouter>
-      </TooltipProvider>
-    </LanguageProvider>
+              </TooltipProvider>
+        </MotionProvider>
+      </LanguageProvider>
+
     </ThemeProvider>
   </QueryClientProvider>
 );

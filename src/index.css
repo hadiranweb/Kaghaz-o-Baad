@@ -717,3 +717,41 @@
 @media (prefers-reduced-motion: reduce) {
   .kb-dock-item { transform: none; transition: none; }
 }
+
+/* Shared motion foundation: presentation-only masks; content remains in the DOM. */
+:root {
+  --kb-motion-fast: 180ms;
+  --kb-motion-base: 420ms;
+  --kb-motion-slow: 760ms;
+  --kb-ease-editorial: cubic-bezier(.22, 1, .36, 1);
+}
+.kb-masked-reveal { overflow: clip; }
+.kb-masked-reveal__content {
+  display: block;
+  opacity: 0;
+  transform: translateY(1.25rem);
+  clip-path: inset(0 0 100% 0);
+  transition: opacity var(--kb-motion-base) var(--kb-ease-editorial) var(--reveal-delay, 0ms),
+    transform var(--kb-motion-base) var(--kb-ease-editorial) var(--reveal-delay, 0ms),
+    clip-path var(--kb-motion-slow) var(--kb-ease-editorial) var(--reveal-delay, 0ms);
+}
+.kb-masked-reveal.is-visible .kb-masked-reveal__content {
+  opacity: 1;
+  transform: none;
+  clip-path: inset(0 0 0 0);
+}
+.kb-stagger-group { --stagger-step: 70ms; }
+.kb-stagger-item {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  animation: kb-stagger-enter var(--kb-motion-base) var(--kb-ease-editorial) calc(var(--stagger-index, 0) * var(--stagger-step)) both;
+}
+.kb-stagger-group.is-reduced .kb-stagger-item { opacity: 1; transform: none; animation: none; }
+@keyframes kb-stagger-enter {
+  from { opacity: 0; transform: translateY(1.25rem); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  .kb-masked-reveal__content,
+  .kb-stagger-item { opacity: 1; transform: none; clip-path: none; animation: none; transition: none; }
+}

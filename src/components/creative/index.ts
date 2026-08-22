@@ -4,5 +4,8 @@ export { ScrollChapterProgress } from './ScrollChapterProgress';
 export { ArticleShelf } from './ArticleShelf';
 export { StaggeredWordReveal } from './StaggeredWordReveal';
 export { EditorialDock } from './EditorialDock';
+export { MotionProvider, useMotion } from './MotionProvider';
+export { MaskedReveal } from './MaskedReveal';
+export { StaggerGroup } from './StaggerGroup';
 export type { EditorialDockItem } from './EditorialDock';
 export type { ScrollChapter } from './ScrollChapterProgress';

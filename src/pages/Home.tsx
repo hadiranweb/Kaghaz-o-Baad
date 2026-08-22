@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { backendRequest } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 import { BrainAnimation } from '@/components/BrainAnimation';
-import { AmbientPaperParticles, RevealOnScroll, StaggeredWordReveal } from '@/components/creative';
+import { AmbientPaperParticles, MaskedReveal, RevealOnScroll, StaggeredWordReveal, StaggerGroup } from '@/components/creative';
 import { usePointerIntent } from '@/hooks/useCreativeInteraction';
 
 export default function Home() {
@@ -110,27 +110,27 @@ export default function Home() {
         <AmbientPaperParticles count={30} />
         <div className="container relative z-10 mx-auto grid min-h-[calc(100vh-3.5rem)] max-w-6xl items-center gap-10 px-4 py-16 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:py-20">
           <div className="max-w-2xl text-center lg:text-start">
-            <p className="kb-kicker mb-5 text-xs font-semibold uppercase tracking-[.2em] text-primary">{t('دفترِ بازِ کاغذ و باد', 'The open desk of KaghazBaad')}</p>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-background/65 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm">
+            <MaskedReveal as="p" className="kb-kicker mb-5 text-xs font-semibold uppercase tracking-[.2em] text-primary">{t('دفترِ بازِ کاغذ و باد', 'The open desk of KaghazBaad')}</MaskedReveal>
+            <MaskedReveal delay={80} className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-background/65 px-3 py-1.5 text-xs font-semibold text-primary shadow-sm">
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               {t('نشر آکادمیک دوزبانه', 'Bilingual academic publishing')}
-            </div>
+            </MaskedReveal>
             <StaggeredWordReveal
               as="h1"
               className="kb-display-title max-w-3xl text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl"
               text={t('دانش را بنویس، به گفت‌وگو برگردان.', 'Write knowledge. Bring it back to conversation.')}
             />
-            <p className="mt-6 max-w-2xl text-lg leading-9 text-foreground/75 md:text-xl">
+            <MaskedReveal as="p" delay={180} className="mt-6 max-w-2xl text-lg leading-9 text-foreground/75 md:text-xl">
               {t('کاغذ و باد فضایی برای مقاله، نمایش اسلایدی و گفت‌وگوی زنده است؛ جایی که یک ایده می‌تواند خوانده، نقد و ادامه داده شود.', 'KaghazBaad is a space for articles, slide-based reading, and live scholarly dialogue—a place where an idea can be read, questioned, and extended.')}
-            </p>
-            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
+            </MaskedReveal>
+            <StaggerGroup className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start" step={90}>
               <Link to="/read" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-elegant transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {t('مشاهدهٔ مقالات', 'Explore articles')} <Arrow className="h-4 w-4" aria-hidden="true" />
               </Link>
               <Link to="/about-project" className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background/65 px-5 py-3 text-sm font-semibold transition hover:bg-accent/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 {t('آشنایی با پروژه', 'About the project')} <Arrow className="h-4 w-4" aria-hidden="true" />
               </Link>
-            </div>
+            </StaggerGroup>
             <div ref={containerRef} className="relative mt-10 max-w-xl lg:max-w-2xl">
               <label htmlFor={inputId} className="mb-2 block text-start text-xs font-semibold text-muted-foreground">
                 {t('در مقالات جست‌وجو کنید', 'Search the articles')}
