@@ -11,6 +11,7 @@ import { listPublicArticles, listPublicProfiles, publishArticle } from '@/lib/ba
 import { useToast } from '@/hooks/use-toast';
 import { useCallback, useEffect, useState } from 'react';
 import { ArticleShelf, RevealOnScroll } from '@/components/creative';
+import { normalizeShelfArticle } from '@/lib/article-shelf-data';
 
 interface AuthorProfile {
   id: string;
@@ -124,6 +125,7 @@ export default function Read() {
   };
 
   const clearSearch = () => setSearchParams({});
+  const shelfArticles = articles.map((article) => normalizeShelfArticle(article, locale, article.author_id ? authors[article.author_id] : undefined));
 
   return (
     <div className="min-h-screen py-12">
@@ -207,7 +209,7 @@ export default function Read() {
         {!loading && articles && articles.length > 0 && (
           <>
             <ArticleShelf direction={locale === 'fa' ? 'rtl' : 'ltr'} label={locale === 'fa' ? 'قفسهٔ مقالات' : 'Article shelf'}>
-              {articles.map((article) => {
+              {shelfArticles.map((article) => {
                 const isUserArticle = user && article.author_id === user.id;
                 const authProfile = article.author_id ? authors[article.author_id] : undefined;
                 return (
@@ -221,11 +223,13 @@ export default function Read() {
                       isUserArticle ? 'ring-1 ring-accent/30' : ''
                     }`}
                   >
-                    <div className={`h-48 bg-gradient-to-br relative overflow-hidden ${
+                                              <div className={`h-48 bg-gradient-to-br relative overflow-hidden ${
+
                       isUserArticle 
                         ? 'from-accent/15 via-secondary to-card' 
                         : 'from-secondary via-card to-background'
-                    }`}>
+                          }`}>
+                      {article.hasCover && <img src={article.cover_url || undefined} alt="" loading="lazy" width="672" height="384" className="absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}
                       <div className="absolute inset-0 flex items-center justify-center">
                         <BookOpen className="h-16 w-16 text-primary/20 group-hover:scale-110 transition-transform" />
                       </div>
@@ -255,11 +259,11 @@ export default function Read() {
                       </div>
                       
                       <CardTitle className="text-xl group-hover:text-primary transition-colors" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-                        {locale === 'fa' ? article.title_fa : article.title_en}
+                        {article.displayTitle}
                       </CardTitle>
                       
                       <CardDescription className="line-clamp-3" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-                        {locale === 'fa' ? article.summary_fa : article.summary_en}
+                        {article.displaySummary}
                       </CardDescription>
                       
                       {authProfile && authProfile.show_on_cards && (
@@ -282,7 +286,8 @@ export default function Read() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>{new Date(article.published_at || article.created_at).toLocaleDateString(locale)}</span>
+                          <span>{article.dateLabel}</span>
+                          <span className="text-xs text-muted-foreground/80">{article.languageLabel}</span>
                         </div>
                       </div>
                       
