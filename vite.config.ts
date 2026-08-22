@@ -12,7 +12,9 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()].filter(Boolean),
   build: {
     modulePreload: {
-      resolveDependencies: (_hostId, deps) => deps.filter((dependency) => !dependency.includes('markdown-vendor')),
+      resolveDependencies(_filename, deps) {
+        return deps.filter((dep) => !/(markdown|pdf|livekit|e2ee)/i.test(dep));
+      },
     },
     rollupOptions: {
       output: {
