@@ -32,6 +32,7 @@ import LiveSessionsManager from '@/components/admin/LiveSessionsManager';
 import CircuitBreakerMonitor from '@/components/admin/CircuitBreakerMonitor';
 import SystemWiki from '@/components/admin/SystemWiki';
 import UsageCostReport from '@/components/admin/UsageCostReport';
+import VerifiedFactorsCard from '@/components/auth/VerifiedFactorsCard';
 
 type DashboardView =
   | 'articles'
@@ -41,7 +42,8 @@ type DashboardView =
   | 'all_live'
   | 'project'
   | 'wiki'
-  | 'usage_report';
+  | 'usage_report'
+  | 'security';
 
 const articleSchema = z.object({
   title_fa: z.string().trim().min(3, { message: "عنوان فارسی باید حداقل ۳ کاراکتر باشد" }).max(200),
@@ -375,6 +377,7 @@ export default function Dashboard() {
     if (activeView === 'resilience') return t('تاب‌آوری و مدارشکن‌ها', 'Resilience & Breakers');
     if (activeView === 'all_live') return t('پایش پخش‌های زنده', 'Live Sessions (Monitor)');
     if (activeView === 'project') return t('ویرایش شرح پروژه', 'Project Description');
+    if (activeView === 'security') return t('امنیت و عوامل تأیید', 'Security & Verified Factors');
     if (activeView === 'wiki') return t('ویکی و راهنمای سامانه', 'System Wiki & Etiquette');
     return t('میز کار کاربری', 'User Workspace');
   };
@@ -539,9 +542,18 @@ export default function Dashboard() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
+                    <SidebarMenuButton
+                      isActive={activeView === 'security'}
+                      onClick={() => handleSelectView('security')}
+                    >
+                      <Shield className="h-4 w-4" />
+                      <span>{t('امنیت و عوامل تأیید', 'Security & Factors')}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => navigate('/change-password')}>
                       <Settings className="h-4 w-4" />
-                      <span>{t('تنظیمات امنیتی', 'Security Settings')}</span>
+                      <span>{t('تغییر رمز عبور', 'Change Password')}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>
@@ -576,6 +588,8 @@ export default function Dashboard() {
             <div className="container mx-auto px-4 py-6 max-w-6xl" dir={isRTL ? 'rtl' : 'ltr'}>
               {/* VIEW: 'wiki' (ویکی و راهنما در داخل کنسول) */}
               {activeView === 'wiki' && <SystemWiki />}
+
+              {activeView === 'security' && <VerifiedFactorsCard />}
 
               {/* VIEW: 'users' (مدیریت کاربران و نقش‌های RBAC) */}
               {activeView === 'users' && canAccessAdmin && <UsersManager />}

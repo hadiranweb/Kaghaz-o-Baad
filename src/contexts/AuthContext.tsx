@@ -137,6 +137,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   ) => {
     try {
       const response = await register({ email, password, ...userData });
+      if ('pending' in response) {
+        const pendingError = new Error('email_verification_required');
+        toast({ title: 'تأیید ایمیل لازم است', description: 'لینک تأیید به ایمیل شما ارسال شد. پس از کلیک روی لینک، ورود کامل می‌شود.' });
+        return { error: pendingError };
+      }
       const nextSession = toSession(response);
       setUser(nextSession.user);
       setSession(nextSession);
@@ -148,7 +153,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: 'خطا در ثبت‌نام',
         description: error instanceof Error && error.message === 'email_already_registered'
           ? 'این ایمیل قبلاً ثبت شده است'
-          : error instanceof Error ? error.message : 'خطای ناشناخته',
+          : error instanceof Error && error.message === 'email_provider_not_configured'
+            ? 'ارسال ایمیل تأیید هنوز در backend تنظیم نشده است'
+            : error instanceof Error ? error.message : 'خطای ناشناخته',
       });
       return { error };
     }

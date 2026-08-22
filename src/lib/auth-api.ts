@@ -4,6 +4,10 @@ export type BackendUser = {
   first_name?: string | null;
   last_name?: string | null;
   roles?: string[];
+  phone?: string | null;
+  email_verified?: boolean;
+  phone_verified?: boolean;
+  has_verified_factor?: boolean;
 };
 
 export type BackendSession = {
@@ -41,10 +45,11 @@ export async function register(input: {
   last_name?: string;
   phone?: string;
 }) {
-  const response = await request<{ user: BackendUser; token: string }>('/auth/register', {
+  const response = await request<{ user: BackendUser; token: string } | { pending: true; expires_in_seconds: number }>('/auth/register', {
     method: 'POST',
     body: JSON.stringify(input),
   });
+  if ('pending' in response) return response;
   setToken(response.token);
   return { user: response.user, token: response.token };
 }
@@ -61,6 +66,26 @@ export async function verifyPhoneCode(phone: string, code: string) {
     method: 'POST',
     body: JSON.stringify({ phone, code }),
   });
+  setToken(response.token);
+  return { user: response.user, token: response.token };
+}
+
+export async function sendPhoneFactorCode(phone: string) {
+  return request<{ ok: true; expires_in_seconds: number }>('/auth/phone/verify-factor/send-code', {
+    method: 'POST',
+    body: JSON.stringify({ phone }),
+  });
+}
+
+export async function verifyPhoneFactor(phone: string, code: string) {
+  return request<{ ok: true; phone: string; phone_verified: true }>('/auth/phone/verify-factor', {
+    method: 'POST',
+    body: JSON.stringify({ phone, code }),
+  });
+}
+
+export async function verifyEmail(tokenValue: string) {
+  const response = await request<{ user: BackendUser; token: string }>(`/auth/verify-email?token=${encodeURIComponent(tokenValue)}`);
   setToken(response.token);
   return { user: response.user, token: response.token };
 }
