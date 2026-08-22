@@ -27,7 +27,7 @@ export function createWorkerHealthServer(env: AppEnv, state: WorkerHealthState):
       return;
     }
 
-    if (requestUrl.pathname === '/healthz' || requestUrl.pathname === '/health') {
+    if (requestUrl.pathname === '/' || requestUrl.pathname === '/healthz' || requestUrl.pathname === '/health') {
       sendJson(res, 200, {
         ok: true,
         service: 'kaghazbaad-mailbox-worker',
