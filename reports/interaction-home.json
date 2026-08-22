@@ -1,0 +1,127 @@
+{
+  "events": [
+    {
+      "name": "keydown",
+      "startTime": 25203.600000023842,
+      "processingStart": 25220.800000071526,
+      "duration": 88,
+      "interactionId": 8979
+    },
+    {
+      "name": "keyup",
+      "startTime": 25254.800000071526,
+      "processingStart": 25273.899999976158,
+      "duration": 56,
+      "interactionId": 8979
+    },
+    {
+      "name": "keydown",
+      "startTime": 25276.200000047684,
+      "processingStart": 25286.600000023842,
+      "duration": 48,
+      "interactionId": 8986
+    },
+    {
+      "name": "keyup",
+      "startTime": 25288.399999976158,
+      "processingStart": 25297,
+      "duration": 56,
+      "interactionId": 8986
+    },
+    {
+      "name": "pointerdown",
+      "startTime": 25449.399999976158,
+      "processingStart": 25467.800000071526,
+      "duration": 72,
+      "interactionId": 8993
+    },
+    {
+      "name": "pointerup",
+      "startTime": 25449.600000023842,
+      "processingStart": 25486.200000047684,
+      "duration": 72,
+      "interactionId": 8993
+    },
+    {
+      "name": "click",
+      "startTime": 25449.600000023842,
+      "processingStart": 25486.5,
+      "duration": 72,
+      "interactionId": 8993
+    }
+  ],
+  "lcp": 23976,
+  "cls": 0.11653417122395833,
+  "longTasks": [
+    {
+      "startTime": 20551.700000047684,
+      "duration": 270
+    },
+    {
+      "startTime": 20830.5,
+      "duration": 472
+    },
+    {
+      "startTime": 23071.600000023842,
+      "duration": 81
+    },
+    {
+      "startTime": 25027.200000047684,
+      "duration": 83
+    }
+  ],
+  "navigation": {
+    "name": "http://localhost:8080/",
+    "entryType": "navigation",
+    "startTime": 0,
+    "duration": 20829.200000047684,
+    "navigationId": 1757,
+    "initiatorType": "navigation",
+    "deliveryType": "",
+    "nextHopProtocol": "http/1.1",
+    "renderBlockingStatus": "non-blocking",
+    "contentType": "text/html",
+    "contentEncoding": "",
+    "workerStart": 0,
+    "workerRouterEvaluationStart": 0,
+    "workerCacheLookupStart": 0,
+    "workerMatchedSourceType": "",
+    "workerFinalSourceType": "",
+    "redirectStart": 0,
+    "redirectEnd": 0,
+    "fetchStart": 1.100000023841858,
+    "domainLookupStart": 1.100000023841858,
+    "domainLookupEnd": 1.100000023841858,
+    "connectStart": 1.100000023841858,
+    "secureConnectionStart": 0,
+    "connectEnd": 1.100000023841858,
+    "requestStart": 2.399999976158142,
+    "responseStart": 6.300000071525574,
+    "firstInterimResponseStart": 0,
+    "finalResponseHeadersStart": 6.300000071525574,
+    "responseEnd": 170.30000007152557,
+    "transferSize": 3804,
+    "encodedBodySize": 3504,
+    "decodedBodySize": 3504,
+    "responseStatus": 200,
+    "serverTiming": [],
+    "unloadEventStart": 0,
+    "unloadEventEnd": 0,
+    "domInteractive": 204.20000004768372,
+    "domContentLoadedEventStart": 20813,
+    "domContentLoadedEventEnd": 20813.700000047684,
+    "domComplete": 20828.399999976158,
+    "loadEventStart": 20829.200000047684,
+    "loadEventEnd": 20829.200000047684,
+    "type": "navigate",
+    "redirectCount": 0,
+    "activationStart": 0,
+    "criticalCHRestart": 0,
+    "notRestoredReasons": null,
+    "confidence": {}
+  },
+  "capturedAt": 1787374972325,
+  "url": "http://localhost:8080/",
+  "elapsedMs": 25801,
+  "inpEstimateMs": 88
+}

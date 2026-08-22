@@ -792,3 +792,10 @@
   .kb-masked-reveal__content,
   .kb-stagger-item { opacity: 1; transform: none; clip-path: none; animation: none; transition: none; }
 }
+
+/* Lighthouse hardening: reserve the hero geometry and keep the LCP heading paintable. */
+.kb-lcp-critical { min-height: 1.2em; }
+.kb-hero-art { contain: layout paint; }
+@media (max-width: 767px) {
+  .kb-hero-art { min-height: 26rem; }
+}
