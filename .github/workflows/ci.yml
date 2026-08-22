@@ -131,6 +131,7 @@ jobs:
             --team-id "$LIARA_TEAM_ID" \
             --api-token "$LIARA_API_TOKEN" \
             --path . \
+            --detach \
             --no-app-logs \
             --message "GitHub ${GITHUB_SHA}"
 
