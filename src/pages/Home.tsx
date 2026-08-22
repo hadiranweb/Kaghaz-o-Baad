@@ -6,6 +6,7 @@ import { backendRequest } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 import { BrainAnimation } from '@/components/BrainAnimation';
 import { AmbientPaperParticles, RevealOnScroll } from '@/components/creative';
+import { usePointerIntent } from '@/hooks/useCreativeInteraction';
 
 export default function Home() {
   const { locale } = useLanguage();
@@ -20,6 +21,7 @@ export default function Home() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputId = 'home-article-search';
+  const { point: pointerPoint, onPointerMove, onPointerLeave } = usePointerIntent(true);
 
   const fetchSuggestions = useCallback(async (q: string) => {
     if (q.trim().length < 2) {
@@ -164,11 +166,11 @@ export default function Home() {
               </form>
             </div>
           </div>
-          <div className="kb-hero-art relative mx-auto w-full max-w-md rounded-[2rem] border border-primary/20 p-8 shadow-elegant lg:p-10">
-            <div className="relative mx-auto mb-8 max-w-[16rem]" aria-label={t('نشانهٔ تصویری کاغذ و باد', 'KaghazBaad visual mark')}>
+          <div className="kb-hero-art relative mx-auto w-full max-w-md rounded-[2rem] border border-primary/20 p-8 shadow-elegant lg:p-10" onPointerMove={onPointerMove} onPointerLeave={onPointerLeave} style={{ '--pointer-x': pointerPoint.x, '--pointer-y': pointerPoint.y } as React.CSSProperties}>
+            <div className="kb-parallax-layer kb-parallax-layer--deep relative mx-auto mb-8 max-w-[16rem]" aria-label={t('نشانهٔ تصویری کاغذ و باد', 'KaghazBaad visual mark')}>
               <BrainAnimation />
             </div>
-            <div className="relative grid gap-3">
+            <div className="kb-parallax-layer kb-parallax-layer--near relative grid gap-3">
               {[['۰۱', 'بنویس', 'Write', 'متن و چکیدهٔ روشن', 'Clear text and abstract'], ['۰۲', 'بساز', 'Build', 'هر ایده در یک اسلاید', 'One idea per slide'], ['۰۳', 'زنده کن', 'Make it live', 'پرسش، پاسخ و ادامه', 'Questions, answers, and extension']].map(([number, faTitle, enTitle, faBody, enBody]) => (
                 <div key={number} className="kb-step-card flex items-center gap-4 rounded-2xl p-4">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-sm font-semibold text-primary">{number}</span>

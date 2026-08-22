@@ -206,14 +206,15 @@ export default function Read() {
         {/* Articles Grid */}
         {!loading && articles && articles.length > 0 && (
           <>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="creative-shelf grid gap-6 md:grid-cols-2 lg:flex lg:flex-nowrap lg:gap-7 lg:overflow-x-auto lg:overscroll-x-contain lg:pb-4" role="list" aria-label={locale === 'fa' ? 'قفسهٔ مقالات' : 'Article shelf'}>
               {articles.map((article) => {
                 const isUserArticle = user && article.author_id === user.id;
                 const authProfile = article.author_id ? authors[article.author_id] : undefined;
                 return (
-                  <RevealOnScroll key={article.id} as="article" className="h-full">
+                  <RevealOnScroll key={article.id} as="article" className="h-full lg:min-w-[21rem] lg:flex-[0_0_21rem]" >
                   <Card 
                     key={article.id} 
+                    role="listitem"
                     className={`group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
                       isUserArticle ? 'ring-1 ring-accent/30' : ''
                     }`}
