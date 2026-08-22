@@ -1,0 +1,21 @@
+{
+  "platform": "docker",
+  "port": 5678,
+  "timezone": "Asia/Tehran",
+  "build": {
+    "location": "germany"
+  },
+  "disks": [
+    {
+      "name": "n8n-data",
+      "mountTo": "/home/node/.n8n"
+    }
+  ],
+  "healthCheck": {
+    "command": "CMD node -e \"fetch('http://localhost:5678/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3,
+    "startPeriod": 30
+  }
+}

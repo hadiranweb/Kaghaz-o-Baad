@@ -70,6 +70,12 @@ const envSchema = z.object({
   MAILBOX_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().min(1_000).max(120_000).default(15_000),
   MAILBOX_HEALTH_PORT: z.coerce.number().int().positive().max(65_535).default(8080),
   MAILBOX_RECONCILE_ENABLED: z.coerce.boolean().default(false),
+  N8N_BASE_URL: z.string().url().optional(),
+  N8N_EVENT_WEBHOOK_URL: z.string().url().optional(),
+  N8N_WEBHOOK_SECRET: z.string().min(32).optional(),
+  OPENCLAW_BASE_URL: z.string().url().optional(),
+  OPENCLAW_GATEWAY_TOKEN: z.string().min(32).optional(),
+  OPENWEBUI_BASE_URL: z.string().url().optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
