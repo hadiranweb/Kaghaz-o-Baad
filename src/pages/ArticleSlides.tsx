@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, X, Loader2 } from 'lucide-react';
@@ -10,14 +9,13 @@ import ArticleComments from '@/components/ArticleComments';
 import MDEditor from '@uiw/react-md-editor';
 import { setNoIndexMetadata, setSeoMetadata } from '@/lib/seo';
 import { normalizeSlides, localizedSlideBody, localizedSlideTitle, localizedArticleTitle, localizedArticleSummary } from '@/lib/article-reader';
+import { useSwipeGesture } from '@/hooks/useCreativeInteraction';
 
 export default function ArticleSlides() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { locale, direction } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
-  const suppressClickRef = useRef(false);
 
   const { data: articleData, isLoading, error } = useQuery({
     queryKey: ['article-slides', slug],
@@ -76,34 +74,14 @@ export default function ArticleSlides() {
     setCurrentSlide((prev) => prev > 0 ? prev - 1 : prev);
   }, []);
 
-  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType === 'mouse') return;
-    pointerStartRef.current = { x: e.clientX, y: e.clientY };
-    suppressClickRef.current = false;
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-  }, []);
-
-  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const start = pointerStartRef.current;
-    pointerStartRef.current = null;
-    if (!start || e.pointerType === 'mouse') return;
-    const dx = e.clientX - start.x;
-    const dy = e.clientY - start.y;
-    const horizontalDistance = Math.abs(dx);
-    const verticalDistance = Math.abs(dy);
-    if (horizontalDistance < 48 || horizontalDistance < verticalDistance * 1.15) return;
-    suppressClickRef.current = true;
-    const movingForward = dx < 0;
-    if (movingForward) goToNextSlide();
+  const handleSwipe = useCallback((swipeDirection: 'next' | 'previous') => {
+    if (swipeDirection === 'next') goToNextSlide();
     else goToPrevSlide();
   }, [goToNextSlide, goToPrevSlide]);
+  const swipeGesture = useSwipeGesture({ onSwipe: handleSwipe, threshold: 48, dominanceRatio: 1.15 });
 
   // Click navigation: left half = prev, right half = next
   const handleSlideClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (suppressClickRef.current) {
-      suppressClickRef.current = false;
-      return;
-    }
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const midpoint = rect.width / 2;
@@ -227,7 +205,7 @@ export default function ArticleSlides() {
 
       {/* Slide Content - clickable halves for navigation */}
       {hasSlides && slide ? (
-        <div className="flex-1 relative overflow-hidden cursor-default touch-pan-y" onClick={handleSlideClick} onPointerDown={handlePointerDown} onPointerUp={handlePointerUp} onPointerCancel={() => { pointerStartRef.current = null; }} role="region" aria-label={locale === 'fa' ? 'صفحهٔ مطالعهٔ مقاله' : 'Article reading page'}>
+        <div className="flex-1 relative overflow-hidden cursor-default touch-pan-y" onClick={handleSlideClick} onClickCapture={swipeGesture.onClickCapture} onPointerDown={swipeGesture.onPointerDown} onPointerUp={swipeGesture.onPointerUp} onPointerCancel={swipeGesture.onPointerCancel} role="region" aria-label={locale === 'fa' ? 'صفحهٔ مطالعهٔ مقاله' : 'Article reading page'}>
           {/* Content */}
           <div className="absolute inset-0 flex items-center justify-center p-8 md:p-16 lg:p-24">
             <div key={currentSlide} className="creative-page-turn max-w-3xl w-full" dir={locale === 'fa' ? 'rtl' : 'ltr'} aria-live="polite">
