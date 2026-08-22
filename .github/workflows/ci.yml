@@ -110,6 +110,8 @@ jobs:
 
       - name: Fetch mailbox Worker runtime logs
         if: always()
+        continue-on-error: true
+        timeout-minutes: 1
         shell: bash
         run: |
           liara logs \
