@@ -108,6 +108,17 @@ jobs:
             --port 8080 \
             --message "GitHub ${GITHUB_SHA} mailbox-worker"
 
+      - name: Fetch mailbox Worker runtime logs
+        if: always()
+        shell: bash
+        run: |
+          liara logs \
+            --app "$MAILBOX_WORKER_APP" \
+            --team-id "$LIARA_TEAM_ID" \
+            --api-token "$LIARA_API_TOKEN" \
+            --last-lines \
+            --timestamps
+
       - name: Deploy frontend
         shell: bash
         run: |
