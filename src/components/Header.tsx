@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Search, User, Shield, Menu, X, Moon, Sun, ChevronDown, BookOpen, Film, Info, FileText, Users, LayoutDashboard, Globe, Settings, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { EditorialDock } from '@/components/creative';
+import { EditorialDock } from '@/components/creative/EditorialDock';
 import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
