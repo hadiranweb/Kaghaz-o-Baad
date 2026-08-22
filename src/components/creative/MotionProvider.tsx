@@ -1,5 +1,6 @@
-import { createContext, useContext, useMemo, type PropsWithChildren } from 'react';
+import { useMemo, type PropsWithChildren } from 'react';
 import { usePageVisibility, useReducedMotion } from '../../hooks/useCreativeInteraction';
+import { MotionContext } from './MotionContext';
 
 export type MotionTokens = {
   duration: { instant: number; fast: number; base: number; slow: number };
@@ -8,26 +9,12 @@ export type MotionTokens = {
   stagger: { tight: number; base: number; loose: number };
 };
 
-type MotionContextValue = {
-  reducedMotion: boolean;
-  pageVisible: boolean;
-  enabled: boolean;
-  tokens: MotionTokens;
-};
-
 const defaultTokens: MotionTokens = {
   duration: { instant: 0, fast: 180, base: 420, slow: 760 },
   distance: { subtle: 8, base: 20, dramatic: 48 },
   blur: { subtle: 4, base: 12 },
   stagger: { tight: 40, base: 70, loose: 120 },
 };
-
-const MotionContext = createContext<MotionContextValue>({
-  reducedMotion: false,
-  pageVisible: true,
-  enabled: true,
-  tokens: defaultTokens,
-});
 
 export function MotionProvider({ children }: PropsWithChildren) {
   const reducedMotion = useReducedMotion();
@@ -42,6 +29,4 @@ export function MotionProvider({ children }: PropsWithChildren) {
   return <MotionContext.Provider value={value}>{children}</MotionContext.Provider>;
 }
 
-export function useMotion() {
-  return useContext(MotionContext);
-}
+export { useMotion } from './MotionContext';
