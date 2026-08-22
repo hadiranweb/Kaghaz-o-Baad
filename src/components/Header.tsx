@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Search, User, Shield, Menu, X, Moon, Sun, ChevronDown, BookOpen, Film, Info, FileText, Users, LayoutDashboard, Globe, Settings, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { EditorialDock } from '@/components/creative';
 import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
@@ -48,8 +49,19 @@ export const Header = () => {
               </span>
             </Link>
 
-            {/* Desktop — سلسله‌مراتبی */}
-            <nav className="kb-primary-nav hidden items-center gap-1 md:flex" aria-label={locale === 'fa' ? 'ناوبری اصلی' : 'Primary navigation'}>
+            {/* Desktop — editorial dock / Sylva proximity port */}
+            <EditorialDock
+              ariaLabel={locale === 'fa' ? 'ناوبری اصلی' : 'Primary navigation'}
+              items={[
+                { id: 'home', label: t('خانه', 'Home'), href: '/', active: isActive('/') },
+                { id: 'read', label: t('مطالعه', 'Read'), href: '/read', active: isContentActive && location.pathname.startsWith('/read') },
+                { id: 'media', label: t('رسانه', 'Media'), href: '/media', active: location.pathname.startsWith('/media') },
+                { id: 'live', label: t('زنده', 'Live'), href: '/live', active: location.pathname.startsWith('/live') },
+                { id: 'about', label: t('پروژه', 'Project'), href: '/about-project', active: isAboutActive },
+              ]}
+              className="hidden md:flex"
+            />
+            <nav className="kb-primary-nav hidden items-center gap-1" aria-label={locale === 'fa' ? 'ناوبری اصلی' : 'Primary navigation'}>
               <Link
                 to="/"
                 className={`kb-nav-link px-3 py-2 rounded-lg text-sm font-light transition-colors ${isActive('/') ? 'is-active text-foreground bg-accent/10' : 'text-foreground/70 hover:text-foreground hover:bg-accent/5'}`}

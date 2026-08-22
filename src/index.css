@@ -671,3 +671,49 @@
 @media (prefers-reduced-motion: reduce) {
   .kb-word-reveal__word { opacity: 1; transform: none; transition: none; }
 }
+
+/* Source-level port from MengTo/sylva dock: transform-only proximity and plain mobile fallback. */
+.kb-editorial-dock {
+  align-items: center;
+  gap: .2rem;
+  justify-content: center;
+  min-width: 0;
+}
+.kb-dock-item {
+  position: relative;
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  gap: .45rem;
+  border-radius: 999px;
+  padding: .55rem .8rem;
+  color: hsl(var(--muted-foreground));
+  font-size: .76rem;
+  font-weight: 500;
+  text-decoration: none;
+  transform: scale(var(--dock-scale, 1));
+  transform-origin: center bottom;
+  transition: color 160ms ease, background-color 160ms ease, transform 80ms linear;
+  will-change: transform;
+}
+.kb-dock-item:hover,
+.kb-dock-item:focus-visible,
+.kb-dock-item.is-active { color: hsl(var(--foreground)); }
+.kb-dock-item:hover,
+.kb-dock-item:focus-visible { background: hsl(var(--accent) / .08); }
+.kb-dock-item.is-active::after {
+  position: absolute;
+  right: 1rem;
+  bottom: .28rem;
+  left: 1rem;
+  height: 1px;
+  background: hsl(var(--accent));
+  content: '';
+}
+.kb-dock-index { color: hsl(var(--accent)); font-family: Inter, sans-serif; font-size: .58rem; letter-spacing: .08em; }
+@media (max-width: 767px), (hover: none) {
+  .kb-dock-item { transform: none; transition: color 160ms ease, background-color 160ms ease; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kb-dock-item { transform: none; transition: none; }
+}
