@@ -117,10 +117,11 @@ export default function Home() {
             </MaskedReveal>
             <StaggeredWordReveal
               as="h1"
-              className="kb-display-title max-w-3xl text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl"
+              className="kb-display-title kb-lcp-critical max-w-3xl text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl"
               text={t('دانش را بنویس، به گفت‌وگو برگردان.', 'Write knowledge. Bring it back to conversation.')}
+              disabled
             />
-            <MaskedReveal as="p" delay={180} className="mt-6 max-w-2xl text-lg leading-9 text-foreground/75 md:text-xl">
+            <MaskedReveal as="p" delay={180} disabled className="kb-lcp-critical mt-6 max-w-2xl text-lg leading-9 text-foreground/75 md:text-xl">
               {t('کاغذ و باد فضایی برای مقاله، نمایش اسلایدی و گفت‌وگوی زنده است؛ جایی که یک ایده می‌تواند خوانده، نقد و ادامه داده شود.', 'KaghazBaad is a space for articles, slide-based reading, and live scholarly dialogue—a place where an idea can be read, questioned, and extended.')}
             </MaskedReveal>
             <StaggerGroup className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start" step={90}>
@@ -173,7 +174,7 @@ export default function Home() {
               </form>
             </div>
           </div>
-          <div className="kb-hero-art relative mx-auto w-full max-w-md rounded-[2rem] border border-primary/20 p-8 shadow-elegant lg:p-10" aria-label={t('کارت روایت کاغذ و باد', 'KaghazBaad story card')} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave} style={{ '--pointer-x': pointerPoint.x, '--pointer-y': pointerPoint.y } as React.CSSProperties}>
+          <div className="kb-hero-art relative mx-auto min-h-[28rem] w-full max-w-md rounded-[2rem] border border-primary/20 p-8 shadow-elegant lg:min-h-[34rem] lg:p-10" aria-label={t('کارت روایت کاغذ و باد', 'KaghazBaad story card')} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave} style={{ '--pointer-x': pointerPoint.x, '--pointer-y': pointerPoint.y } as React.CSSProperties}>
             <div className="kb-parallax-layer kb-parallax-layer--deep relative mx-auto mb-8 max-w-[16rem]" aria-label={t('نشانهٔ تصویری کاغذ و باد', 'KaghazBaad visual mark')}>
               <BrainAnimation />
             </div>

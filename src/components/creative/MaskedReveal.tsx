@@ -7,15 +7,16 @@ type MaskedRevealProps = {
   className?: string;
   delay?: number;
   once?: boolean;
+  disabled?: boolean;
 };
 
-export function MaskedReveal({ children, as: Tag = 'div', className = '', delay = 0, once = true }: MaskedRevealProps) {
+export function MaskedReveal({ children, as: Tag = 'div', className = '', delay = 0, once = true, disabled = false }) {
   const ref = useRef<HTMLElement | null>(null);
-  const [visible, setVisible] = useState(false);
+  const [visible, setVisible] = useState(disabled);
   const { reducedMotion } = useMotion();
 
   useEffect(() => {
-    if (reducedMotion || !('IntersectionObserver' in window) || !ref.current) {
+    if (disabled || reducedMotion || !('IntersectionObserver' in window) || !ref.current) {
       setVisible(true);
       return;
     }
@@ -26,7 +27,7 @@ export function MaskedReveal({ children, as: Tag = 'div', className = '', delay 
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
     observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [once, reducedMotion]);
+  }, [disabled, once, reducedMotion]);
 
   return (
     <Tag
