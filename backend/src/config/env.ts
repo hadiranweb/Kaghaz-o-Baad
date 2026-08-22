@@ -6,7 +6,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8080),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   DATABASE_SSL: z.coerce.boolean().default(false),
-  AUTH_JWT_SECRET: z.string().min(32, 'AUTH_JWT_SECRET must be at least 32 characters'),
+  AUTH_JWT_SECRET: z.string().min(32, 'AUTH_JWT_SECRET must be at least 32 characters').optional(),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   AI_PROVIDER: z.string().default('openai'),
   AI_API_KEY: z.string().optional(),
@@ -74,11 +74,14 @@ const envSchema = z.object({
 
 export type AppEnv = z.infer<typeof envSchema>;
 
-export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
+export function loadEnv(source: NodeJS.ProcessEnv = process.env, options: { requireAuthSecret?: boolean } = {}): AppEnv {
   const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
     const details = parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
     throw new Error(`Invalid backend environment: ${details}`);
+  }
+  if (options.requireAuthSecret && !parsed.data.AUTH_JWT_SECRET) {
+    throw new Error('Invalid backend environment: AUTH_JWT_SECRET: Required');
   }
   return parsed.data;
 }
