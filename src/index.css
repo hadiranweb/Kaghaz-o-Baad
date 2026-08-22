@@ -656,3 +656,18 @@
   .kb-nav-link::after,
   .kb-primary-nav [data-state="open"]::after { transition: none; transform: none; }
 }
+
+/* Ported from MengTo/Skills/staggered-word-reveal: words, not letters; 0.8s / 70ms. */
+.kb-word-reveal { visibility: visible; }
+.kb-word-reveal__word {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 20px, 0);
+  transition: opacity .8s cubic-bezier(.16, 1, .3, 1), transform .8s cubic-bezier(.16, 1, .3, 1);
+  transition-delay: calc(var(--word-index) * .07s);
+  will-change: opacity, transform;
+}
+.kb-word-reveal.is-visible .kb-word-reveal__word { opacity: 1; transform: translate3d(0, 0, 0); }
+@media (prefers-reduced-motion: reduce) {
+  .kb-word-reveal__word { opacity: 1; transform: none; transition: none; }
+}

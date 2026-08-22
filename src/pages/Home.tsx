@@ -5,7 +5,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { backendRequest } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 import { BrainAnimation } from '@/components/BrainAnimation';
-import { AmbientPaperParticles, RevealOnScroll } from '@/components/creative';
+import { AmbientPaperParticles, RevealOnScroll, StaggeredWordReveal } from '@/components/creative';
 import { usePointerIntent } from '@/hooks/useCreativeInteraction';
 
 export default function Home() {
@@ -115,9 +115,11 @@ export default function Home() {
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               {t('نشر آکادمیک دوزبانه', 'Bilingual academic publishing')}
             </div>
-            <h1 className="kb-display-title max-w-3xl text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-              {t('دانش را بنویس، به گفت‌وگو برگردان.', 'Write knowledge. Bring it back to conversation.')}
-            </h1>
+            <StaggeredWordReveal
+              as="h1"
+              className="kb-display-title max-w-3xl text-4xl font-bold tracking-tight md:text-6xl lg:text-7xl"
+              text={t('دانش را بنویس، به گفت‌وگو برگردان.', 'Write knowledge. Bring it back to conversation.')}
+            />
             <p className="mt-6 max-w-2xl text-lg leading-9 text-foreground/75 md:text-xl">
               {t('کاغذ و باد فضایی برای مقاله، نمایش اسلایدی و گفت‌وگوی زنده است؛ جایی که یک ایده می‌تواند خوانده، نقد و ادامه داده شود.', 'KaghazBaad is a space for articles, slide-based reading, and live scholarly dialogue—a place where an idea can be read, questioned, and extended.')}
             </p>
