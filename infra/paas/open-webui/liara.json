@@ -1,0 +1,21 @@
+{
+  "platform": "docker",
+  "port": 8080,
+  "timezone": "Asia/Tehran",
+  "build": {
+    "location": "germany"
+  },
+  "disks": [
+    {
+      "name": "openwebui-data",
+      "mountTo": "/app/backend/data"
+    }
+  ],
+  "healthCheck": {
+    "command": "CMD curl --fail http://localhost:8080/health || exit 1",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 3,
+    "startPeriod": 45
+  }
+}
