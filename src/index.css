@@ -10,7 +10,7 @@
   font-weight: 300;
   font-display: swap;
   src: local('IRANSharp Light'), local('IRANSharp-Light'),
-       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Light.woff2') format('woff2');
+       url('/fonts/Vazirmatn-Light.woff2') format('woff2');
 }
 @font-face {
   font-family: 'IRANSharp';
@@ -18,7 +18,7 @@
   font-weight: 400;
   font-display: swap;
   src: local('IRANSharp'), local('IRANSharp-Regular'),
-       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2');
+       url('/fonts/Vazirmatn-Regular.woff2') format('woff2');
 }
 @font-face {
   font-family: 'IRANSharp';
@@ -26,7 +26,7 @@
   font-weight: 700;
   font-display: swap;
   src: local('IRANSharp Bold'), local('IRANSharp-Bold'),
-       url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2');
+       url('/fonts/Vazirmatn-Bold.woff2') format('woff2');
 }
 
 /* === نظام رنگی کاغذ و باد — برگرفته از کتابچه هویت بصری اکوسیستم لاپیداری === */
