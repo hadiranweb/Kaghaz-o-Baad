@@ -230,9 +230,9 @@ export default function SystemWiki() {
               <div className="font-sans font-medium text-foreground">
                 {t('راه‌اندازی سرور زنده (یک‌بار):', 'LiveKit setup (one-time):')}
               </div>
-              <div>supabase secrets set LIVEKIT_URL=wss://… LIVEKIT_API_KEY=… LIVEKIT_API_SECRET=…</div>
-              <div>supabase functions deploy livekit-token</div>
-              <div>supabase db push</div>
+              <div>Liara: ثبت LIVEKIT_URL، LIVEKIT_API_KEY و LIVEKIT_API_SECRET در secretهای backend</div>
+              <div>Backend: استقرار release جدید برای فعال‌شدن endpoint مستقل livekit-token</div>
+              <div>PostgreSQL: اجرای migration runner و بررسی جدول schema_migrations</div>
             </div>
 
             <div className="flex flex-wrap gap-2 pt-1">

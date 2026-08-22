@@ -43,11 +43,11 @@
 | اصل مهندسی Algomaster | پیاده‌سازی در «کاغذ و باد» | مزیت معماری |
 |---|---|---|
 | **RLS & Tenant Delivery Surfaces** | اعمال **Row Level Security** روی تمامی ۱۸ جدول پایگاه داده | جداسازی کامل داده‌های مستاجران و نقش‌ها در لایه هسته پایگاه داده |
-| **Token Bucket / Sliding Window Rate Limiting** | پیاده‌سازی محدودیت نرخ در Edge Functions (`send-otp` و `search-suggest`) | جلوگیری از DoS، ارسال رگباری پیامک (حداکثر ۳ درخواست در ۳ دقیقه) و هرزنگاری |
-| **2-Tier Edge Caching** | کش حافظه (`In-Memory LRU`) + کش پایگاه داده (`edge_cache` table) | پاسخ‌دهی آنی (0ms Latency) برای پیشنهادهای جستجوی هوش مصنوعی (`Gemini`) |
-| **Keyset / Cursor-Based Pagination** | توابع RPC مکان‌نما (`paginate_published_articles` و `paginate_media`) | صفحه‌بندی با پیچیدگی زمانی $O(\log N)$ بدون اسکن آفست در لیست‌های بزرگ |
-| **Circuit Breakers & Graceful Degradation** | مدارشکن خودکار ۳‌حالته (`CLOSED` / `HALF_OPEN` / `OPEN`) + پنل پایش ادمین | تاب‌آوری سامانه در برابر قطعی هوش مصنوعی و پیامک با بازگشت آنی کلمات جایگزین محلی |
-| **Resilient Client & ErrorBoundary** | فال‌بک خودکار متغیرهای محیطی Supabase در `client.ts` + `<ErrorBoundary>` | جلوگیری کامل از خطای صفحه سفید (`White Page`) و امکان بارگذاری مجدد در صورت کرش |
+| **Token Bucket / Sliding Window Rate Limiting** | پیاده‌سازی محدودیت نرخ در backend مستقل (`send-otp` و AI Gateway) | جلوگیری از DoS، ارسال رگباری پیامک و هرزنگاری |
+| **2-Tier Response Caching** | کش حافظه (`In-Memory LRU`) + کش PostgreSQL (`ai_response_cache`) | کاهش latency و هزینهٔ پاسخ‌های AI با کنترل backend |
+| **Keyset / Cursor-Based Pagination** | queryهای cursor-based در PostgreSQL و endpointهای مستقل | صفحه‌بندی مقیاس‌پذیر بدون اسکن offset در فهرست‌های بزرگ |
+| **Circuit Breakers & Graceful Degradation** | مدارشکن خودکار ۳‌حالته + پنل پایش ادمین در backend | تاب‌آوری سامانه در برابر قطعی هوش مصنوعی و پیامک |
+| **Resilient Client & ErrorBoundary** | API client مستقل با `<ErrorBoundary>` | جلوگیری از خطای صفحه سفید و امکان بازیابی رابط کاربری |
 
 ---
 
@@ -100,10 +100,12 @@
 - **خطای راهنمای راه‌اندازی**: اگر `LIVEKIT_URL/API_KEY/API_SECRET` تنظیم نشده باشند، تابع `livekit-token` خطای `LIVEKIT_NOT_CONFIGURED` برمی‌گرداند و رابط کاربری دستورهای setup را نمایش می‌دهد.
 
 ### راه‌اندازی سرور زنده (یک‌بار)
+متغیرهای `LIVEKIT_URL`، `LIVEKIT_API_KEY` و `LIVEKIT_API_SECRET` را فقط در secret management سرویس backend روی Liara ثبت کنید. توکن اتاق از endpoint مستقل backend صادر می‌شود و migrationهای LiveKit با runner PostgreSQL در `backend/migrations/` اجرا می‌شوند.
+
 ```bash
-supabase secrets set LIVEKIT_URL=wss://your-project.livekit.cloud LIVEKIT_API_KEY=... LIVEKIT_API_SECRET=...
-supabase functions deploy livekit-token
-supabase db push
+cd backend
+npm run check
+npm run migrate:dry-run
 ```
 
 ### مهاجرت‌های مرتبط با پخش زنده
@@ -144,7 +146,7 @@ npm run build      # خروجی در پوشه dist/ تولید می‌شود
   bash scripts/local-db.sh up
   ```
 
-اسکریپت‌های وابسته به Supabase حذف شده‌اند. پوشهٔ `supabase/` فعلاً فقط به‌عنوان میراث انتقالی نگه داشته می‌شود، چون بخشی از frontend موجود هنوز از کلاینت Supabase استفاده می‌کند؛ حذف کامل آن پس از انتقال این importها به API مستقل انجام خواهد شد.
+مسیر اجرایی پروژه مستقل است و به Supabase وابستگی ندارد. migrationهای PostgreSQL در `backend/migrations/` نگه‌داری و با runner تراکنشی backend اجرا می‌شوند.
 
 ---
 
@@ -162,14 +164,12 @@ Kaghaz-o-Baad/
 │   │   └── LiveRoom.tsx       # LiveKit VideoConference & PreJoin Lobby
 │   ├── contexts/              # AuthContext (Sandbox Auth Fallback), LanguageContext (FA/EN Dicts)
 │   ├── hooks/                 # useRole (RBAC check), useLiveKitToken, use-toast
-│   ├── integrations/supabase/ # میراث انتقالی؛ تا پایان مهاجرت frontend حذف نمی‌شود
 │   ├── pages/                 # Home, Read (Keyset Pagination), Dashboard (Unified Console), Media, ...
 │   └── main.tsx, App.tsx      # Entry point wrapped in ErrorBoundary
 ├── backend/
 │   ├── migrations/            # migrationهای مستقل PostgreSQL، از 001 تا 007
 │   ├── src/modules/           # auth، workflow، usage، quota، rate-limit، cache، billing
 │   └── src/jobs/              # پاک‌سازی cache و lifecycle اشتراک
-├── supabase/                  # میراث انتقالی frontend؛ مسیر production مستقل نیست
 ├── installer/                 # Windows EXE برای آماده‌سازی workspace استقرار
 ├── scripts/                   # ensure-env.sh و local-db.sh
 ├── public/                    # SVG assets (brain-character.svg), robots.txt
@@ -183,12 +183,11 @@ Kaghaz-o-Baad/
 
 | نام متغیر | توضیح |
 |---|---|
-| `VITE_SUPABASE_URL` | آدرس پروژه Supabase Cloud |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | کلید عمومی (anon) جهت ارتباط کلاینت |
-| `VITE_SUPABASE_PROJECT_ID` | شناسه پروژه |
-| `LIVEKIT_URL` / `API_KEY` / `API_SECRET` | متغیرهای سرورلس LiveKit Cloud (فقط در Edge Functions) |
-| `SMSIR_API_KEY` / `SMSIR_LINE_NUMBER` | کلید و شماره خط پیامکی SMS.ir (فقط در Edge Functions) |
-| `AI_API_KEY` | کلید دسترسی به AI Gateway / Google Gemini (فقط در Edge Functions) |
+| `VITE_API_BASE_URL` | آدرس backend مستقل کاغذ و باد |
+| `LIVEKIT_URL` / `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` | اتصال server-side backend به LiveKit Cloud |
+| `SMSIR_API_KEY` / `SMSIR_LINE_NUMBER` | کلید و شماره خط پیامکی SMS.ir در backend |
+| `AI_API_KEY` | کلید دسترسی backend به provider یا AI Gateway |
+| `DATABASE_URL` / `AUTH_JWT_SECRET` | اتصال و امضای session در backend؛ فقط در secret management |
 
 ---
 

@@ -4,21 +4,11 @@
 
 مسیر production هدف کاغذ و باد، **Node.js/Fastify + PostgreSQL مستقل** است. migrationهای اجرایی این مسیر در `backend/migrations/` قرار دارند و برای Liara DBaaS یا PostgreSQL روی یک سرور مستقل طراحی شده‌اند.
 
-پوشهٔ `supabase/` فعلاً به‌عنوان میراث انتقالی نگه داشته می‌شود، زیرا بخشی از frontend موجود هنوز از `src/integrations/supabase/` و `@supabase/supabase-js` استفاده می‌کند. حذف این پوشه یا dependency در وضعیت فعلی باعث خراب شدن build یا بخشی از قابلیت‌های سایت می‌شود.
+پوشهٔ اجرایی `supabase/` و dependencyهای مربوط به آن از شاخهٔ کاری حذف شده‌اند. frontend و backend از API مستقل کاغذ و باد استفاده می‌کنند و هیچ import یا اتصال runtime به Supabase ندارند.
 
-## معیار حذف کامل
+## وضعیت اجرای معیار حذف کامل
 
-حذف Supabase فقط پس از انجام همهٔ موارد زیر مجاز است:
-
-1. انتقال Auth و session به endpointهای مستقل backend.
-2. انتقال CRUD مقاله، community، media و profile به API مستقل.
-3. انتقال storage و URLهای رسانه به Liara Object Storage.
-4. جایگزینی RPCها و Edge Functionهای استفاده‌شده در frontend.
-5. حذف همهٔ importهای `@/integrations/supabase` و `@supabase/supabase-js`.
-6. اجرای build frontend، تست integration و smoke test روی staging.
-7. ثبت rollback و تأیید سلامت داده‌های منتقل‌شده.
-
-تا پیش از عبور از این معیارها، Supabase نباید به‌عنوان مسیر جدید توسعه یا production استفاده شود؛ فقط کد انتقالی موجود است.
+معیارهای انتقال Auth/session، CRUD محتوا، media، profile، LiveKit، AI و جایگزینی RPCها با backend مستقل انجام شده‌اند. dependency و پوشهٔ اجرایی Supabase حذف شده، build و typecheck باید در CI تأیید شوند و اسناد تاریخی این فایل فقط برای traceability نگه داشته می‌شود. کنارگذاشتن هر دادهٔ منبع قدیمی، مستقل از حذف کد، منوط به export، import آزمایشی، تطبیق شمارش و checksum، تست application و rollback است.
 
 ## منابع مستقل فعلی
 

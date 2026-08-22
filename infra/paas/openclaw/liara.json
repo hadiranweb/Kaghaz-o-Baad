@@ -1,0 +1,21 @@
+{
+  "platform": "docker",
+  "port": 18789,
+  "timezone": "Asia/Tehran",
+  "build": {
+    "location": "germany"
+  },
+  "disks": [
+    {
+      "name": "openclaw-state",
+      "mountTo": "/home/node/.openclaw"
+    }
+  ],
+  "healthCheck": {
+    "command": "CMD node dist/docker-healthcheck.js",
+    "interval": 30,
+    "timeout": 10,
+    "retries": 5,
+    "startPeriod": 45
+  }
+}

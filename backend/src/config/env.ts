@@ -54,6 +54,12 @@ const envSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_VERIFICATION_TTL_SECONDS: z.coerce.number().int().positive().max(86400).default(1800),
+  N8N_BASE_URL: z.string().url().optional(),
+  N8N_EVENT_WEBHOOK_URL: z.string().url().optional(),
+  N8N_WEBHOOK_SECRET: z.string().min(32).optional(),
+  OPENCLAW_BASE_URL: z.string().url().optional(),
+  OPENCLAW_GATEWAY_TOKEN: z.string().min(32).optional(),
+  OPENWEBUI_BASE_URL: z.string().url().optional(),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

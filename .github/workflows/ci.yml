@@ -106,6 +106,57 @@ jobs:
             --no-app-logs \
             --message "GitHub ${GITHUB_SHA}"
 
+  deploy-ai-stack:
+    name: Deploy AI and automation stack to Liara
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: liara-ai-stack-production-deploy
+      cancel-in-progress: false
+    env:
+      LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+      LIARA_TEAM_ID: ${{ secrets.LIARA_TEAM_ID }}
+      N8N_APP: kaghazbaad-n8n
+      OPENWEBUI_APP: kaghazbaad-openwebui
+      OPENCLAW_APP: kaghazbaad-openclaw
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Validate deployment secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$LIARA_API_TOKEN" || { echo 'Missing LIARA_API_TOKEN repository secret.' >&2; exit 1; }
+          test -n "$LIARA_TEAM_ID" || { echo 'Missing LIARA_TEAM_ID repository secret.' >&2; exit 1; }
+
+      - name: Install Liara CLI
+        shell: bash
+        run: npm install --global @liara/cli@9.5.1
+
+      - name: Deploy n8n
+        shell: bash
+        run: |
+          set -euo pipefail
+          liara deploy --app "$N8N_APP" --team-id "$LIARA_TEAM_ID" --api-token "$LIARA_API_TOKEN" --path infra/paas/n8n --dockerfile Dockerfile --port 5678 --no-app-logs --message "GitHub ${GITHUB_SHA}"
+
+      - name: Deploy Open WebUI
+        shell: bash
+        run: |
+          set -euo pipefail
+          liara deploy --app "$OPENWEBUI_APP" --team-id "$LIARA_TEAM_ID" --api-token "$LIARA_API_TOKEN" --path infra/paas/open-webui --dockerfile Dockerfile --port 8080 --no-app-logs --message "GitHub ${GITHUB_SHA}"
+
+      - name: Deploy OpenClaw
+        shell: bash
+        run: |
+          set -euo pipefail
+          liara deploy --app "$OPENCLAW_APP" --team-id "$LIARA_TEAM_ID" --api-token "$LIARA_API_TOKEN" --path infra/paas/openclaw --dockerfile Dockerfile --port 18789 --no-app-logs --message "GitHub ${GITHUB_SHA}"
+
   installer:
     name: Windows EXE installer
     runs-on: windows-latest
@@ -151,5 +202,4 @@ jobs:
             exit 1
           fi
 
-# Deployment is intentionally not automatic. Liara or Single Server deployment
-# requires a human-reviewed environment, database URL, callback URL and secrets.
+# Runtime secrets remain managed in Liara; GitHub Actions only receives deployment credentials.

@@ -23,8 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Supabase
-.supabase
 .env
 .env.local
 
