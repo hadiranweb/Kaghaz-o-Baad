@@ -734,6 +734,9 @@
 .kb-dock-item.is-active { color: hsl(var(--foreground)); }
 .kb-dock-item:hover,
 .kb-dock-item:focus-visible { background: hsl(var(--accent) / .08); }
+.kb-editorial-dock[data-sylva-state="nearby"] .kb-dock-item:not(:hover):not(:focus-visible) { opacity: .78; }
+.kb-editorial-dock[data-sylva-state="touch-fallback"] .kb-dock-item { transform: none; }
+.kb-dock-item[data-dock-state="focused"] { outline: 2px solid hsl(var(--ring) / .55); outline-offset: 3px; }
 .kb-dock-item.is-active::after {
   position: absolute;
   right: 1rem;
@@ -748,6 +751,7 @@
   .kb-dock-item { transform: none; transition: color 160ms ease, background-color 160ms ease; }
 }
 @media (prefers-reduced-motion: reduce) {
+  .kb-editorial-dock { --dock-scale: 1 !important; }
   .kb-dock-item { transform: none; transition: none; }
 }
 

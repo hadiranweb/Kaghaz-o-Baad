@@ -29,4 +29,3 @@ export function MotionProvider({ children }: PropsWithChildren) {
   return <MotionContext.Provider value={value}>{children}</MotionContext.Provider>;
 }
 
-export { useMotion } from './MotionContext';
