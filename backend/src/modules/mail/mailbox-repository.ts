@@ -27,7 +27,7 @@ export async function claimMailboxJobs(options: { batchSize: number; leaseMs: nu
     );
     const result = await client.query<MailboxJob>(
       `WITH candidates AS (
-         SELECT j.id
+         SELECT j.id, j.mailbox_id
          FROM mailbox_provisioning_jobs j
          WHERE j.status IN ('queued', 'retryable')
            AND j.available_at <= now()
@@ -38,7 +38,7 @@ export async function claimMailboxJobs(options: { batchSize: number; leaseMs: nu
        UPDATE mailbox_provisioning_jobs j
        SET status='running', locked_at=now(), locked_by=$2, attempts=j.attempts + 1, updated_at=now()
        FROM candidates c
-       JOIN user_mailboxes m ON m.id=j.mailbox_id
+       JOIN user_mailboxes m ON m.id=c.mailbox_id
        WHERE j.id=c.id
        RETURNING j.id, j.mailbox_id, j.operation, j.idempotency_key, j.attempts,
                  m.provider_mail_server_id, m.provider_account_id, m.account_name,
