@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/pool.js';
@@ -7,6 +7,7 @@ import { sendSmsIrVerificationCode, SmsProviderError } from './smsir.js';
 import { sendEmailVerification, EmailProviderError } from './email.js';
 import { recordAuthEvent } from './audit.js';
 import { enforceRateLimit, RateLimitExceededError } from '../modules/rate-limit/service.js';
+import { enqueueMailboxCreateTx } from '../modules/mail/mailbox-provisioning.js';
 import type { AppEnv } from '../config/env.js';
 
 const credentialsSchema = z.object({
@@ -94,14 +95,41 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
         await client.query('ROLLBACK');
         return reply.status(400).send({ error: 'invalid_or_expired_verification_token' });
       }
-      const created = await client.query<{ id: string; email: string; first_name: string | null; last_name: string | null }>(
-        `INSERT INTO users (email, password_hash, first_name, last_name, email_verified_at) VALUES ($1, $2, $3, $4, now()) RETURNING id, email, first_name, last_name`,
-        [pending.email, pending.password_hash, pending.first_name, pending.last_name],
+      const platformLocalpart = `user-${randomUUID().replaceAll('-', '')}`;
+      const platformEmail = `${platformLocalpart}@${env.LIARA_MAIL_DOMAIN.toLowerCase()}`;
+      const created = await client.query<{ id: string; email: string; first_name: string | null; last_name: string | null; platform_email: string }>(
+        `INSERT INTO users
+           (email, password_hash, first_name, last_name, email_verified_at, platform_email, platform_email_localpart, identity_status)
+         VALUES ($1, $2, $3, $4, now(), $5, $6, 'active')
+         RETURNING id, email, first_name, last_name, platform_email`,
+        [pending.email, pending.password_hash, pending.first_name, pending.last_name, platformEmail, platformLocalpart],
       );
       const user = created.rows[0];
       if (!user) throw new Error('registration_failed');
       await client.query(`INSERT INTO user_roles (user_id, role) VALUES ($1, 'author') ON CONFLICT DO NOTHING`, [user.id]);
-      if (pending.phone) await client.query(`INSERT INTO profiles (user_id, phone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET phone = EXCLUDED.phone`, [user.id, pending.phone]);
+      if (pending.phone) {
+        await client.query(`INSERT INTO profiles (user_id, phone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET phone = EXCLUDED.phone`, [user.id, pending.phone]);
+        await client.query(
+          `INSERT INTO user_contact_methods (user_id, kind, value, normalized_value, is_primary, is_login_enabled)
+           VALUES ($1, 'phone', $2, $2, FALSE, TRUE) ON CONFLICT (kind, normalized_value) DO NOTHING`,
+          [user.id, pending.phone],
+        );
+      }
+      await client.query(
+        `INSERT INTO user_login_identities (user_id, provider, provider_subject, provider_email, is_verified, verified_at)
+         VALUES ($1, 'password_email', $2, $2, TRUE, now()) ON CONFLICT (provider, provider_subject) DO NOTHING`,
+        [user.id, pending.email],
+      );
+      await client.query(
+        `INSERT INTO user_contact_methods (user_id, kind, value, normalized_value, is_primary, is_login_enabled, verified_at, verification_method, last_verified_at)
+         VALUES ($1, 'email', $2, $2, TRUE, TRUE, now(), 'email_link', now()) ON CONFLICT (kind, normalized_value) DO NOTHING`,
+        [user.id, pending.email],
+      );
+      await enqueueMailboxCreateTx(client, {
+        userId: user.id,
+        platformEmail: user.platform_email,
+        config: { enabled: env.MAILBOX_PROVISIONING_ENABLED, domain: env.LIARA_MAIL_DOMAIN, mailServerId: env.LIARA_MAIL_SERVER_ID },
+      });
       await client.query(`UPDATE pending_email_registrations SET consumed_at = now() WHERE id = $1`, [pending.id]);
       await client.query('COMMIT');
       const token = await createSession(user.id);

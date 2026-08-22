@@ -54,6 +54,22 @@ const envSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
   EMAIL_VERIFICATION_TTL_SECONDS: z.coerce.number().int().positive().max(86400).default(1800),
+  LIARA_MAIL_API_BASE_URL: z.string().url().default('https://mail-service.iran.liara.ir'),
+  LIARA_MAIL_API_TOKEN: z.string().min(1).optional(),
+  LIARA_MAIL_SERVER_ID: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+  LIARA_MAIL_DOMAIN: z.string().default('kaghazobaad.ir'),
+  MAILBOX_PROVISIONING_ENABLED: z.coerce.boolean().default(false),
+  MAILBOX_WORKER_ENABLED: z.coerce.boolean().default(false),
+  MAILBOX_WORKER_POLL_MS: z.coerce.number().int().positive().min(250).max(300_000).default(2_000),
+  MAILBOX_WORKER_BATCH_SIZE: z.coerce.number().int().positive().max(100).default(10),
+  MAILBOX_WORKER_CONCURRENCY: z.coerce.number().int().positive().max(10).default(2),
+  MAILBOX_MAX_ATTEMPTS: z.coerce.number().int().positive().max(20).default(8),
+  MAILBOX_BACKOFF_BASE_MS: z.coerce.number().int().positive().max(300_000).default(2_000),
+  MAILBOX_BACKOFF_MAX_MS: z.coerce.number().int().positive().max(86_400_000).default(900_000),
+  MAILBOX_LEASE_MS: z.coerce.number().int().positive().min(5_000).max(3_600_000).default(120_000),
+  MAILBOX_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().min(1_000).max(120_000).default(15_000),
+  MAILBOX_HEALTH_PORT: z.coerce.number().int().positive().max(65_535).default(8080),
+  MAILBOX_RECONCILE_ENABLED: z.coerce.boolean().default(false),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

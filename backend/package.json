@@ -16,7 +16,9 @@
     "jobs:subscription-lifecycle": "tsx src/jobs/subscription-lifecycle.ts",
     "test:integration": "node ../tests/integration/api-smoke.mjs",
     "test:k6": "k6 run ../tests/k6/kaghazbaad-api.js",
-    "check": "tsc -p tsconfig.json --noEmit"
+    "check": "tsc -p tsconfig.json --noEmit",
+    "jobs:mailbox-worker": "tsx src/jobs/mailbox-outbox-worker.ts",
+    "health:liara-mail": "node ../scripts/check-liara-mail-health.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1111.0",
