@@ -106,6 +106,7 @@ jobs:
             --path backend \
             --dockerfile Worker.Dockerfile \
             --port 8080 \
+            --no-app-logs \
             --message "GitHub ${GITHUB_SHA} mailbox-worker"
 
       - name: Fetch mailbox Worker runtime logs
