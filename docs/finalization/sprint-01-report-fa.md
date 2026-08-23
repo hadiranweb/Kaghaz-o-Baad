@@ -8,7 +8,7 @@
 
 تناقض اصلی میان کد و مستندات برطرف شد: README و Roadmap دیگر Supabase Edge Functionها یا Stage 1 قدیمی را Runtime فعال معرفی نمی‌کنند. معماری Fastify/PostgreSQL مستقل، سیاست Branch/Deployment و مرز n8n/OpenClaw/Open WebUI با ADR ثبت شد. یک Check خودکار مانع بازگشت Supabase به Runtime می‌شود.
 
-از سمت GitHub، `main` که پیش از این بدون Protection بود، محافظت شد. Environmentهای `production` و `staging` ساخته شدند و Push خط تجمیع از این پس CI را اجرا می‌کند، بدون اینکه Production Deploy شود.
+از سمت GitHub، `main` که پیش از این بدون Protection بود، محافظت شد. Environmentهای `production` و `staging` ساخته شدند و Push خط تجمیع از این پس CI را اجرا می‌کند، بدون اینکه Production Deploy شود. نخستین اجرای کامل روی خط تجمیع با هر چهار Job موفق و Job تولید به‌درستی Skip شد.
 
 ## تغییرات Repository
 
@@ -114,6 +114,9 @@ Environmentها:
 | Installer type-check | ✅ |
 | Installer build | ✅ |
 | Frontend lint | ❌؛ همان ۲۳ Error شناخته‌شده |
+| GitHub Actions روی Integration | ✅ چهار Job موفق؛ Production Deploy برابر `skipped` |
+
+اجرای تأییدشده: `https://github.com/hadiranweb/Kaghaz-o-Baad/actions/runs/32649455946`.
 
 Build فرانت‌اند همچنان هشدار Chunkهای بزرگ را دارد و Sitemap در نبود API قابل دسترس با صفر مقاله و fallback معتبر ساخته شد.
 
@@ -128,8 +131,7 @@ Build فرانت‌اند همچنان هشدار Chunkهای بزرگ را دا
 
 ## ریسک‌های باز
 
-- Required Checkها باید با اجرای CI همین Push در GitHub تأیید شوند؛
-- Staging هنوز زیرساخت و Secret واقعی ندارد؛
+- نام و موفقیت هر چهار Required Check در اجرای Integration تأیید شد؛ با این حال Staging هنوز زیرساخت و Secret واقعی ندارد؛
 - Branch Protection به‌تنهایی Rollback یا Health verification ایجاد نمی‌کند؛
 - Actions هنوز با Tag نسخه (`@v4`) استفاده می‌شوند و SHA pinning فعال نیست؛
 - Lint دارای ۲۳ Error است؛
@@ -154,4 +156,4 @@ Environmentهای خالی `staging` و `production` داده یا Secret ایج
 5. یکپارچه‌سازی Error envelope و Request ID؛
 6. اجرای Migration واقعی روی PostgreSQL موقت؛
 7. افزودن تست‌های Integration به CI؛
-8. بررسی نتیجهٔ Workflow اسپرینت ۱ در GitHub.
+8. اتصال تست‌های جدید به همان چهار Required Check تأییدشده.
