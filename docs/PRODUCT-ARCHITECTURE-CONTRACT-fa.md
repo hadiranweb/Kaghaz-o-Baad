@@ -64,13 +64,22 @@ draft
 
 نویسنده یا contributor می‌تواند مقاله را برای بررسی ارسال کند. editor یا admin مسئول درخواست اصلاح، تأیید، زمان‌بندی، انتشار و بایگانی است. هیچ انتقال وضعیتی صرفاً با frontend یا پاسخ AI معتبر نیست؛ backend باید هویت، نقش، مالکیت، وضعیت قبلی و مجازبودن انتقال را بررسی کند و event تغییر را ثبت نماید.
 
-## ۶. AI و OpenClaw
+## ۶. AI، n8n، OpenClaw و Open WebUI
 
 AI اختیاری، مرحله‌ای و وابسته به محل استفاده است. قابلیت‌های رسمی عبارت‌اند از پیشنهاد عنوان پیش از نگارش، تشخیص کم‌هزینهٔ محل‌های نیازمند ویرایش، نمایش annotation/comment در متن، rewrite فقط پس از کلیک و درخواست کاربر، و تولید خلاصه، فلش‌کارت یا محتوای مقصد پس از انتشار.
 
 مدل ارزان برای تشخیص و مدل قوی‌تر برای rewrite استفاده می‌شود. تشخیص annotation نباید خودکار هزینهٔ rewrite ایجاد کند. تولید محتوای مقصد ابتدا باید draft بسازد و انتشار خارجی فقط با تأیید کاربر انجام شود.
 
-OpenClaw محصول یا هستهٔ مالی کاغذ و باد نیست. فقط الگوها یا adapterهای مناسب آن، مانند event lifecycle، tool policy، usage tracking، provider/model attribution و approval gate، قابل اقتباس هستند. کپی کامل، fork کامل یا وابستگی runtime به OpenClaw بدون تصمیم جداگانهٔ مالک محصول ممنوع است.
+سرویس‌های کمکی با این مرز پذیرفته شده‌اند:
+
+- n8n فقط Orchestrator داخلی Workflowهاست؛
+- OpenClaw Runtime عامل‌های محدود و Tool-allowlisted است؛
+- Open WebUI محیط خصوصی تیم برای مدل و Prompt است، نه رابط عمومی؛
+- Backend تنها درگاه عمومی AI و مالک Auth، Usage، Quota، Entitlement، Redaction و Audit است؛
+- Agentها حق دسترسی مستقیم به Production DB ندارند؛
+- هر قابلیت AI باید Feature Flag، Kill Switch، Budget و Human approval متناسب داشته باشد.
+
+خرابی این سرویس‌ها نباید Auth، Workflow، مطالعه، Media، Live یا Payment را مختل کند. جزئیات در `docs/adr/0003-auxiliary-ai-stack.md` ثبت شده است.
 
 ## ۷. usage، quota و attribution
 
@@ -146,14 +155,19 @@ Backend کاغذ و باد باید token endpoint، role grant، webhook، sess
 
 ## ۱۶. وضعیت فعلی و تصحیح سابقه
 
-branch توسعهٔ فعلی حاوی foundation و چند پیاده‌سازی Supabase-specific است که باید **TRANSITIONAL** تلقی شوند و مقصد production نیستند. این کدها نباید deploy شوند. کار بعدی باید بازنویسی همان منطق در Backend مستقل کاغذ و باد باشد.
+در خط مبنای `main@0a7903e`، Backend مستقل، Migrationهای PostgreSQL و Deployment Liara پیاده‌سازی شده‌اند. Runtime Frontend دیگر import یا dependency از Supabase ندارد. پوشهٔ `supabase/` فقط **TRANSITIONAL ARCHIVE** است و نباید Build یا Deploy شود.
 
-هر گزارش آینده باید صریحاً بین این سه وضعیت تفاوت بگذارد:
+پروژه در وضعیت `Production Hardening — In Progress` قرار دارد. وجود Runtime گسترده به معنی تأیید عملیاتی نیست؛ تست Integration، Staging، Security، Observability، Backup و Rollback هنوز Gate انتشار هستند.
+
+هر گزارش آینده باید صریحاً میان این چهار وضعیت تفاوت بگذارد:
 
 | وضعیت | معنی |
 |---|---|
-| طراحی‌شده | در سند یا قرارداد تعریف شده، ولی runtime ندارد |
-| پیاده‌سازی‌شده | کد نوشته و build شده، ولی ممکن است deploy نشده باشد |
-| عملیاتی | deploy شده، secret و migration فعال است و با تست واقعی تأیید شده |
+| طراحی‌شده | در سند یا قرارداد تعریف شده، ولی Runtime ندارد |
+| پیاده‌سازی‌شده | کد نوشته و Build شده است |
+| تأییدشده | تست خودکار روی زیرساخت واقعی یا جایگزین کنترل‌شده پاس شده است |
+| عملیاتی | Deploy، Secret، Migration، Monitoring و Runbook فعال و تأیید شده‌اند |
+
+وضعیت تفصیلی در `docs/ROADMAP-8-STAGES-STATUS-fa.md` نگهداری می‌شود.
 
 **پایان قرارداد.**

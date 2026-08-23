@@ -1,198 +1,202 @@
-# کاغذ و باد | KaghazBaad — پلتفرم نشر آکادمیک و گفت‌وگوی زنده دوزبانه
-### Bilingual (Persian / English) Academic Publishing, Slide-based Learning & Live Discussion Platform
+# کاغذ و باد | KaghazBaad
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![Architecture: Algomaster Compliant](https://img.shields.io/badge/Architecture-Algomaster%20Compliant-emerald.svg)](#-اصول-مهندسی-و-معماری-algomaster-compliance)
-[![RBAC: 4 Official Roles](https://img.shields.io/badge/RBAC-4%20Official%20Roles-purple.svg)](#-سطوح-دسترسی-و-حسابهای-تستی-rbac-matrix--test-accounts)
-[![LiveKit: Realtime Workshop](https://img.shields.io/badge/Realtime-LiveKit%20Workshops-red.svg)](#-ماژول-جلسات-زنده--livekit-workshops)
+پلتفرم دوزبانهٔ فارسی/انگلیسی برای نگارش، داوری و انتشار محتوای علمی، نمایش اسلایدی، رسانه و گفت‌وگوی زنده.
 
----
+> **وضعیت:** در حال Production Hardening. کد قابلیت‌های اصلی وجود دارد، اما هر قابلیت فقط پس از تست integration روی Staging و تأیید عملیاتی، Production-ready محسوب می‌شود.
 
-## 🇮🇷 معرفی فارسی (Persian Overview)
+## قابلیت‌های محصول
 
-**«کاغذ و باد» (KaghazBaad)** یک پلتفرم مستقل، دوزبانه (فارسی/انگلیسی) و متمرکز بر نشر آکادمیک در حوزه‌ی علوم شناختی، روان‌شناسی و مطالعات میان‌رشته‌ای است. این سامانه با الهام از فلسفه‌ی **«کاغذ، حاملِ ماندگار اندیشه؛ باد، حاملِ زنده‌ی آن»**، چرخه‌ی کامل **«نگارش → داوری → انتشار اسلایدی (۶۰ ثانیه‌ای) → گفت‌وگوی زنده»** را پوشش می‌دهد.
+- گردش‌کار مقاله از `draft` تا `published` و `archived`؛
+- نقش‌ها و کنترل دسترسی سمت Backend؛
+- نظر، رویداد فعالیت و سابقهٔ گردش‌کار؛
+- مقاله و Deck دوزبانه با تجربهٔ RTL/LTR؛
+- رسانه و Object Storage با URL امضاشده؛
+- جلسهٔ زنده با LiveKit، نقش جلسه، E2EE اختیاری و Recording؛
+- احراز هویت ایمیل/تلفن، OTP، OAuth و Verification؛
+- Usage Gateway، Quota، Entitlement، Billing و Subscription؛
+- AI server-side برای پیشنهاد عنوان و بازنویسی؛
+- Liara Mailbox Worker برای Provisioning ایمیل؛
+- Installer ویندوز برای آماده‌سازی محیط تحویل.
 
-### 🌟 ویژگی‌های کلیدی و تمایز معماری
-- 📖 **دوزبانگی هم‌ارز (RTL / LTR Parity):** تمام مقالات، اسلایدها و رابط کاربری دارای ستون‌های مجزای فارسی و انگلیسی در پایگاه داده و رابط کاربری هستند.
-- 🎞️ **ایجاز مستدل (1-Idea-per-Slide Deck):** انتشار مقالات در قالب عرشه اسلایدهای ۶۰ ثانیه‌ای به همراه پیوست‌های چندرسانه‌ای (تصویر، صوت، ویدیو، سند).
-- 🎙️ **کارگاه‌های زنده صوتی/تصویری (`LiveKit`):** هر مقاله پس از انتشار، نقطه آغاز یک کارگاه پرسش و پاسخ زنده با حضور نویسنده (Host)، ویراستاران (Speaker) و پژوهشگران (Viewer) است.
-- 🔐 **احراز هویت بی‌رمز و تفکیک نقش‌ها (`Passwordless OTP + RBAC`):** ورود از طریق ایمیل و پیامک (`SMS.ir`) با تفکیک ۴ نقش رسمی (`admin`, `editor`, `contributor`, `user`) در جدول مستقل `user_roles`.
-- 💾 **درایو شخصی ۱۵ گیگابایتی (`Google-Drive-style Quota`):** فضای ابری اختصاصی برای هر کاربر با محاسبه خودکار سهمیه در دیتابیس و اشتراک‌گذاری ایمیلی امن.
-- ⚡ **کنسول مدیریت یکپارچه (Cloudflare-Style Unified Workspace):** تمام کاربران واردشده از آدرس واحد `/dashboard` به محیط کاری خود دسترسی دارند؛ ابزارهای مدیریتی و کاربری در یک نوار کناری تودرتو و تمیز به همراه **ویکی داخلی (`SystemWiki`)** تعبیه شده‌اند.
+وجود کد به معنی فعال‌بودن همهٔ Providerها در Production نیست. وضعیت دقیق هر حوزه در [نقشهٔ وضعیت](docs/ROADMAP-8-STAGES-STATUS-fa.md) ثبت می‌شود.
 
----
+## معماری Production
 
-## 🇬🇧 English Overview
-
-**KaghazBaad** is an independent, bilingual (Persian/English) platform focused on academic publishing in cognitive science, psychology, and interdisciplinary studies. Inspired by the philosophy **“Paper is the durable carrier of thought; Wind is its living carrier”**, KaghazBaad implements the continuous scholarly loop of **“Write → Review → 60-Second Slide Deck Publication → Live Audio/Video Workshop”**.
-
-### 🌟 Core Capabilities & Architectural Differentiation
-- 📖 **True Bilinguality (RTL / LTR Parity):** Title, summary, body, and metadata are maintained as dual-column peers in PostgreSQL and UI rendering.
-- 🎞️ **Reasoned Brevity (60-Second Slide Decks):** Long-form walls of text are replaced by structured 1-idea-per-slide decks with rich media attachments.
-- 🎙️ **Live Scholarly Workshops (`LiveKit Cloud`):** Publication is the start of a live Q&A session where authors expound their work via short-lived, RLS-enforced tokens.
-- 🔐 **Granular RBAC & Secure Auth:** 4 official app roles (`admin`, `editor`, `contributor`, `user`) managed separately from profiles to prevent privilege escalation.
-- 💾 **15GB Personal Media Drive (`user_storage`):** Dedicated quota tracking per user with atomic database triggers and secure email-based sharing.
-- ⚡ **Cloudflare-Style Unified Workspace (`/dashboard`):** A single console where user authoring tools, system administration (for Admins/Editors), and an in-console Wiki coexist seamlessly.
-
----
-
-## 🛡️ اصول مهندسی و معماری (Algomaster Compliance)
-
-زیرساخت «کاغذ و باد» مطابق با پیشرفته‌ترین استانداردهای مهندسی سیستم‌ها در [Algomaster.io](https://algomaster.io) معماری شده است:
-
-| اصل مهندسی Algomaster | پیاده‌سازی در «کاغذ و باد» | مزیت معماری |
-|---|---|---|
-| **RLS & Tenant Delivery Surfaces** | اعمال **Row Level Security** روی تمامی ۱۸ جدول پایگاه داده | جداسازی کامل داده‌های مستاجران و نقش‌ها در لایه هسته پایگاه داده |
-| **Token Bucket / Sliding Window Rate Limiting** | پیاده‌سازی محدودیت نرخ در Edge Functions (`send-otp` و `search-suggest`) | جلوگیری از DoS، ارسال رگباری پیامک (حداکثر ۳ درخواست در ۳ دقیقه) و هرزنگاری |
-| **2-Tier Edge Caching** | کش حافظه (`In-Memory LRU`) + کش پایگاه داده (`edge_cache` table) | پاسخ‌دهی آنی (0ms Latency) برای پیشنهادهای جستجوی هوش مصنوعی (`Gemini`) |
-| **Keyset / Cursor-Based Pagination** | توابع RPC مکان‌نما (`paginate_published_articles` و `paginate_media`) | صفحه‌بندی با پیچیدگی زمانی $O(\log N)$ بدون اسکن آفست در لیست‌های بزرگ |
-| **Circuit Breakers & Graceful Degradation** | مدارشکن خودکار ۳‌حالته (`CLOSED` / `HALF_OPEN` / `OPEN`) + پنل پایش ادمین | تاب‌آوری سامانه در برابر قطعی هوش مصنوعی و پیامک با بازگشت آنی کلمات جایگزین محلی |
-| **Resilient Client & ErrorBoundary** | فال‌بک خودکار متغیرهای محیطی Supabase در `client.ts` + `<ErrorBoundary>` | جلوگیری کامل از خطای صفحه سفید (`White Page`) و امکان بارگذاری مجدد در صورت کرش |
-
----
-
-## 👥 سطوح دسترسی و حساب‌های تستی (RBAC Matrix & Test Accounts)
-
-پلتفرم دارای **۴ نقش رسمی (`admin`, `editor`, `contributor`, `user`)** + **مهمان (`guest`)** است. برای تست سریع و آفلاین در محیط‌های توسعه و پیش‌نمایش (که مایگریشن سرور ابری هنوز اجرا نشده است)، مکانیزم **Sandbox Preview Auth Fallback** فعال است:
-
-| نقش (App Role) | حساب تست | سطح دسترسی و قابلیت‌ها |
-|---|---|---|
-| **1. Admin (مدیر)** | از طریق seed امن محیط توسعه | دسترسی کامل به مقالات، کاربران، نقش‌ها، پایش سامانه و شرح پروژه |
-| **2. Editor (ویرایشگر)** | از طریق seed امن محیط توسعه | داوری و بررسی مقالات، انتشار و حضور در لایو به عنوان Speaker |
-| **3. Contributor (نویسنده)** | از طریق seed امن محیط توسعه | ایجاد و ویرایش مقاله و اسلاید و میزبانی جلسهٔ زنده |
-| **4. User (کاربر عادی)** | از طریق seed امن محیط توسعه | تکمیل پروفایل، نظر، فضای شخصی و حضور در لایو به عنوان Viewer |
-| **5. Main Admin (اصلی)** | از طریق bootstrap یک‌بارهٔ production | دسترسی کامل مدیریتی؛ credential هرگز در README، Git یا log ذخیره نمی‌شود |
-
-> **راهنمای امنیتی:** حساب‌های تست باید فقط با متغیرهای محیطی یا seed محلی ایجاد شوند. برای production از endpoint عمومی seed استفاده نکنید؛ bootstrap مدیر باید یک‌باره اجرا شود و secret موقت آن بلافاصله حذف شود. در صفحهٔ ورود (`/auth`) نیز هیچ رمز واقعی یا credential ثابت نباید در bundle frontend قرار گیرد.
-
----
-
-## 🏗️ ساختار کنسول یکپارچه (Cloudflare-Style Unified Console)
-
-در آدرس واحد `/dashboard`، نوار کناری (Sidebar) به سه گروه اصلی دسته‌بندی شده است:
-1. **ابزارهای من (`My Workspace`):** مقالات من (`My Articles`)، مقاله جدید (`New Article`)، درایو ۱۵ گیگابایتی (`15GB Media Drive`)، جلسات زنده (`Live Sessions`) و پروفایل کاربری (`Profile`).
-2. **مدیریت کلان سامانه (`System Administration` - فقط برای Admin و Editor):** بررسی همه مقالات (`All Articles Review`)، کاربران و نقش‌ها (`Users & Roles`)، تاب‌آوری و مدارشکن‌ها (`Resilience & Breakers`)، پایش زنده جلسات (`Live Monitor`) و ویرایش شرح پروژه (`Project Description`).
-3. **راهنما و ویکی (`Wiki & Support`):** ویکی و راهنمای داخلی سامانه (`SystemWiki`) و تنظیمات امنیتی (`Security Settings`).
-
----
-
-## 📡 معماری پخش زنده (Live Broadcast Architecture)
-
-پس از بررسی و اجماع روی پروتکل‌های محبوب (Telegram/tgcalls، Skyroom، Skype/Teams)، معماری نهایی بر پایه‌ی **LiveKit SFU** انتخاب شد — تنها گزینه‌ی متن‌باز و قابل استقرار روی زیرساخت خودی که هر سه اولویت کاربر را پوشش می‌دهد:
-
-### اولویت‌ها و پیاده‌سازی (Priorities → Implementation)
-
-| اولویت | راه‌حل پیاده‌سازی‌شده |
-|---|---|
-| ۱. سرعت و بهینگی اتصال | **SFU** (یک استریم بالادست + توزیع سروری، بدون MCU) + **Dynacast** (ارسال فقط لایه‌های موردنیاز هر بیننده) + **AdaptiveStream** (بستن خودکار ویدیوی پنهان) + کلید «خاموش‌کردن ویدیو» برای بینندگان + رندر بومی اسلاید/PDF (مصرف اینترنت نزدیک به صفر به‌جای اشتراک‌صفحه) |
-| ۲. امنیت و ضد مانیتورینگ بیرونی | **E2EE واقعی** با `ExternalE2EEKeyProvider` + `Insertable Streams`: فریم‌های صدا/تصویر و کانال داده پیش از خروج از مرورگر رمز می‌شوند؛ کلید در مرورگر میزبان ساخته و هرگز روی سرور ذخیره نمی‌شود. بدون E2EE، مسیر همچنان **DTLS/SRTP** است |
-| ۳. کیفیت اتصال و ارائه | همگام‌سازی اسلاید/صفحه از **کانال دادهٔ درون‌اتاقی LiveKit** (نه ویدیوی اشتراک‌صفحه) + رندر PDF صفحه‌به‌صفحه با **pdf.js** و DPI بالا + نشانگر کیفیت اتصال + بازیابی خودکار اتصال |
-
-### امکانات تکمیلی (حواشی پخش زنده)
-- **آپلود فایل ارائه** (PDF / تصویر / PPTX) هنگام ساخت جلسه؛ فایل در درایو رسانه ذخیره و به جلسه متصل می‌شود و اعضای جلسه از طریق **لینک امضاشدهٔ ۴ ساعته** (خروجی تابع `livekit-token`) به آن دسترسی دارند — بدون افشای فایل خصوصی.
-- **اتاق انتظار** برای بینندگان جلسات «برنامه‌ریزی‌شده» + دکمهٔ «شروع جلسه» برای میزبان.
-- **گفتگوی متنی** روی کانال داده (در جلسات E2EE، رمزشده).
-- **لیست شرکت‌کنندگان** با نقش زنده (host/speaker/viewer) از `metadata` توکن.
-- **پایان جلسه** توسط میزبان → اعلان همگام به همه + قفل اتاق.
-- **نشانگر کیفیت اتصال** (ConnectionQuality) و بنر «در حال بازیابی اتصال».
-- **کلید E2EE**: تولید خودکار در مرورگر میزبان + دکمهٔ کپی + هشدار ارسال امن؛ درگاه ورود کلید برای بینندگان.
-- **سازگاری با دیتابیس قدیمی**: اگر مهاجرت ستون‌های جدید اعمال نشده باشد، درج جلسه/رسانه به‌صورت خودکار بدون ستون‌های جدید تکرار می‌شود.
-- **خطای راهنمای راه‌اندازی**: اگر `LIVEKIT_URL/API_KEY/API_SECRET` تنظیم نشده باشند، تابع `livekit-token` خطای `LIVEKIT_NOT_CONFIGURED` برمی‌گرداند و رابط کاربری دستورهای setup را نمایش می‌دهد.
-
-### راه‌اندازی سرور زنده (یک‌بار)
-```bash
-supabase secrets set LIVEKIT_URL=wss://your-project.livekit.cloud LIVEKIT_API_KEY=... LIVEKIT_API_SECRET=...
-supabase functions deploy livekit-token
-supabase db push
+```text
+Browser
+  └─ Frontend React/Vite — Liara PaaS
+       └─ Backend Fastify — Liara PaaS
+            ├─ PostgreSQL — Liara DBaaS (منبع حقیقت)
+            ├─ Object Storage — S3 API
+            ├─ Mailbox Worker — Liara App مستقل
+            ├─ LiveKit — سرویس مستقل
+            ├─ SMS.ir / Liara Mail / Payment Provider
+            └─ AI Gateway
+                 └─ Providerها و سرویس‌های اختیاری n8n/OpenClaw/Open WebUI
 ```
 
-### مهاجرت‌های مرتبط با پخش زنده
-- `20260530213553_9d4f9e6d-...` — جدول `live_sessions` و `live_participants`
-- `20260809220000_live_resilience_and_presentation.sql` — ستون‌های `e2ee_enabled`، `presentation_enabled`، RPC `get_session_slides`
-- `20260813000000_live_complete_presentation.sql` — ستون `presentation_media_id`، نوع رسانهٔ `document`
+اصول حاکم:
 
----
+1. Backend منبع حقیقت Auth، RBAC، Workflow، Quota، Billing و دسترسی است.
+2. Frontend هیچ پرداخت، نقش یا مجوزی را تأیید نمی‌کند.
+3. PostgreSQL مستقل مسیر Production است؛ `supabase/` فقط آرشیو انتقالی و غیرقابل Deploy است.
+4. LiveKit فقط رسانهٔ بلادرنگ را حمل می‌کند؛ Token و Role از Backend صادر می‌شوند.
+5. سرویس‌های AI اختیاری، Feature-Flagged و قابل خاموش‌شدن هستند.
+6. Secretها فقط در GitHub/Liara نگهداری می‌شوند و وارد Git یا Bundle نمی‌شوند.
 
-## 🚀 شروع سریع (Quick Start)
+اسناد حاکم:
+
+- [قرارداد معماری محصول](docs/PRODUCT-ARCHITECTURE-CONTRACT-fa.md)
+- [وضعیت هشت حوزهٔ توسعه](docs/ROADMAP-8-STAGES-STATUS-fa.md)
+- [نقشهٔ نهایی‌سازی](docs/finalization/roadmap-fa.md)
+- [ADRهای معماری](docs/adr/README.md)
+
+## وضعیت Supabase
+
+Runtime اصلی هیچ import یا dependency از `@supabase/supabase-js` ندارد. پوشهٔ `supabase/` شامل Migration و Edge Functionهای تاریخی است و:
+
+- در CI یا Production اجرا نمی‌شود؛
+- برای قابلیت جدید قابل استفاده نیست؛
+- تا Sprint حذف Legacy فقط برای تطبیق Migration و Rollback نگهداری می‌شود.
+
+جزئیات: [LEGACY-SUPABASE-TRANSITION-fa.md](docs/LEGACY-SUPABASE-TRANSITION-fa.md).
+
+## پیش‌نیازها
+
+- Node.js `22.12.0`؛
+- npm؛
+- Docker و Docker Compose برای PostgreSQL محلی؛
+- Git.
+
+نسخهٔ Node در `.nvmrc` و `.node-version` ثبت شده است.
+
+## اجرای محلی
+
+### ۱. نصب وابستگی‌ها
 
 ```bash
-# 1. کلون مخزن
-git clone https://github.com/hadiranweb/Kaghaz-o-Baad.git
-cd Kaghaz-o-Baad
-
-# 2. نصب وابستگی‌ها
 npm ci
+npm --prefix backend ci
+npm --prefix installer ci
+```
 
-# 3. ایجاد فایل متغیرهای محیطی (.env)
+### ۲. ایجاد فایل‌های محیطی
+
+```bash
 cp .env.example .env
+cp .env.local.example .env.local
+cp backend/.env.example backend/.env
+```
 
-# 4. اجرای سرور توسعه (Vite Dev Server) روی پورت 8080 و 0.0.0.0
+مقادیر محلی را جایگزین کنید. فایل‌های واقعی `.env` نباید Commit شوند.
+
+### ۳. PostgreSQL و Backend
+
+```bash
+bash scripts/local-db.sh up
+npm --prefix backend run migrate
+npm --prefix backend run dev
+```
+
+Backend به‌صورت پیش‌فرض روی `http://localhost:8080` اجرا می‌شود.
+
+### ۴. Frontend
+
+```bash
 npm run dev
-# سایت روی آدرس http://localhost:8080 در دسترس است
-
-# 5. بیلد تولیدی (Production Build)
-npm run build      # خروجی در پوشه dist/ تولید می‌شود
 ```
 
-### 🧪 ابزارهای خط فرمان و اسکریپت‌ها
-- **بررسی متغیرهای محیطی محلی:**
-  ```bash
-  bash scripts/ensure-env.sh
-  ```
-- **راه‌اندازی PostgreSQL محلی و اجرای migrationهای backend مستقل:**
-  ```bash
-  bash scripts/local-db.sh up
-  ```
+Vite روی `http://localhost:8080` یا پورت آزاد بعدی اجرا می‌شود. در توسعهٔ دو سرویس مستقل، `VITE_API_URL` را به Backend تنظیم کنید.
 
-اسکریپت‌های وابسته به Supabase حذف شده‌اند. پوشهٔ `supabase/` فعلاً فقط به‌عنوان میراث انتقالی نگه داشته می‌شود، چون بخشی از frontend موجود هنوز از کلاینت Supabase استفاده می‌کند؛ حذف کامل آن پس از انتقال این importها به API مستقل انجام خواهد شد.
+## Quality Checks
 
----
+```bash
+# Frontend
+npm run lint
+npm run build
+npm run verify:seo
+npm audit --omit=dev --audit-level=high
 
-## 🗂️ ساختار پروژه (Project Directory Structure)
+# Backend
+npm --prefix backend run check
+npm --prefix backend run build
+npm --prefix backend run migrate:dry-run
+npm --prefix backend audit --omit=dev --audit-level=high
 
-```
-Kaghaz-o-Baad/
-├── src/
-│   ├── components/
-│   │   ├── admin/             # UsersManager, LiveSessionsManager, CircuitBreakerMonitor, SystemWiki
-│   │   ├── ui/                # shadcn/ui Design Tokens & Glassmorphic Components
-│   │   ├── ErrorBoundary.tsx  # Resilient Client Fallback & Reload Card
-│   │   ├── Header.tsx         # Mode Switcher (Public SEO ↔ Workspace) & Dual-State Navbar
-│   │   ├── Footer.tsx         # Bilingual Footer & References
-│   │   └── LiveRoom.tsx       # LiveKit VideoConference & PreJoin Lobby
-│   ├── contexts/              # AuthContext (Sandbox Auth Fallback), LanguageContext (FA/EN Dicts)
-│   ├── hooks/                 # useRole (RBAC check), useLiveKitToken, use-toast
-│   ├── integrations/supabase/ # میراث انتقالی؛ تا پایان مهاجرت frontend حذف نمی‌شود
-│   ├── pages/                 # Home, Read (Keyset Pagination), Dashboard (Unified Console), Media, ...
-│   └── main.tsx, App.tsx      # Entry point wrapped in ErrorBoundary
-├── backend/
-│   ├── migrations/            # migrationهای مستقل PostgreSQL، از 001 تا 007
-│   ├── src/modules/           # auth، workflow، usage، quota، rate-limit، cache، billing
-│   └── src/jobs/              # پاک‌سازی cache و lifecycle اشتراک
-├── supabase/                  # میراث انتقالی frontend؛ مسیر production مستقل نیست
-├── installer/                 # Windows EXE برای آماده‌سازی workspace استقرار
-├── scripts/                   # ensure-env.sh و local-db.sh
-├── public/                    # SVG assets (brain-character.svg), robots.txt
-├── vite.config.ts             # Vite Dev Server config (0.0.0.0:8080, allowedHosts)
-└── package.json
+# Installer
+npm --prefix installer run check
+npm --prefix installer run build
 ```
 
----
+Baseline فعلی در [گزارش Sprint 0](docs/finalization/sprint-00-report-fa.md) ثبت شده است. Lint و برخی Advisoryهای Dependency هنوز Blocker هستند و پنهان نشده‌اند.
 
-## 🔑 متغیرهای محیطی (.env.example)
+## تست‌های عملیاتی
 
-| نام متغیر | توضیح |
-|---|---|
-| `VITE_SUPABASE_URL` | آدرس پروژه Supabase Cloud |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | کلید عمومی (anon) جهت ارتباط کلاینت |
-| `VITE_SUPABASE_PROJECT_ID` | شناسه پروژه |
-| `LIVEKIT_URL` / `API_KEY` / `API_SECRET` | متغیرهای سرورلس LiveKit Cloud (فقط در Edge Functions) |
-| `SMSIR_API_KEY` / `SMSIR_LINE_NUMBER` | کلید و شماره خط پیامکی SMS.ir (فقط در Edge Functions) |
-| `AI_API_KEY` | کلید دسترسی به AI Gateway / Google Gemini (فقط در Edge Functions) |
+```bash
+# نیازمند Backend، PostgreSQL و هویت تست
+TEST_BASE_URL=http://localhost:8080 \
+TEST_EMAIL=... \
+TEST_PASSWORD=... \
+npm --prefix backend run test:integration
 
----
+# نیازمند k6
+BASE_URL=http://localhost:8080 k6 run tests/k6/kaghazbaad-api.js
+```
 
-## 📄 مجوز و پشتیبانی (License & Contact)
+Credential تست باید فقط در Secret یا Environment محلی قرار گیرد.
 
-- **مجوز (License):** Apache 2.0 — فایل `LICENSE` را مطالعه کنید.
-- **تیم توسعه:** Hadiran Web — `hadiranweb@gmail.com`
+## ساختار Repository
+
+```text
+.github/workflows/       CI/CD
+backend/                 Fastify API، Worker و PostgreSQL migrations
+backend/migrations/      Migrationهای فعال 001 تا 018
+installer/               Windows installer
+src/                     React frontend
+supabase/                آرشیو انتقالی؛ خارج از Runtime و Deployment
+scripts/                 ابزارهای محیط و Health Check
+tests/                   Smoke و Load tests
+docs/                    معماری، وضعیت، Runbook و گزارش‌ها
+```
+
+## Branch و استقرار
+
+- `main`: تنها منبع Production؛ Push موفق آن Deployment خودکار Liara را آغاز می‌کند.
+- `integration/product-finalization`: خط تجمیع اسپرینت‌های نهایی‌سازی.
+- `sprint/*`: تغییرات کوتاه‌عمر و قابل بازگشت.
+
+Push مستقیم و Force Push به `main` ممنوع است. Required Checks و Pull Request باید پیش از Merge پاس شوند. Production بدون Commit موجود در `main` تغییر نمی‌کند.
+
+## متغیرهای محیطی
+
+Frontend فقط متغیرهای عمومی با پیشوند `VITE_` دریافت می‌کند. در وضعیت فعلی متغیر اصلی آن:
+
+```text
+VITE_API_URL
+```
+
+متغیرهای Backend در `backend/.env.example` مستند شده‌اند و حوزه‌های زیر را پوشش می‌دهند:
+
+- Database و CORS؛
+- Auth، OAuth، SMS و Email؛
+- Object Storage؛
+- LiveKit؛
+- AI، Rate Limit و Cache؛
+- Payment؛
+- Liara Mailbox Worker.
+
+هیچ Secret سمت سرور نباید با پیشوند `VITE_` تعریف شود.
+
+## مشارکت
+
+1. از خط مبنای مناسب Branch بسازید.
+2. تغییر کوچک و هدفمند انجام دهید.
+3. Build، Check و تست مرتبط را اجرا کنید.
+4. مستندات، Environment example و Rollback را همگام کنید.
+5. Pull Request بسازید و Required Checks را پاس کنید.
+
+Template مربوط به Pull Request در `.github/pull_request_template.md` قرار دارد.
+
+## مجوز
+
+Apache License 2.0 — فایل [LICENSE](LICENSE).

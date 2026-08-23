@@ -10,6 +10,7 @@
     "build": "vite build",
     "postbuild": "node scripts/prerender-seo-pages.mjs",
     "verify:seo": "node scripts/verify-seo-build.mjs",
+    "verify:architecture": "node scripts/check-architecture-contract.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
