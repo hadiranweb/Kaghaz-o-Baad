@@ -1,8 +1,15 @@
-import { createHash, randomBytes, randomInt, randomUUID, timingSafeEqual } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import { db } from '../db/pool.js';
 import { createSession, getAuthUser, hashPassword, verifyPassword } from './service.js';
+import {
+  normalizePhone,
+  formatPhoneForSmsIr,
+  generateOtpCode,
+  hashOtpCode,
+  verifyOtpCode,
+} from './phone.js';
 import { sendSmsIrVerificationCode, SmsProviderError } from './smsir.js';
 import { sendEmailVerification, EmailProviderError } from './email.js';
 import { recordAuthEvent } from './audit.js';
@@ -25,23 +32,6 @@ const sendPhoneCodeSchema = z.object({ phone: phoneSchema });
 const verifyPhoneCodeSchema = z.object({ phone: phoneSchema, code: z.string().trim().regex(/^\d{6}$/) });
 const verifyFactorCodeSchema = verifyPhoneCodeSchema;
 const verifyEmailSchema = z.object({ token: z.string().trim().min(20).max(200) });
-
-function normalizePhone(input: string) {
-  const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
-  const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
-  const translated = input
-    .replace(/[۰-۹]/g, (digit) => String(persianDigits.indexOf(digit)))
-    .replace(/[٠-٩]/g, (digit) => String(arabicDigits.indexOf(digit)));
-  const digits = translated.replace(/[^0-9]/g, '');
-  const withoutCountry = digits.startsWith('0098') ? digits.slice(4) : digits.startsWith('98') ? digits.slice(2) : digits;
-  const national = withoutCountry.startsWith('0') ? withoutCountry.slice(1) : withoutCountry;
-  if (!/^9\d{9}$/.test(national)) throw new Error('invalid_phone');
-  return `0${national}`;
-}
-
-function hashCode(code: string) {
-  return createHash('sha256').update(code).digest('hex');
-}
 
 function requestIp(request: FastifyRequest) {
   return request.ip || request.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() || 'unknown';
@@ -70,7 +60,7 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
         `INSERT INTO pending_email_registrations (email, password_hash, first_name, last_name, phone, token_hash, expires_at)
          VALUES ($1, $2, $3, $4, $5, $6, now() + ($7 || ' seconds')::interval)
          ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash, first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name, phone = EXCLUDED.phone, token_hash = EXCLUDED.token_hash, expires_at = EXCLUDED.expires_at, consumed_at = NULL`,
-        [parsed.data.email, passwordHash, parsed.data.first_name ?? null, parsed.data.last_name ?? null, phone, hashCode(rawToken), env.EMAIL_VERIFICATION_TTL_SECONDS],
+        [parsed.data.email, passwordHash, parsed.data.first_name ?? null, parsed.data.last_name ?? null, phone, hashOtpCode(rawToken), env.EMAIL_VERIFICATION_TTL_SECONDS],
       );
       return reply.status(202).send({ pending: true, expires_in_seconds: env.EMAIL_VERIFICATION_TTL_SECONDS });
     } catch (error: unknown) {
@@ -88,7 +78,7 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
       await client.query('BEGIN');
       const pendingResult = await client.query<{ id: string; email: string; password_hash: string; first_name: string | null; last_name: string | null; phone: string | null }>(
         `SELECT id, email, password_hash, first_name, last_name, phone FROM pending_email_registrations WHERE token_hash = $1 AND consumed_at IS NULL AND expires_at > now() FOR UPDATE`,
-        [hashCode(parsed.data.token)],
+        [hashOtpCode(parsed.data.token)],
       );
       const pending = pendingResult.rows[0];
       if (!pending) {
@@ -173,10 +163,14 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
       if (error instanceof RateLimitExceededError) return handleRateLimit(reply, error);
       throw error;
     }
-    const code = String(randomInt(100000, 1000000));
-    const inserted = await db.query<{ id: string }>(`INSERT INTO phone_login_codes (phone, code_hash, expires_at, request_id) VALUES ($1, $2, now() + ($3 || ' seconds')::interval, $4) RETURNING id`, [phone, hashCode(code), env.OTP_TTL_SECONDS, request.id]);
+    const code = generateOtpCode();
+    const inserted = await db.query<{ id: string }>(
+      `INSERT INTO phone_login_codes (phone, code_hash, expires_at, request_id)
+       VALUES ($1, $2, now() + ($3 || ' seconds')::interval, $4) RETURNING id`,
+      [phone, hashOtpCode(code), env.OTP_TTL_SECONDS, request.id],
+    );
     try {
-      const sms = await sendSmsIrVerificationCode({ env, phone: `98${phone.slice(1)}`, code });
+      const sms = await sendSmsIrVerificationCode({ env, phone: formatPhoneForSmsIr(phone), code });
       await db.query(`UPDATE phone_login_codes SET provider_message_id = $1 WHERE id = $2`, [sms.messageId ?? null, inserted.rows[0]?.id]);
       return reply.send({ ok: true, expires_in_seconds: env.OTP_TTL_SECONDS });
     } catch (error) {
@@ -194,21 +188,35 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
     try { await enforceRateLimit({ key: `${phone}:${requestIp(request)}`, config: { name: 'auth:phone:verify', limit: 10, windowSeconds: 600 } }); }
     catch (error) { if (error instanceof RateLimitExceededError) return handleRateLimit(reply, error); throw error; }
 
-    const codeResult = await db.query<{ id: string; code_hash: string; expires_at: Date; attempts: number }>(`SELECT id, code_hash, expires_at, attempts FROM phone_login_codes WHERE phone = $1 AND purpose = 'login' AND consumed_at IS NULL ORDER BY created_at DESC LIMIT 1`, [phone]);
+    const codeResult = await db.query<{ id: string; code_hash: string; expires_at: Date; attempts: number }>(
+      `SELECT id, code_hash, expires_at, attempts FROM phone_login_codes WHERE phone = $1 AND purpose = 'login' AND consumed_at IS NULL ORDER BY created_at DESC LIMIT 1`,
+      [phone],
+    );
     const pending = codeResult.rows[0];
-    if (!pending || pending.expires_at.getTime() <= Date.now() || pending.attempts >= env.OTP_MAX_ATTEMPTS) return reply.status(401).send({ error: 'invalid_or_expired_code' });
+    if (!pending || pending.expires_at.getTime() <= Date.now() || pending.attempts >= env.OTP_MAX_ATTEMPTS) {
+      return reply.status(401).send({ error: 'invalid_or_expired_code' });
+    }
+
     await db.query(`UPDATE phone_login_codes SET attempts = attempts + 1 WHERE id = $1`, [pending.id]);
-    const expected = Buffer.from(pending.code_hash, 'hex');
-    const actual = Buffer.from(hashCode(parsed.data.code), 'hex');
-    if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return reply.status(401).send({ error: 'invalid_or_expired_code' });
+
+    if (!verifyOtpCode(parsed.data.code, pending.code_hash)) {
+      return reply.status(401).send({ error: 'invalid_or_expired_code' });
+    }
+
     await db.query(`UPDATE phone_login_codes SET consumed_at = now() WHERE id = $1`, [pending.id]);
 
-    const existing = await db.query<{ id: string; email: string; first_name: string | null; last_name: string | null }>(`SELECT u.id, u.email, u.first_name, u.last_name FROM users u JOIN profiles p ON p.user_id = u.id WHERE p.phone = $1 AND u.is_active = TRUE LIMIT 1`, [phone]);
+    const existing = await db.query<{ id: string; email: string; first_name: string | null; last_name: string | null }>(
+      `SELECT u.id, u.email, u.first_name, u.last_name FROM users u JOIN profiles p ON p.user_id = u.id WHERE p.phone = $1 AND u.is_active = TRUE LIMIT 1`,
+      [phone],
+    );
     let user = existing.rows[0];
     if (!user) {
       const syntheticEmail = `${phone}@phone.kaghazbaad.local`;
       const passwordHash = await hashPassword(randomBytes(24).toString('base64url'));
-      const created = await db.query<{ id: string; email: string; first_name: string | null; last_name: string | null }>(`INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, first_name, last_name`, [syntheticEmail, passwordHash]);
+      const created = await db.query<{ id: string; email: string; first_name: string | null; last_name: string | null }>(
+        `INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email, first_name, last_name`,
+        [syntheticEmail, passwordHash],
+      );
       const createdUser = created.rows[0];
       if (!createdUser) return reply.status(500).send({ error: 'phone_registration_failed' });
       user = createdUser;
@@ -216,6 +224,7 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
       await db.query(`INSERT INTO profiles (user_id, phone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET phone = EXCLUDED.phone`, [createdUser.id, phone]);
     }
     if (!user) return reply.status(500).send({ error: 'phone_registration_failed' });
+
     await db.query(`UPDATE profiles SET phone_verified_at = COALESCE(phone_verified_at, now()), updated_at = now() WHERE user_id = $1 AND phone = $2`, [user.id, phone]);
     const token = await createSession(user.id);
     const roles = await db.query<{ role: string }>(`SELECT role::text FROM user_roles WHERE user_id = $1 ORDER BY role`, [user.id]);
@@ -229,9 +238,11 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
     if (!parsed.success) return reply.status(400).send({ error: 'invalid_phone' });
     let phone: string;
     try { phone = normalizePhone(parsed.data.phone); } catch { return reply.status(400).send({ error: 'invalid_phone' }); }
+
     const current = await db.query<{ phone: string | null; phone_verified_at: Date | null }>(`SELECT phone, phone_verified_at FROM profiles WHERE user_id = $1`, [authUser.id]);
     const currentProfile = current.rows[0];
     if (currentProfile?.phone_verified_at && currentProfile.phone === phone) return reply.status(409).send({ error: 'phone_already_verified' });
+
     try {
       await enforceRateLimit({ key: `${authUser.id}:factor:${phone}`, config: { name: 'auth:phone:factor:send', limit: 1, windowSeconds: 60 } });
       await enforceRateLimit({ key: requestIp(request), config: { name: 'auth:phone:factor:send:ip', limit: 5, windowSeconds: 600 } });
@@ -239,10 +250,16 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
       if (error instanceof RateLimitExceededError) return handleRateLimit(reply, error);
       throw error;
     }
-    const code = String(randomInt(100000, 1000000));
-    const inserted = await db.query<{ id: string }>(`INSERT INTO phone_login_codes (phone, code_hash, purpose, expires_at, request_id) VALUES ($1, $2, 'phone_verification', now() + ($3 || ' seconds')::interval, $4) RETURNING id`, [phone, hashCode(code), env.OTP_TTL_SECONDS, request.id]);
+
+    const code = generateOtpCode();
+    const inserted = await db.query<{ id: string }>(
+      `INSERT INTO phone_login_codes (phone, code_hash, purpose, expires_at, request_id)
+       VALUES ($1, $2, 'phone_verification', now() + ($3 || ' seconds')::interval, $4) RETURNING id`,
+      [phone, hashOtpCode(code), env.OTP_TTL_SECONDS, request.id],
+    );
+
     try {
-      const sms = await sendSmsIrVerificationCode({ env, phone: `98${phone.slice(1)}`, code });
+      const sms = await sendSmsIrVerificationCode({ env, phone: formatPhoneForSmsIr(phone), code });
       await db.query(`UPDATE phone_login_codes SET provider_message_id = $1 WHERE id = $2`, [sms.messageId ?? null, inserted.rows[0]?.id]);
       return reply.send({ ok: true, expires_in_seconds: env.OTP_TTL_SECONDS });
     } catch (error) {
@@ -259,17 +276,35 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
     if (!parsed.success) return reply.status(400).send({ error: 'invalid_code' });
     let phone: string;
     try { phone = normalizePhone(parsed.data.phone); } catch { return reply.status(400).send({ error: 'invalid_phone' }); }
-    try { await enforceRateLimit({ key: `${authUser.id}:${phone}:${requestIp(request)}`, config: { name: 'auth:phone:factor:verify', limit: 10, windowSeconds: 600 } }); }
-    catch (error) { if (error instanceof RateLimitExceededError) return handleRateLimit(reply, error); throw error; }
-    const codeResult = await db.query<{ id: string; code_hash: string; expires_at: Date; attempts: number }>(`SELECT id, code_hash, expires_at, attempts FROM phone_login_codes WHERE phone = $1 AND purpose = 'phone_verification' AND consumed_at IS NULL ORDER BY created_at DESC LIMIT 1`, [phone]);
+
+    try {
+      await enforceRateLimit({ key: `${authUser.id}:${phone}:${requestIp(request)}`, config: { name: 'auth:phone:factor:verify', limit: 10, windowSeconds: 600 } });
+    } catch (error) {
+      if (error instanceof RateLimitExceededError) return handleRateLimit(reply, error);
+      throw error;
+    }
+
+    const codeResult = await db.query<{ id: string; code_hash: string; expires_at: Date; attempts: number }>(
+      `SELECT id, code_hash, expires_at, attempts FROM phone_login_codes WHERE phone = $1 AND purpose = 'phone_verification' AND consumed_at IS NULL ORDER BY created_at DESC LIMIT 1`,
+      [phone],
+    );
     const pending = codeResult.rows[0];
-    if (!pending || pending.expires_at.getTime() <= Date.now() || pending.attempts >= env.OTP_MAX_ATTEMPTS) return reply.status(401).send({ error: 'invalid_or_expired_code' });
+    if (!pending || pending.expires_at.getTime() <= Date.now() || pending.attempts >= env.OTP_MAX_ATTEMPTS) {
+      return reply.status(401).send({ error: 'invalid_or_expired_code' });
+    }
+
     await db.query(`UPDATE phone_login_codes SET attempts = attempts + 1 WHERE id = $1`, [pending.id]);
-    const expected = Buffer.from(pending.code_hash, 'hex');
-    const actual = Buffer.from(hashCode(parsed.data.code), 'hex');
-    if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return reply.status(401).send({ error: 'invalid_or_expired_code' });
+
+    if (!verifyOtpCode(parsed.data.code, pending.code_hash)) {
+      return reply.status(401).send({ error: 'invalid_or_expired_code' });
+    }
+
     await db.query(`UPDATE phone_login_codes SET consumed_at = now() WHERE id = $1`, [pending.id]);
-    await db.query(`INSERT INTO profiles (user_id, phone, phone_verified_at) VALUES ($1, $2, now()) ON CONFLICT (user_id) DO UPDATE SET phone = EXCLUDED.phone, phone_verified_at = now(), updated_at = now()`, [authUser.id, phone]);
+    await db.query(
+      `INSERT INTO profiles (user_id, phone, phone_verified_at) VALUES ($1, $2, now())
+       ON CONFLICT (user_id) DO UPDATE SET phone = EXCLUDED.phone, phone_verified_at = now(), updated_at = now()`,
+      [authUser.id, phone],
+    );
     return reply.send({ ok: true, phone, phone_verified: true });
   });
 

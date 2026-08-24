@@ -4,6 +4,7 @@ import type { FastifyRequest } from 'fastify';
 import { db } from '../db/pool.js';
 
 export * from './roles.js';
+export * from './phone.js';
 
 const scrypt = promisify(scryptCallback);
 const SESSION_DAYS = 30;
