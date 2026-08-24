@@ -1,11 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { TrackSource } from '@livekit/protocol';
 import {
   parseLiveSessionRole,
   buildLiveKitTokenGrants,
   isSessionManager,
   livekitConfigured,
+  TrackSource,
 } from '../../backend/dist/modules/live/routes.js';
 
 describe('LiveKit Streaming & WebRTC Token Infrastructure', () => {

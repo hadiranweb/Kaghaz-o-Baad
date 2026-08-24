@@ -1,11 +1,22 @@
 import type { FastifyInstance } from 'fastify';
-import { AccessToken, EgressClient, RoomServiceClient, WebhookReceiver, type WebhookEvent } from 'livekit-server-sdk';
-import { EncodedFileOutput, EncodedFileType, S3Upload, TrackSource } from '@livekit/protocol';
+import {
+  AccessToken,
+  EgressClient,
+  RoomServiceClient,
+  WebhookReceiver,
+  type WebhookEvent,
+  TrackSource,
+  EncodedFileOutput,
+  EncodedFileType,
+  S3Upload,
+} from 'livekit-server-sdk';
 import { z } from 'zod';
 import { getAuthUser, isManager } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
-import { commitQuota, getQuotaStatus, reserveQuota } from '../quota/service.js';
+import { getQuotaStatus } from '../quota/service.js';
 import type { AppEnv } from '../../config/env.js';
+
+export { TrackSource };
 
 const paramsSchema = z.object({ sessionId: z.string().uuid() });
 const participantParamsSchema = z.object({ sessionId: z.string().uuid(), identity: z.string().min(1).max(200) });
