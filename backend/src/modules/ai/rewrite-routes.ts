@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import type { AppEnv } from '../../config/env.js';
 import { getAuthUser } from '../../auth/service.js';
+import { isCircuitBreakerOpen, recordFailure, recordSuccess } from '../circuit-breaker/service.js';
 import { runUsage } from '../usage/gateway.js';
 import { rewriteWithOpenAi, AiProviderError } from './openai-compatible.js';
 
@@ -32,6 +33,8 @@ export async function registerRewriteRoutes(app: FastifyInstance, env: AppEnv) {
     const requestHeader = request.headers['x-request-id'];
     const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
     try {
+      const aiBreakerOpen = await isCircuitBreakerOpen('ai-provider');
+      if (aiBreakerOpen) return reply.status(503).send({ error: 'ai_provider_circuit_breaker_open', requestId });
       const result = await runUsage(
         {
           userId: user.id,
@@ -49,8 +52,10 @@ export async function registerRewriteRoutes(app: FastifyInstance, env: AppEnv) {
           return { value: generated.content, metrics: generated.metrics };
         },
       );
+      await recordSuccess('ai-provider');
       return reply.send({ ok: true, content: result.value, requestId: result.requestId, usageId: result.usageId, provider: env.AI_PROVIDER, model: env.AI_MODEL });
     } catch (error) {
+      await recordFailure('ai-provider');
       const status = statusFor(error);
       if (status === 503) return reply.status(status).send({ error: 'ai_provider_not_configured' });
       if (status === 504) return reply.status(status).send({ error: 'ai_provider_timeout', requestId });
