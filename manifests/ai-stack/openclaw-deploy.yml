@@ -1,0 +1,46 @@
+# Liara PaaS Deployment Manifest — OpenClaw Runtime
+# ADR-0003: Tool-allowlisted agent runtime with restricted scopes.
+# Isolation: No production DB access. Only allowed backend tools invoked via API.
+
+service: openclaw-runtime
+platform: liara-paas
+runtime: python:3.12-slim
+port: 8081
+replicas: 1
+
+network_policy:
+  ingress:
+    - source: n8n-orchestrator
+    - source: admin-vpn
+  egress:
+    - destination: kaghazbaad-backend-api
+    - deny_all_others: true
+
+secrets:
+  - name: OPENCLAW_AGENT_ID
+    source: vault/liara/openclaw-agent-id
+  - name: OPENCLAW_ALLOWLISTED_TOOLS
+    source: vault/liara/openclaw-tools-json
+
+health_checks:
+  endpoint: /readyz
+  interval: 45s
+  timeout: 10s
+
+environment:
+  OPENCLAW_MODE: restricted
+  OPENCLAW_SCOPE_LIMIT: user-session-only
+  OPENCLAW_MAX_CONCURRENT: 2
+  BACKEND_API_URL: https://api.kaghazobaad.ir
+  # Kill switch for agent runtime
+  KILL_SWITCH_OPENCLAW: disabled
+  FEATURE_FLAG_AUXILIARY_AI: enabled
+
+volume_mounts:
+  - name: openclaw-session-data
+    path: /data/sessions
+    persistence: false  # Ephemeral session storage
+
+rollback_policy:
+  max_failed_deployments: 2
+  automatic_rollback_on_health_fail: true

@@ -1,0 +1,46 @@
+# Liara PaaS Deployment Manifest — Open WebUI Workspace
+# ADR-0003: Private team workspace — not a public product interface.
+# Isolation: No direct user-facing endpoint exposed. Only via admin/auth gateway.
+
+service: open-webui-workspace
+platform: liara-paas
+runtime: node:22-alpine
+port: 3000
+replicas: 1
+
+network_policy:
+  ingress:
+    - source: admin-vpn
+    - source: backend-management-gateway
+    - deny_public: true
+  egress:
+    - destination: kaghazbaad-backend-api
+    - deny_all_others: true
+
+secrets:
+  - name: OPENWEBUI_ADMIN_TOKEN
+    source: vault/liara/openwebui-admin
+  - name: BACKEND_API_URL
+    source: vault/liara/backend-public-url
+
+health_checks:
+  endpoint: /health
+  interval: 60s
+  timeout: 10s
+
+environment:
+  NODE_ENV: production
+  OPENWEBUI_ACCESS_MODE: private-team-only
+  OPENWEBUI_SESSION_TIMEOUT_MINUTES: 120
+  BACKEND_API_URL: https://api.kaghazobaad.ir
+  FEATURE_FLAG_AUXILIARY_AI: enabled
+  KILL_SWITCH_OPENWEBUI: disabled
+
+volume_mounts:
+  - name: openwebui-config
+    path: /app/config
+    persistence: true
+
+rollback_policy:
+  max_failed_deployments: 2
+  automatic_rollback_on_health_fail: true
