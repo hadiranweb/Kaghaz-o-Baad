@@ -39,7 +39,7 @@ Browser
 
 1. Backend منبع حقیقت Auth، RBAC، Workflow، Quota، Billing و دسترسی است.
 2. Frontend هیچ پرداخت، نقش یا مجوزی را تأیید نمی‌کند.
-3. PostgreSQL مستقل مسیر Production است؛ `supabase/` فقط آرشیو انتقالی و غیرقابل Deploy است.
+3. PostgreSQL مستقل مسیر Production است؛ Supabase در اسپرینت ۵ به صورت کامل حذف و خارج شده است.
 4. LiveKit فقط رسانهٔ بلادرنگ را حمل می‌کند؛ Token و Role از Backend صادر می‌شوند.
 5. سرویس‌های AI اختیاری، Feature-Flagged و قابل خاموش‌شدن هستند.
 6. Secretها فقط در GitHub/Liara نگهداری می‌شوند و وارد Git یا Bundle نمی‌شوند.
@@ -51,13 +51,13 @@ Browser
 - [نقشهٔ نهایی‌سازی](docs/finalization/roadmap-fa.md)
 - [ADRهای معماری](docs/adr/README.md)
 
-## وضعیت Supabase
+## وضعیت Supabase (خروج کامل — Decommissioned)
 
-Runtime اصلی هیچ import یا dependency از `@supabase/supabase-js` ندارد. پوشهٔ `supabase/` شامل Migration و Edge Functionهای تاریخی است و:
+پوشهٔ تاریخی `supabase/` در اسپرینت ۵ به صورت کامل حذف شد و چک‌سام‌های آرشیوی آن در `docs/archive/legacy-supabase-manifest-2026-08-24.json` نگهداری می‌شوند. Runtime اصلی و مخزن دارای صفر باقیمانده (Zero Residue) هستند.
 
-- در CI یا Production اجرا نمی‌شود؛
-- برای قابلیت جدید قابل استفاده نیست؛
-- تا Sprint حذف Legacy فقط برای تطبیق Migration و Rollback نگهداری می‌شود.
+- هیچ وابستگی پکیجی از قبیل `@supabase/supabase-js` در پروژه وجود ندارد؛
+- هیچ import یا فراخوانی کدی در فرانت‌اند یا بک‌اند وجود ندارد؛
+- اسکریپت `scripts/check-architecture-contract.mjs` در هر بیلد و در CI عدم بازگشت هرگونه رفرنس قدیمی را بررسی می‌کند.
 
 جزئیات: [LEGACY-SUPABASE-TRANSITION-fa.md](docs/LEGACY-SUPABASE-TRANSITION-fa.md).
 
@@ -150,12 +150,11 @@ Credential تست باید فقط در Secret یا Environment محلی قرار
 ```text
 .github/workflows/       CI/CD
 backend/                 Fastify API، Worker و PostgreSQL migrations
-backend/migrations/      Migrationهای فعال 001 تا 018
+backend/migrations/      Migrationهای فعال 001 تا 021
 installer/               Windows installer
 src/                     React frontend
-supabase/                آرشیو انتقالی؛ خارج از Runtime و Deployment
 scripts/                 ابزارهای محیط و Health Check
-tests/                   Smoke و Load tests
+tests/                   آزمون‌های واحد بومی (Native Unit Tests) و تست‌های Smoke/Load
 docs/                    معماری، وضعیت، Runbook و گزارش‌ها
 ```
 
