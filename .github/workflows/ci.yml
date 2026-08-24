@@ -47,6 +47,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run build
+      - run: npm run test
       - run: npm run migrate:dry-run
       - name: Dependency audit
         run: npm audit --omit=dev --audit-level=high

@@ -3,6 +3,8 @@ import { promisify } from 'node:util';
 import type { FastifyRequest } from 'fastify';
 import { db } from '../db/pool.js';
 
+export * from './roles.js';
+
 const scrypt = promisify(scryptCallback);
 const SESSION_DAYS = 30;
 
@@ -71,8 +73,4 @@ export async function getAuthUser(request: FastifyRequest): Promise<AuthUser | n
   if (!user) return null;
   await db.query('UPDATE sessions SET last_seen_at = now() WHERE token_hash = $1', [tokenHash]);
   return user;
-}
-
-export function hasRole(user: Pick<AuthUser, 'roles'>, ...roles: string[]) {
-  return roles.some((role) => user.roles.includes(role));
 }

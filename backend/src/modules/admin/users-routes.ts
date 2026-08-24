@@ -1,13 +1,12 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { getAuthUser, hasRole, hashPassword } from '../../auth/service.js';
+import { getAuthUser, isAdmin, hashPassword, systemRoleSchema } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
 
-const roleSchema = z.enum(['admin', 'editor', 'contributor', 'user']);
 const bodySchema = z.object({
   action: z.enum(['list', 'setRole', 'deleteUser', 'updateUser']),
   userId: z.string().uuid().optional(),
-  role: roleSchema.optional(),
+  role: systemRoleSchema.optional(),
   enabled: z.boolean().optional(),
   email: z.string().email().optional(),
   firstName: z.string().max(120).optional(),
@@ -15,8 +14,6 @@ const bodySchema = z.object({
   phone: z.string().max(40).optional(),
   password: z.string().min(8).max(200).optional(),
 });
-
-function isAdmin(user: { roles: string[] }) { return hasRole(user, 'admin', 'senior_manager'); }
 
 export async function registerAdminUsersRoutes(app: FastifyInstance) {
   app.post('/api/v1/admin/users', async (request, reply) => {

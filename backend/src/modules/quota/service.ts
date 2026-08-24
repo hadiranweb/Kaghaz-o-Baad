@@ -23,9 +23,14 @@ type Reservation = {
 
 function periodStart(period: string, now = new Date()) {
   const value = new Date(now);
-  if (period === 'daily') value.setUTCHours(0, 0, 0, 0);
-  else if (period === 'monthly') value.setUTCDate(1), value.setUTCHours(0, 0, 0, 0);
-  else value.setTime(0);
+  if (period === 'daily') {
+    value.setUTCHours(0, 0, 0, 0);
+  } else if (period === 'monthly') {
+    value.setUTCDate(1);
+    value.setUTCHours(0, 0, 0, 0);
+  } else {
+    value.setTime(0);
+  }
   return value;
 }
 

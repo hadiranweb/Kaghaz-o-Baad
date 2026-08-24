@@ -13,6 +13,8 @@
     "verify:architecture": "node scripts/check-architecture-contract.mjs",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "test:unit": "npm --prefix backend test",
+    "test": "npm run test:unit",
     "preview": "vite preview"
   },
   "dependencies": {

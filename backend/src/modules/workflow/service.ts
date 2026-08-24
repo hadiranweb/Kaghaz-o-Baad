@@ -1,6 +1,7 @@
 import type { PoolClient } from 'pg';
 import { db } from '../../db/pool.js';
 import type { AuthUser } from '../../auth/service.js';
+import { isManager, isAuthor } from '../../auth/service.js';
 
 export const workflowActions = [
   'submit_for_review',
@@ -15,7 +16,7 @@ export const workflowActions = [
 export type WorkflowAction = (typeof workflowActions)[number];
 export type ArticleStatus = 'draft' | 'in_review' | 'changes_requested' | 'approved' | 'scheduled' | 'published' | 'archived';
 
-const transitions: Record<WorkflowAction, readonly [ArticleStatus, ArticleStatus][]> = {
+export const ARTICLE_TRANSITIONS: Record<WorkflowAction, readonly [ArticleStatus, ArticleStatus][]> = {
   submit_for_review: [['draft', 'in_review'], ['changes_requested', 'in_review']],
   request_changes: [['in_review', 'changes_requested']],
   approve: [['in_review', 'approved']],
@@ -25,23 +26,37 @@ const transitions: Record<WorkflowAction, readonly [ArticleStatus, ArticleStatus
   restore_draft: [['archived', 'draft'], ['changes_requested', 'draft']],
 };
 
-function hasRole(user: AuthUser, ...roles: string[]) {
-  return roles.some((role) => user.roles.includes(role));
-}
+/**
+ * Pure function: Determines whether an actor is authorized to perform a workflow action on an article.
+ */
+export function isActionPermittedForActor(
+  actor: Pick<AuthUser, 'id' | 'roles'>,
+  action: WorkflowAction,
+  article: { author_id: string | null },
+): boolean {
+  const isOwner = article.author_id === actor.id;
+  const manager = isManager(actor);
+  const author = isAuthor(actor);
 
-function canManageWorkflow(user: AuthUser) {
-  return hasRole(user, 'editor', 'admin', 'senior_manager', 'technical_manager');
-}
-
-function allowed(user: AuthUser, action: WorkflowAction, article: { author_id: string | null; status: ArticleStatus }) {
-  const owner = article.author_id === user.id;
-  const manager = canManageWorkflow(user);
-  const contributor = hasRole(user, 'author', 'contributor');
-  const validTransition = transitions[action].some(([from]) => from === article.status);
-  if (!validTransition) return false;
-  if (action === 'submit_for_review') return (owner && contributor) || manager;
-  if (action === 'restore_draft') return (owner && contributor) || manager;
+  if (action === 'submit_for_review' || action === 'restore_draft') {
+    return (isOwner && (author || manager)) || manager;
+  }
   return manager;
+}
+
+/**
+ * Pure function: Checks if an action is valid given the current article status.
+ */
+export function isValidTransition(action: WorkflowAction, currentStatus: ArticleStatus): boolean {
+  return ARTICLE_TRANSITIONS[action].some(([from]) => from === currentStatus);
+}
+
+/**
+ * Pure function: Returns the next status for a given action and current status, or null if invalid.
+ */
+export function getNextStatus(action: WorkflowAction, currentStatus: ArticleStatus): ArticleStatus | null {
+  const match = ARTICLE_TRANSITIONS[action]?.find(([from]) => from === currentStatus);
+  return match ? match[1] : null;
 }
 
 export async function transitionArticle(input: {
@@ -50,6 +65,7 @@ export async function transitionArticle(input: {
   note?: string;
   metadata?: Record<string, unknown>;
   actor: AuthUser;
+  requestId?: string;
 }) {
   const client = await db.connect();
   try {
@@ -60,12 +76,15 @@ export async function transitionArticle(input: {
     );
     const article = articleResult.rows[0];
     if (!article) throw Object.assign(new Error('article_not_found'), { statusCode: 404 });
-    if (!allowed(input.actor, input.action, article)) {
+
+    if (!isActionPermittedForActor(input.actor, input.action, article)) {
       throw Object.assign(new Error('forbidden_transition'), { statusCode: 403 });
     }
 
-    const nextStatus = transitions[input.action].find(([from]) => from === article.status)?.[1];
-    if (!nextStatus) throw Object.assign(new Error('invalid_transition'), { statusCode: 409 });
+    const nextStatus = getNextStatus(input.action, article.status);
+    if (!nextStatus) {
+      throw Object.assign(new Error('invalid_transition'), { statusCode: 409 });
+    }
 
     await client.query(
       `UPDATE articles
@@ -89,9 +108,9 @@ export async function transitionArticle(input: {
     );
 
     await client.query(
-      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, metadata)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [input.actor.id, `article.workflow.${input.action}`, 'article', input.articleId, { from: article.status, to: nextStatus }],
+      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, request_id, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [input.actor.id, `article.workflow.${input.action}`, 'article', input.articleId, input.requestId ?? null, { from: article.status, to: nextStatus }],
     );
 
     await client.query('COMMIT');

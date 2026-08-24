@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { AccessToken, EgressClient, RoomServiceClient, WebhookReceiver } from 'livekit-server-sdk';
+import { AccessToken, EgressClient, RoomServiceClient, WebhookReceiver, type WebhookEvent } from 'livekit-server-sdk';
 import { EncodedFileOutput, EncodedFileType, S3Upload } from '@livekit/protocol';
 import { TrackSource } from '@livekit/protocol';
 import { z } from 'zod';
@@ -179,7 +179,7 @@ export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
     const rawBody = rawBodyOf(request as unknown as { rawBody?: unknown });
     const authHeader = request.headers.authorization ?? request.headers.authorize;
     if (!rawBody || typeof authHeader !== 'string') return reply.status(400).send({ error: 'invalid_webhook' });
-    let event: any;
+    let event: WebhookEvent;
     try {
       event = await new WebhookReceiver(env.LIVEKIT_API_KEY, env.LIVEKIT_API_SECRET).receive(rawBody, authHeader);
     } catch {
@@ -236,13 +236,13 @@ export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
       await db.query(`UPDATE live_sessions SET status = CASE WHEN status = 'cancelled' THEN status ELSE 'ended' END, ends_at = COALESCE(ends_at, now()), updated_at = now() WHERE id = $1`, [sessionId]);
     }
 
-    const egress = event.egressInfo ?? event.egress;
+    const egress = event.egressInfo;
     const egressId = typeof egress?.egressId === 'string' ? egress.egressId : null;
-    if (inserted.rowCount && egressId) {
+    if (inserted.rowCount && egress && egressId) {
       const egressStatus = event.event === 'egress_started' ? 'active' : event.event === 'egress_ended' ? (egress.error ? 'failed' : 'completed') : 'active';
       const fileInfo = Array.isArray(egress.fileResults) ? egress.fileResults[0] : null;
-      const duration = Number(egress.endedAt ?? egress.duration ?? 0);
-      const size = Number(fileInfo?.size ?? fileInfo?.fileSize ?? 0);
+      const duration = Number(fileInfo?.duration ?? egress.endedAt ?? 0);
+      const size = Number(fileInfo?.size ?? 0);
       await db.query(
         `UPDATE live_recordings
          SET status = $2,
@@ -255,7 +255,7 @@ export async function registerLiveRoutes(app: FastifyInstance, env: AppEnv) {
              metadata = metadata || $8,
              updated_at = now()
          WHERE egress_id = $1`,
-        [egressId, egressStatus, duration, size, fileInfo?.type ?? null, fileInfo?.location ?? null, egress.error ?? null, egress],
+        [egressId, egressStatus, duration, size, null, fileInfo?.location ?? null, egress.error || null, egress],
       );
     }
     return reply.send({ ok: true, duplicate: !inserted.rowCount });
