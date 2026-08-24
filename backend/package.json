@@ -14,6 +14,7 @@
     "bootstrap:admin": "node dist/scripts/bootstrap-admin.js",
     "jobs:cleanup-ai-cache": "tsx src/jobs/cleanup-ai-cache.ts",
     "jobs:subscription-lifecycle": "tsx src/jobs/subscription-lifecycle.ts",
+    "jobs:cleanup-media": "tsx src/jobs/cleanup-orphaned-media.ts",
     "test": "node --test ../tests/unit/*.test.mjs",
     "test:integration": "node ../tests/integration/api-smoke.mjs",
     "test:k6": "k6 run ../tests/k6/kaghazbaad-api.js",
