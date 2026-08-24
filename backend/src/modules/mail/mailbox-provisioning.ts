@@ -1,5 +1,6 @@
 import type { PoolClient } from 'pg';
 import { LiaraMailError } from './liara-mail-client.js';
+import { hasVerifiedFactor, isIdentityActive, resolveIdentityConsistencyErrors, validatePlatformEmailFormat } from '../../auth/identity-consistency.js';
 
 export type MailboxProvisioningConfig = {
   enabled: boolean;
@@ -24,6 +25,24 @@ export async function enqueueMailboxCreateTx(client: PoolClient, input: {
   const platformDomain = domainResult.rows[0];
   if (!platformDomain || platformDomain.mail_server_id !== input.config.mailServerId) {
     throw new LiaraMailError('platform_domain_not_configured', 'configuration');
+  }
+
+  // Central identity hardening: require verified factor before mailbox provisioning
+  const identityResult = await client.query<{ verified: boolean; status: string; email_localpart: string }>(
+    `SELECT
+       CASE WHEN EXISTS (SELECT 1 FROM user_login_identities WHERE user_id=$1 AND is_verified = TRUE)
+            OR EXISTS (SELECT 1 FROM user_contact_methods WHERE user_id=$1 AND verified_at IS NOT NULL)
+            THEN TRUE ELSE FALSE END AS verified,
+       identity_status AS status,
+       platform_email_localpart AS email_localpart
+     FROM users WHERE id=$1`, [input.userId],
+  );
+  const identityRow = identityResult.rows[0];
+  if (!identityRow) throw new LiaraMailError('user_not_found', 'invalid_request');
+  if (identityRow.status !== 'active') throw new LiaraMailError('user_identity_not_active', 'invalid_request');
+  if (!identityRow.verified) throw new LiaraMailError('user_requires_verified_factor_before_mailbox', 'invalid_request');
+  if (!validatePlatformEmailFormat(input.platformEmail, domain)) {
+    throw new LiaraMailError('invalid_platform_email_format', 'invalid_request');
   }
   const mailboxResult = await client.query<{ id: string }>(
     `INSERT INTO user_mailboxes
