@@ -1,0 +1,87 @@
+{
+  "url": "http://localhost:4173/",
+  "results": [
+    {
+      "kind": "cold",
+      "repetition": 1,
+      "score": 0.74,
+      "lcpMs": 5404.6224,
+      "cls": 0.02796673884098744,
+      "tbtMs": 175,
+      "transferBytes": 829688,
+      "requests": 25,
+      "lcpElement": "div.container > div.max-w-2xl > p.kb-masked-reveal > span.kb-masked-reveal__content"
+    },
+    {
+      "kind": "warm",
+      "repetition": 1,
+      "score": 0.74,
+      "lcpMs": 5404.865300000001,
+      "cls": 0.02796673884098744,
+      "tbtMs": 173,
+      "transferBytes": 829688,
+      "requests": 25,
+      "lcpElement": "div.container > div.max-w-2xl > p.kb-masked-reveal > span.kb-masked-reveal__content"
+    },
+    {
+      "kind": "cold",
+      "repetition": 2,
+      "score": 0.74,
+      "lcpMs": 5411.248250000001,
+      "cls": 0.02796673884098744,
+      "tbtMs": 160.87517500000013,
+      "transferBytes": 829679,
+      "requests": 25,
+      "lcpElement": "div.container > div.max-w-2xl > p.kb-masked-reveal > span.kb-masked-reveal__content"
+    },
+    {
+      "kind": "warm",
+      "repetition": 2,
+      "score": 0.73,
+      "lcpMs": 5410.407499999999,
+      "cls": 0.02796673884098744,
+      "tbtMs": 173.95924999999988,
+      "transferBytes": 829688,
+      "requests": 25,
+      "lcpElement": "div.container > div.max-w-2xl > p.kb-masked-reveal > span.kb-masked-reveal__content"
+    },
+    {
+      "kind": "cold",
+      "repetition": 3,
+      "score": 0.72,
+      "lcpMs": 5408.979,
+      "cls": 0.02796673884098744,
+      "tbtMs": 226.10210000000052,
+      "transferBytes": 829688,
+      "requests": 25,
+      "lcpElement": "div.container > div.max-w-2xl > p.kb-masked-reveal > span.kb-masked-reveal__content"
+    },
+    {
+      "kind": "warm",
+      "repetition": 3,
+      "score": 0.74,
+      "lcpMs": 5410.89125,
+      "cls": 0.03313711380339511,
+      "tbtMs": 162.91087500000003,
+      "transferBytes": 829688,
+      "requests": 25,
+      "lcpElement": "div.container > div.max-w-2xl > p.kb-masked-reveal > span.kb-masked-reveal__content"
+    }
+  ],
+  "medians": {
+    "cold": {
+      "lcpMs": 5408.979,
+      "cls": 0.02796673884098744,
+      "tbtMs": 175,
+      "transferBytes": 829688,
+      "score": 0.74
+    },
+    "warm": {
+      "lcpMs": 5410.407499999999,
+      "cls": 0.02796673884098744,
+      "tbtMs": 173,
+      "transferBytes": 829688,
+      "score": 0.74
+    }
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "events": [
+    {
+      "name": "keydown",
+      "startTime": 25242.699999928474,
+      "processingStart": 25243.399999976158,
+      "duration": 48,
+      "interactionId": 6605
+    },
+    {
+      "name": "keyup",
+      "startTime": 25255,
+      "processingStart": 25265.399999976158,
+      "duration": 48,
+      "interactionId": 6605
+    },
+    {
+      "name": "keydown",
+      "startTime": 25267.100000023842,
+      "processingStart": 25276.199999928474,
+      "duration": 56,
+      "interactionId": 6612
+    },
+    {
+      "name": "keyup",
+      "startTime": 25277.5,
+      "processingStart": 25277.799999952316,
+      "duration": 40,
+      "interactionId": 6612
+    },
+    {
+      "name": "pointerdown",
+      "startTime": 25429.600000023842,
+      "processingStart": 25440.600000023842,
+      "duration": 56,
+      "interactionId": 6619
+    },
+    {
+      "name": "pointerup",
+      "startTime": 25429.699999928474,
+      "processingStart": 25445.799999952316,
+      "duration": 56,
+      "interactionId": 6619
+    },
+    {
+      "name": "click",
+      "startTime": 25429.699999928474,
+      "processingStart": 25446.100000023842,
+      "duration": 56,
+      "interactionId": 6619
+    }
+  ],
+  "lcp": 23972,
+  "cls": 0.11653417122395833,
+  "longTasks": [
+    {
+      "startTime": 20560.899999976158,
+      "duration": 257
+    },
+    {
+      "startTime": 20826.100000023842,
+      "duration": 464
+    },
+    {
+      "startTime": 23068.399999976158,
+      "duration": 89
+    },
+    {
+      "startTime": 25011.799999952316,
+      "duration": 83
+    }
+  ],
+  "navigation": {
+    "name": "http://localhost:8080/",
+    "entryType": "navigation",
+    "startTime": 0,
+    "duration": 20825.100000023842,
+    "navigationId": 9388,
+    "initiatorType": "navigation",
+    "deliveryType": "",
+    "nextHopProtocol": "http/1.1",
+    "renderBlockingStatus": "non-blocking",
+    "contentType": "text/html",
+    "contentEncoding": "",
+    "workerStart": 0,
+    "workerRouterEvaluationStart": 0,
+    "workerCacheLookupStart": 0,
+    "workerMatchedSourceType": "",
+    "workerFinalSourceType": "",
+    "redirectStart": 0,
+    "redirectEnd": 0,
+    "fetchStart": 1.100000023841858,
+    "domainLookupStart": 1.100000023841858,
+    "domainLookupEnd": 1.100000023841858,
+    "connectStart": 1.100000023841858,
+    "secureConnectionStart": 0,
+    "connectEnd": 1.100000023841858,
+    "requestStart": 2.399999976158142,
+    "responseStart": 4.899999976158142,
+    "firstInterimResponseStart": 0,
+    "finalResponseHeadersStart": 4.899999976158142,
+    "responseEnd": 175.60000002384186,
+    "transferSize": 3804,
+    "encodedBodySize": 3504,
+    "decodedBodySize": 3504,
+    "responseStatus": 200,
+    "serverTiming": [],
+    "unloadEventStart": 0,
+    "unloadEventEnd": 0,
+    "domInteractive": 217,
+    "domContentLoadedEventStart": 20809.399999976158,
+    "domContentLoadedEventEnd": 20810,
+    "domComplete": 20825.100000023842,
+    "loadEventStart": 20825.100000023842,
+    "loadEventEnd": 20825.100000023842,
+    "type": "navigate",
+    "redirectCount": 0,
+    "activationStart": 0,
+    "criticalCHRestart": 0,
+    "notRestoredReasons": null,
+    "confidence": {}
+  },
+  "capturedAt": 1787375260629,
+  "url": "http://localhost:8080/",
+  "elapsedMs": 25762,
+  "inpEstimateMs": 56
+}

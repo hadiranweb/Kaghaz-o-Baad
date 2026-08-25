@@ -1,0 +1,711 @@
+# Generated from MengTo/Skills main: agent-skills/web-design
+# Review status is an initial routing decision; implementation must verify each SKILL.md and REFERENCES.md.
+generated_at: 2026-08-22T09:01:32.373Z
+repository: https://github.com/MengTo/Skills
+path: agent-skills/web-design
+skill_count: 88
+skills:
+  - id: add-mouse-driven-orbit
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/add-mouse-driven-orbit"
+    skill_file: "agent-skills/web-design/add-mouse-driven-orbit/SKILL.md"
+    references_file: null
+    description: "Add restrained mouse-driven orbit and parallax depth to a Three.js hero by damping one pointer target and splitting it across camera translation, look-at, and small object rotations. Use for passive cinematic 3D heroes, pointer-responsive scenes, organic model parallax, and interactive depth where OrbitControls would feel like a product viewer."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: add-shader-cursor-trail
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/add-shader-cursor-trail"
+    skill_file: "agent-skills/web-design/add-shader-cursor-trail/SKILL.md"
+    references_file: null
+    description: "\"Add the Shaders WebGPU mouse effect used for the Tidal Commons hero: a white twinkling halftone cursor trail driven by ChromaFlow, masked through a DotGrid, finished with chromatic ripples and film grain, and protected by static, touch, accessibility, SSR, and performance fallbacks. Use when a user asks for this shader mouse effect, a halftone cursor trail, an interactive WebGPU hero/contact background, or a reusable cursor-following shader layer in React, Next.js, Vue, Svelte, Solid, or plain web projects.\""
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: agency-grid-layout-minimal
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/agency-grid-layout-minimal"
+    skill_file: "agent-skills/web-design/agency-grid-layout-minimal/SKILL.md"
+    references_file: null
+    description: "\"Create a minimal agency design system with a disciplined editorial grid, oversized typography, quiet uppercase utility labels, restrained image blocks, and subtle structural detail.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: ambient-section-particles
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/ambient-section-particles"
+    skill_file: "agent-skills/web-design/ambient-section-particles/SKILL.md"
+    references_file: "agent-skills/web-design/ambient-section-particles/REFERENCES.md"
+    description: "Add a restrained particle atmosphere inside one section with configurable shapes, density, gravity, wind, sway, rotation, recycling or settling, pointer disturbance, visibility pausing, responsive limits, and reduced-motion fallbacks. Use for petals, leaves, snow, sparks, confetti, dots, paper, icons, or brand fragments that support a section's mood without obscuring content."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: animation-on-scroll
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/animation-on-scroll"
+    skill_file: "agent-skills/web-design/animation-on-scroll/SKILL.md"
+    references_file: null
+    description: "Create an on-scroll animation trigger using IntersectionObserver with Tailwind-friendly animation classes and keyframes. Use when asked for scroll-reveal, animate-on-scroll, or sequencing element animations when they enter the viewport."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: animation-systems
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/animation-systems"
+    skill_file: "agent-skills/web-design/animation-systems/SKILL.md"
+    references_file: null
+    description: "Use when designing or implementing product-grade web motion like Stripe, Linear, Apple, and Vercel. Covers motion principles, easing/duration defaults, choreography patterns, scroll/hover interactions, performance, accessibility (reduced motion), and implementation guidance."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: atmosphere-background
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/atmosphere-background"
+    skill_file: "agent-skills/web-design/atmosphere-background/SKILL.md"
+    references_file: null
+    description: "\"Create a dark atmospheric background with drifting vertical light folds, screen-blended glow, and a concentrated luminous corner or lower-edge bloom.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: background-grid-webgl
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/background-grid-webgl"
+    skill_file: "agent-skills/web-design/background-grid-webgl/SKILL.md"
+    references_file: null
+    description: "\"Create a perspective WebGL background grid with fading lines, subtle particle haze, slow forward drift, and gentle camera parallax.\""
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: beam-glow-states
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/beam-glow-states"
+    skill_file: "agent-skills/web-design/beam-glow-states/SKILL.md"
+    references_file: "agent-skills/web-design/beam-glow-states/REFERENCES.md"
+    description: "Create React loading, processing, selected, current, focus, and pressed states with the border-beam package's animated edge glow. Use when a card, button, input, tab, option, task panel, or agent surface needs a restrained traveling or breathing beam; includes installation, imports, prop selection, state wiring, reduced motion, accessibility, and performance and layout guardrails."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: beautiful-shadows
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/beautiful-shadows"
+    skill_file: "agent-skills/web-design/beautiful-shadows/SKILL.md"
+    references_file: null
+    description: "Apply exact Tailwind arbitrary shadow utilities for polished, layered neutral elevation. Use when compact cards, controls, panels, popovers, hero media, feature callouts, or modal-like containers need refined shadows without default Tailwind shadow scales or colored tinting."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: blue-cloudy-clean-modern
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/blue-cloudy-clean-modern"
+    skill_file: "agent-skills/web-design/blue-cloudy-clean-modern/SKILL.md"
+    references_file: null
+    description: "\"Create a clean modern design system with a luminous blue sky atmosphere, soft drifting cloud light, minimal white framing, and serene premium typography.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: blue-laser-clean-glass-layout
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/blue-laser-clean-glass-layout"
+    skill_file: "agent-skills/web-design/blue-laser-clean-glass-layout/SKILL.md"
+    references_file: null
+    description: "\"Create a clean dark glass layout system with a thin blue laser atmosphere, frosted premium shells, and polished dashboard structure.\""
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: book-serif-index
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/book-serif-index"
+    skill_file: "agent-skills/web-design/book-serif-index/SKILL.md"
+    references_file: null
+    description: "\"Create an archival book-reader design system with serif-led pages, mono index navigation, aged paper surfaces, margin notes, and a premium catalog frame.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: bright-green-tech-system-webgl
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/bright-green-tech-system-webgl"
+    skill_file: "agent-skills/web-design/bright-green-tech-system-webgl/SKILL.md"
+    references_file: null
+    description: "\"Create a bright-green technical design system with structured split layouts, hard-framed dark surfaces, mono utility labels, and a prominent WebGL visualization zone.\""
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: build-awwwards-quality-sites
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/build-awwwards-quality-sites"
+    skill_file: "agent-skills/web-design/build-awwwards-quality-sites/SKILL.md"
+    references_file: null
+    description: "Art-direct and implement distinctive, motion-rich marketing, editorial, portfolio, and landing websites with original reference-inspired imagery, standout heroes, GSAP choreography, one smooth-scroll engine, optional Three.js shaders, honest icon and logo sourcing, photo avatars, accessibility, and performance safeguards. Use when a user asks for an Awwwards-quality, premium, cinematic, interactive, high-concept, or motion-led website, or explicitly requests this visual and motion system."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: build-interactive-particle-trail
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/build-interactive-particle-trail"
+    skill_file: "agent-skills/web-design/build-interactive-particle-trail/SKILL.md"
+    references_file: null
+    description: "Build a cursor or touch particle interaction that emits by distance along the traveled segment into a recycled GPU point pool, with optional keyboard-triggered bursts. Use for interactive particle trails, pollen lifted from a surface, dust disturbed by a pointer, hover particle bursts, and discrete motes whose spacing must stay consistent at different gesture speeds."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: build-threejs-scroll-worlds
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/build-threejs-scroll-worlds"
+    skill_file: "agent-skills/web-design/build-threejs-scroll-worlds/SKILL.md"
+    references_file: null
+    description: "Build rich, scroll-controlled real-time Three.js experiences as one persistent 3D world whose camera, lighting, atmosphere, materials, objects, DOM story, and interactions evolve across authored chapters. Use for 3D scrollytelling, scroll-driven WebGL worlds, camera journeys, interactive portfolios, product stories, exhibitions, explainers, game or film microsites, spatial narratives, and multi-scene websites where native scroll should travel through one continuous place. Not limited to landing pages."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: build-wireframe-scan-reveal
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/build-wireframe-scan-reveal"
+    skill_file: "agent-skills/web-design/build-wireframe-scan-reveal/SKILL.md"
+    references_file: null
+    description: "Reveal Three.js geometry with an expanding world-space scan whose wire cage leads the solid surface, then burns away. Use for wireframe scanning, radial mesh reveals, survey pulses, holographic assembly, topology intros, and 3D model entrances where a plain opacity wipe does not explain the form."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: cinematic-gsap-lenis-motion-system
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/cinematic-gsap-lenis-motion-system"
+    skill_file: "agent-skills/web-design/cinematic-gsap-lenis-motion-system/SKILL.md"
+    references_file: "agent-skills/web-design/cinematic-gsap-lenis-motion-system/REFERENCES.md"
+    description: "Create premium cinematic web motion systems with GSAP, ScrollTrigger, and Lenis. Use for luxury editorial websites, creative studio portfolios, Awwwards-style interactions, smooth scroll reveals, staggered text, parallax, pinned sections, magnetic hover states, custom cursors, and mouse-reactive layered movement."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: cinematic-scroll-storytelling
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/cinematic-scroll-storytelling"
+    skill_file: "agent-skills/web-design/cinematic-scroll-storytelling/SKILL.md"
+    references_file: "agent-skills/web-design/cinematic-scroll-storytelling/REFERENCES.md"
+    description: "Create cinematic scroll-driven landing pages with Lenis smooth scrolling, GSAP ScrollTrigger, scroll-linked progression, staggered text reveals, sticky card stacks, parallax backgrounds, scroll-scrubbed transitions, footer reveals, and immersive preloaders. Use when analyzing or building premium editorial scroll experiences, sticky project stacks, kinetic typography, or section-by-section storytelling."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: clean-minimal-beige-light-mode
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/clean-minimal-beige-light-mode"
+    skill_file: "agent-skills/web-design/clean-minimal-beige-light-mode/SKILL.md"
+    references_file: null
+    description: "\"Create a clean minimal beige light-mode design system with warm neutral shells, quiet process grids, restrained accent color, and elegant low-contrast structure.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: cobejs
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/cobejs"
+    skill_file: "agent-skills/web-design/cobejs/SKILL.md"
+    references_file: "agent-skills/web-design/cobejs/REFERENCES.md"
+    description: "Use when adding a lightweight interactive globe with cobe (canvas setup, markers, interaction, performance, integration with React/Next.js)."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: company-logos
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/company-logos"
+    skill_file: "agent-skills/web-design/company-logos/SKILL.md"
+    references_file: null
+    description: "\"Use Iconify Simple Icons logos (64x64) instead of text logos.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: container-lines
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/container-lines"
+    skill_file: "agent-skills/web-design/container-lines/SKILL.md"
+    references_file: null
+    description: "Add vertical container-size guide lines with mini corner squares for precise, structured web layouts. Use when asked for container lines, measured layout guides, vertical boundary lines, editorial grid markers, or small corner-square frame details."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: corner-diagonals
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/corner-diagonals"
+    skill_file: "agent-skills/web-design/corner-diagonals/SKILL.md"
+    references_file: null
+    description: "Apply diagonal-cut corners and chamfered edges to buttons, cards, panels, and container shells. Use when a design needs precise geometric framing, sci-fi UI surfaces, clipped-corner controls, or engineered sharp containers instead of rounded pills or plain rectangles."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: corner-lasers
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/corner-lasers"
+    skill_file: "agent-skills/web-design/corner-lasers/SKILL.md"
+    references_file: null
+    description: "\"Create a corner-anchored laser composition with thin beams, a bright emitter node, bloom, and atmospheric glow or fog.\""
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: css-alpha-masking
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/css-alpha-masking"
+    skill_file: "agent-skills/web-design/css-alpha-masking/SKILL.md"
+    references_file: null
+    description: "Apply CSS alpha masking with linear-gradient for horizontal or vertical edge fades (mask-image and -webkit-mask-image). Use when asked for alpha masks, fade edges, or CSS mask gradients."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: css-border-gradient
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/css-border-gradient"
+    skill_file: "agent-skills/web-design/css-border-gradient/SKILL.md"
+    references_file: null
+    description: "Apply subtle gradient-border treatments for premium web surfaces. Use when cards, pricing panels, nav bars, modals, buttons, or hero surfaces need a refined edge highlight without a loud glow."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: dark-blue-contrasting-clean
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/dark-blue-contrasting-clean"
+    skill_file: "agent-skills/web-design/dark-blue-contrasting-clean/SKILL.md"
+    references_file: null
+    description: "\"Create a dark-blue clean design system with strong contrast, cobalt gradient feature blocks, crisp framed structure, and restrained premium glow.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: dark-glass-clean-layout
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/dark-glass-clean-layout"
+    skill_file: "agent-skills/web-design/dark-glass-clean-layout/SKILL.md"
+    references_file: null
+    description: "\"Create a dark glass layout system with frosted premium shells, clean multi-column workspace structure, floating data cards, and restrained atmospheric depth.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: dither-background
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/dither-background"
+    skill_file: "agent-skills/web-design/dither-background/SKILL.md"
+    references_file: null
+    description: "Create a dark monochrome procedural background with enlarged square pixels and visible Bayer-style ordered dithering. Use when a page needs an atmospheric near-black dither field, broad organic waves or cloud masses, and restrained gray-white highlights behind framed UI, hero content, or data overlays."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: dither-laser-dark-mode
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/dither-laser-dark-mode"
+    skill_file: "agent-skills/web-design/dither-laser-dark-mode/SKILL.md"
+    references_file: null
+    description: "\"Create a dark premium design system that combines near-black surfaces, subtle ordered-dither texture, and a thin accent-colored laser atmosphere.\""
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: documentary-brutalist-agency
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/documentary-brutalist-agency"
+    skill_file: "agent-skills/web-design/documentary-brutalist-agency/SKILL.md"
+    references_file: "agent-skills/web-design/documentary-brutalist-agency/REFERENCES.md"
+    description: "Create or redesign creative agency, production studio, architecture, culture, and portfolio websites with billboard typography, hard black-and-white chapters, exposed grids, documentary imagery, irregular collages, restrained parallax, brutalist navigation, and accessible FAQ controls."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: editorial-portfolio-chapters
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/editorial-portfolio-chapters"
+    skill_file: "agent-skills/web-design/editorial-portfolio-chapters/SKILL.md"
+    references_file: "agent-skills/web-design/editorial-portfolio-chapters/REFERENCES.md"
+    description: "Create or redesign creative-studio, agency, photographer, artist, and portfolio websites where project work leads the story. Use for dark editorial shells, full-bleed campaign media, color-coded case-study chapters, oversized service typography, restrained project reveals, and a decisive contact finale."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: editorial-service-booking
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/editorial-service-booking"
+    skill_file: "agent-skills/web-design/editorial-service-booking/SKILL.md"
+    references_file: "agent-skills/web-design/editorial-service-booking/REFERENCES.md"
+    description: "Create or redesign appointment-based service websites for salons, barbers, spas, wellness studios, clinics, and hospitality brands. Use for warm editorial layouts, serif-led identity, documentary portrait crops, calm treatment selectors, location-aware booking, and operational states that remain elegant and trustworthy."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: editorial-tech
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/editorial-tech"
+    skill_file: "agent-skills/web-design/editorial-tech/SKILL.md"
+    references_file: null
+    description: "\"Blend editorial magazine composition with precision product-tech detailing using asymmetrical grids, cinematic media bands, mono utility labels, and restrained accent color.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: falling-leaves
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/falling-leaves"
+    skill_file: "agent-skills/web-design/falling-leaves/SKILL.md"
+    references_file: null
+    description: "Build falling leaves that read as leaves, with each one tumbling on its own axis so it presents a face, thins to an edge, and opens out again, and with its sideways slip driven by that same tumble. Covers the 2-D canvas build and the instanced-3-D variant, where leaves are recycled from, density-versus-count maths, depth layering, colour under a tone-mapped composite, reduced motion, and visibility pausing. Use for autumn maple, sakura petals, blossom, ash, snowfall shapes, or any drifting foliage where a generic particle field reads as confetti."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: framed-grid-layout
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/framed-grid-layout"
+    skill_file: "agent-skills/web-design/framed-grid-layout/SKILL.md"
+    references_file: null
+    description: "Create minimal framed grid layouts with thin visible boundary lines, L-shaped corner brackets, subtle diagonal line texture, and strict section alignment. Use when asked for clean, neutral, precise, structured, editorial, technical, or guide-border web layouts."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: framed-tech-dark-border-gradient
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/framed-tech-dark-border-gradient"
+    skill_file: "agent-skills/web-design/framed-tech-dark-border-gradient/SKILL.md"
+    references_file: null
+    description: "\"Create a framed dark technical design system with border-gradient shells, asymmetrical grid panels, mono utility labeling, and restrained monochrome atmosphere.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: funky-purple-container-tech
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/funky-purple-container-tech"
+    skill_file: "agent-skills/web-design/funky-purple-container-tech/SKILL.md"
+    references_file: null
+    description: "\"Create a dark container-led technical design system with fuchsia-purple accents, layered rounded shells, crisp frame lines, and playful futuristic focal objects.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: glass-dark-mode-clock
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/glass-dark-mode-clock"
+    skill_file: "agent-skills/web-design/glass-dark-mode-clock/SKILL.md"
+    references_file: null
+    description: "\"Create a dark glass design system with frosted shells, soft beam grids, circular clock-like calibration dials, and precise sci-fi instrument framing.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: glass-dark-ui
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/glass-dark-ui"
+    skill_file: "agent-skills/web-design/glass-dark-ui/SKILL.md"
+    references_file: null
+    description: "Build dark-mode glassmorphism interfaces with readable contrast, frosted surfaces, and gradient borders using a pseudo-element mask. Use when asked for glass cards, frosted dark hero sections, blur panels, or dark UI systems with gradient/glow borders."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: globe-gl
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/globe-gl"
+    skill_file: "agent-skills/web-design/globe-gl/SKILL.md"
+    references_file: null
+    description: "Use when implementing globe.gl (Globe.GL) for 3D globe data visualization with WebGL/ThreeJS, including setup, data layers (points, arcs, polygons, labels), and integration patterns in plain HTML or React."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: globe-particles
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/globe-particles"
+    skill_file: "agent-skills/web-design/globe-particles/SKILL.md"
+    references_file: null
+    description: "Create a globe-like 3D particle visualization with a dense luminous spherical core and thinner orbital ring or flattened disc. Use when a design needs a premium planetary, orbital, synthesized data-globe effect rendered with real WebGL/Three.js particles, not generic starfields or full page layout changes."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: gooey-blob-system
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/gooey-blob-system"
+    skill_file: "agent-skills/web-design/gooey-blob-system/SKILL.md"
+    references_file: null
+    description: "\"Create a gooey blob system using SVG filters where multiple shapes merge into a single fluid form. Use overlapping circles combined with a Gaussian blur and color matrix filter to produce a continuous, organic mass. The forms should visually fuse and separate based on proximity. Focus on filter-driven merging (blur + threshold effect), soft organic boundaries with no hard edges, multiple independent shapes behaving as one system, and smooth continuous motion that feels fluid and cohesive.\""
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: gsap
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/gsap"
+    skill_file: "agent-skills/web-design/gsap/SKILL.md"
+    references_file: "agent-skills/web-design/gsap/REFERENCES.md"
+    description: "Use when you need to add or debug professional web animations with GSAP (timelines, ScrollTrigger, stagger, transforms) in HTML/CSS/JS/React. Includes patterns for smooth motion, performance, and common pitfalls."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: gsap-scrolltrigger-storytelling
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/gsap-scrolltrigger-storytelling"
+    skill_file: "agent-skills/web-design/gsap-scrolltrigger-storytelling/SKILL.md"
+    references_file: null
+    description: "\"Build cinematic sticky product storytelling with GSAP ScrollTrigger, progressive UI reveals, scroll-synced animation, smooth interpolation, and immersive section transitions.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: high-contrast-skeuomorphic-clean
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/high-contrast-skeuomorphic-clean"
+    skill_file: "agent-skills/web-design/high-contrast-skeuomorphic-clean/SKILL.md"
+    references_file: null
+    description: "\"Create a high-contrast clean skeuomorphic design system with molded dark surfaces, crisp light separation, tactile inset depth, and restrained signal accents.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: image-first-grid-layout
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/image-first-grid-layout"
+    skill_file: "agent-skills/web-design/image-first-grid-layout/SKILL.md"
+    references_file: null
+    description: "\"Create an image-led grid design system with full-bleed photography, structural guide lines, anchored content blocks, and restrained technical overlays.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: landing-page
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/landing-page"
+    skill_file: "agent-skills/web-design/landing-page/SKILL.md"
+    references_file: "agent-skills/web-design/landing-page/REFERENCES.md"
+    description: "Use when designing or rewriting a high-converting landing page (single-offer page) for SaaS/apps/services. Covers structure, layout patterns, conversion strategies, copywriting, SEO/AEO, and common pitfalls."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: light-mode-paper-technical
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/light-mode-paper-technical"
+    skill_file: "agent-skills/web-design/light-mode-paper-technical/SKILL.md"
+    references_file: null
+    description: "\"Create a light-mode technical design system with warm paper surfaces, dark outer framing, subtle diagonal texture, precise bracketed geometry, and restrained accent signals.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: liquid-metal-border
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/liquid-metal-border"
+    skill_file: "agent-skills/web-design/liquid-metal-border/SKILL.md"
+    references_file: "agent-skills/web-design/liquid-metal-border/REFERENCES.md"
+    description: "Add and tune animated liquid-metal WebGL borders with the React `metal-fx` package. Use when buttons, icon controls, chips, tabs, cards, or selected surfaces need a metallic active, selected, hover, focus, or premium border; when implementing the MetalFx component from metal.jakubantalik.com; or when troubleshooting its presets, themes, strength, glow, reflections, sizing, radius, animation, accessibility, SSR, or performance."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: marquee-loop
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/marquee-loop"
+    skill_file: "agent-skills/web-design/marquee-loop/SKILL.md"
+    references_file: null
+    description: "\"Apply seamless infinite marquee loops using duplicated items.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: masked-reveal
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/masked-reveal"
+    skill_file: "agent-skills/web-design/masked-reveal/SKILL.md"
+    references_file: null
+    description: "Create masked staggered word reveals on scroll with GSAP ScrollTrigger. Use when headings, hero copy, section titles, or editorial text should reveal word-by-word through an overflow mask as they enter the viewport."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: matterjs
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/matterjs"
+    skill_file: "agent-skills/web-design/matterjs/SKILL.md"
+    references_file: null
+    description: "Use when implementing 2D physics interactions with Matter.js, including Engine/World setup, Render/Runner configuration, adding bodies and constraints, and scroll/interaction-friendly canvas scenes."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: mesh-gradient-dark-blue-clean
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/mesh-gradient-dark-blue-clean"
+    skill_file: "agent-skills/web-design/mesh-gradient-dark-blue-clean/SKILL.md"
+    references_file: null
+    description: "Create a futuristic, premium, clean dark-blue mesh-gradient design system across background rendering, hero shell, navigation, floating nodes, framed sections, CTAs, and motion. Use when the interface needs a near-black navy foundation, procedural blue mesh atmosphere, disciplined minimal structure, and infrastructural or planetary depth."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: nested-container-clean-agency
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/nested-container-clean-agency"
+    skill_file: "agent-skills/web-design/nested-container-clean-agency/SKILL.md"
+    references_file: null
+    description: "\"Create a clean agency design system built from nested containers, with an outer editorial shell, inset dark feature blocks, rounded premium cards, and restrained accent color.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: nested-container-frames
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/nested-container-frames"
+    skill_file: "agent-skills/web-design/nested-container-frames/SKILL.md"
+    references_file: null
+    description: "\"Create a container-in-container layout system using nested frames. Use an outer centered container with visible vertical boundary lines and corner markers. Inside, place inner containers inset from the edges, each with its own background and rounded frame. Technique: outer container defines global bounds, inner containers use padding to create inset spacing, layered frames (border + background) to separate levels, and consistent spacing between outer frame and inner blocks.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: number-details
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/number-details"
+    skill_file: "agent-skills/web-design/number-details/SKILL.md"
+    references_file: null
+    description: "\"Add decorative 01, 02, 03 numeric detail markers.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: operational-enterprise-ai
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/operational-enterprise-ai"
+    skill_file: "agent-skills/web-design/operational-enterprise-ai/SKILL.md"
+    references_file: "agent-skills/web-design/operational-enterprise-ai/REFERENCES.md"
+    description: "Create or redesign enterprise AI, automation, security, and operations product pages that explain system boundaries, approvals, auditability, exceptions, and rollback. Use for dark cinematic heroes, hairline grids, metric pauses, expandable solution rows, case-study evidence, security proof, and qualified demo or waitlist handoffs."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: orange-clean-paper-saas
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/orange-clean-paper-saas"
+    skill_file: "agent-skills/web-design/orange-clean-paper-saas/SKILL.md"
+    references_file: null
+    description: "\"Create a clean paper-toned SaaS design system with warm neutrals, orange accent signals, rounded premium forms, and polished product illustration surfaces.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: pointer-trail-emitter
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/pointer-trail-emitter"
+    skill_file: "agent-skills/web-design/pointer-trail-emitter/SKILL.md"
+    references_file: null
+    description: "Build a cursor trail whose spacing stays constant at any hand speed, by emitting motes per unit of distance travelled rather than on a timer, so a flick draws the same continuous ribbon as a crawl instead of breaking into scattered dots. Covers sub-segment placement, the ring-buffer ordering trap, the idle breath a distance emitter needs, anchoring the trail to the screen in a 3-D scene, scaling scatter against the plane it hangs on, coasting instead of stopping dead, touch and reduced-motion fallbacks, and why moving the emitter to a DOM overlay to raise its z-index costs more than it buys. Use for cursor wisps, pointer sparks, embers, magic trails, comet tails, plankton, dust, or any mote trail that must stay legible however fast the hand moves."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: pricing-page
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/pricing-page"
+    skill_file: "agent-skills/web-design/pricing-page/SKILL.md"
+    references_file: "agent-skills/web-design/pricing-page/REFERENCES.md"
+    description: "Use when designing or rewriting a high-converting SaaS pricing page (structure, plan design, copywriting, SEO/AEO, FAQs, layout patterns, experiments). Includes checklists, templates, and common pitfalls."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: product-proof-saas
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/product-proof-saas"
+    skill_file: "agent-skills/web-design/product-proof-saas/SKILL.md"
+    references_file: "agent-skills/web-design/product-proof-saas/REFERENCES.md"
+    description: "Create or redesign SaaS and AI product landing pages where a real workflow, interface, or deterministic demo is the central proof. Use for pale atmospheric shells, product UI in the hero, prompt-to-output stories, audience tabs, compact feature modules, honest pricing comparisons, and FAQ handoffs."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: progressive-blur
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/progressive-blur"
+    skill_file: "agent-skills/web-design/progressive-blur/SKILL.md"
+    references_file: null
+    description: "Create a layered CSS progressive blur (top or bottom) using multiple backdrop-filter masks for depth and softness. Use when asked for “progressive blur”, “gradient blur overlay”, or stepped blur masks that fade from an edge of the viewport."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: reveal-hover-effect
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/reveal-hover-effect"
+    skill_file: "agent-skills/web-design/reveal-hover-effect/SKILL.md"
+    references_file: "agent-skills/web-design/reveal-hover-effect/REFERENCES.md"
+    description: "Build cursor-following spotlight reveals that expose a second aligned image through a soft radial mask. Use for hover-to-color, before-and-after, x-ray, material, texture, product-detail, and illustrated hero effects where a desaturated or embossed base image should remain visible while another treatment follows an eased pointer."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: scroll-progress-timeline
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/scroll-progress-timeline"
+    skill_file: "agent-skills/web-design/scroll-progress-timeline/SKILL.md"
+    references_file: "agent-skills/web-design/scroll-progress-timeline/REFERENCES.md"
+    description: "Turn any ordered process into a data-driven vertical or horizontal scroll story with a base line, progress fill, active step states, responsive collapse, semantic fallback, and reduced-motion behavior. Use for onboarding, checkout, roadmaps, recipes, case studies, service processes, histories, or narratives where progress through the sequence should become visible while scrolling."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: scroll-scrubbed-visual-sequence
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/scroll-scrubbed-visual-sequence"
+    skill_file: "agent-skills/web-design/scroll-scrubbed-visual-sequence/SKILL.md"
+    references_file: "agent-skills/web-design/scroll-scrubbed-visual-sequence/REFERENCES.md"
+    description: "Build reversible scroll-controlled visual transformations with a pinned or sticky stage, normalized progress, and video, image-sequence, canvas, SVG, or DOM renderers. Use for hero transformations, product assembly, interface state walkthroughs, object rotation, diagrams, or photo sequences that must move forward and backward with native scrolling."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: scroll-scrubbed-word-reveal
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/scroll-scrubbed-word-reveal"
+    skill_file: "agent-skills/web-design/scroll-scrubbed-word-reveal/SKILL.md"
+    references_file: "agent-skills/web-design/scroll-scrubbed-word-reveal/REFERENCES.md"
+    description: "Reveal marked-up text word by word as scroll progress advances, while preserving semantic inline links, emphasis, responsive line wrapping, and reduced-motion readability. Use for headlines, quotes, manifestos, product statements, onboarding messages, or editorial passages where scrolling should pace comprehension rather than simulate typing."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: scroll-world-storytelling
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/scroll-world-storytelling"
+    skill_file: "agent-skills/web-design/scroll-world-storytelling/SKILL.md"
+    references_file: "agent-skills/web-design/scroll-world-storytelling/REFERENCES.md"
+    description: "\"Turn an article, case study, brand narrative, product journey, or long-form story into a cinematic scroll-driven landing page using one of three renderers: scrubbed video, a real-time Three.js world, or semantic HTML/SVG data and typography. Use when the user asks for a scroll world, fly-through landing page, article-to-website transformation, animated planet, data scrollytelling, video-scrubbed page, connected visual journey, or story-led alternative to ordinary stacked sections.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: shaders-cursor-ripples
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/shaders-cursor-ripples"
+    skill_file: "agent-skills/web-design/shaders-cursor-ripples/SKILL.md"
+    references_file: "agent-skills/web-design/shaders-cursor-ripples/REFERENCES.md"
+    description: "Add cursor-following fluid WebGPU distortion over an existing image with the Shaders library's ImageTexture and CursorRipples components. Use when a hero, gallery, or media panel needs a water-ripple mouse effect; when replacing a drifting CSS spotlight or flashlight reveal; or when a prompt says to borrow only the shader interaction from a Shaders.com reference while preserving the current brand, image, copy, and layout."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: skeuomorphic-ui
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/skeuomorphic-ui"
+    skill_file: "agent-skills/web-design/skeuomorphic-ui/SKILL.md"
+    references_file: null
+    description: "Create skeuomorphic web UI surfaces with layered gradients, stacked inner and outer shadows, reflective gradient borders, micro texture, and embossed text or icon details. Use when asked for pressed, carved, tactile, realistic, soft-plastic, soft-metal, or premium physical interface styling."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: solar-duotone-bold
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/solar-duotone-bold"
+    skill_file: "agent-skills/web-design/solar-duotone-bold/SKILL.md"
+    references_file: null
+    description: "\"Use Iconify Solar Duotone Bold icon style.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: split-layout-technical
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/split-layout-technical"
+    skill_file: "agent-skills/web-design/split-layout-technical/SKILL.md"
+    references_file: null
+    description: "\"Create a technical split-screen design system with dual panels, fine frame lines, mono metadata, quiet editorial typography, and premium inset surfaces.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: staggered-word-reveal
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/staggered-word-reveal"
+    skill_file: "agent-skills/web-design/staggered-word-reveal/SKILL.md"
+    references_file: null
+    description: "Create subtle editorial word-by-word text reveal animations where each word fades and rises into place once it enters the viewport. Use for premium portfolio headlines, hero copy, section intros, and short marketing text that needs a cinematic staggered reveal with IntersectionObserver or in-view detection."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: tailwindcss
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/tailwindcss"
+    skill_file: "agent-skills/web-design/tailwindcss/SKILL.md"
+    references_file: "agent-skills/web-design/tailwindcss/REFERENCES.md"
+    description: "Use when designing/implementing UI with Tailwind CSS (layout, typography, responsive, theming, component patterns). Includes quick recipes and conventions for clean, consistent web design."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: tech-green-dark-mode-modern
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/tech-green-dark-mode-modern"
+    skill_file: "agent-skills/web-design/tech-green-dark-mode-modern/SKILL.md"
+    references_file: null
+    description: "\"Create a modern dark-mode technical design system with matte-black surfaces, emerald signal accents, mono system labeling, framed dashboard cards, and restrained glow.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: technical-wireframe-info-layout
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/technical-wireframe-info-layout"
+    skill_file: "agent-skills/web-design/technical-wireframe-info-layout/SKILL.md"
+    references_file: null
+    description: "\"Create a monochrome technical wireframe design system with exploded 3D structure, connector annotations, sparse information labels, and precise dark diagnostic framing.\""
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: thinking-orbs
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/thinking-orbs"
+    skill_file: "agent-skills/web-design/thinking-orbs/SKILL.md"
+    references_file: "agent-skills/web-design/thinking-orbs/REFERENCES.md"
+    description: "Add accessible animated AI loading and agent-status indicators with the React thinking-orbs library. Use when a chat, copilot, voice, search, generation, or tool-running interface needs a semantic working, searching, solving, listening, composing, or shaping state; when replacing a generic spinner with an AI activity orb; or when implementing the library's size, theme, speed, pause, reduced-motion, and canvas behavior."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: threejs
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/threejs"
+    skill_file: "agent-skills/web-design/threejs/SKILL.md"
+    references_file: "agent-skills/web-design/threejs/REFERENCES.md"
+    description: "Use when building or debugging interactive 3D scenes on the web with Three.js (scene/camera/renderer, lights/materials, GLTF loading, controls, performance). Helpful for designers shipping 3D UI moments."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: threejs-landscape
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/threejs-landscape"
+    skill_file: "agent-skills/web-design/threejs-landscape/SKILL.md"
+    references_file: null
+    description: "Build a live Three.js landscape that stays quiet behind a subject — a noise heightfield on a polar grid so resolution follows the lens, ground coloured by slope and moisture rather than by texture, instanced GPU grass whose wind costs nothing on the CPU, scattered stones, a gradient sky dome, a star field you can actually see, and a time-of-day system that cross-fades instead of cutting. Use for hero backdrops, product stages, scroll worlds, or any scene where a building, object, or figure has to sit in a place rather than float on a gradient."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: threejs-towers
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/threejs-towers"
+    skill_file: "agent-skills/web-design/threejs-towers/SKILL.md"
+    references_file: null
+    description: "Generate architecture procedurally in Three.js and film it assembling — a small geometry vocabulary that builds pagodas, castles, domes and spires from parameters instead of mesh files, hip roofs with flying eaves driven by a single profile function, and a clipping-plane build animation where everything below a rising line is finished work and scaffolding stands above it. Use for construction studies, architectural title sequences, procedural landmarks, or any hero object that should build itself rather than fade in."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: threejs-weather
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/threejs-weather"
+    skill_file: "agent-skills/web-design/threejs-weather/SKILL.md"
+    references_file: null
+    description: "Put weather into a Three.js scene that reads as weather — rain anchored inside the frustum, a storm that is the rain leaned on rather than a second system, lightning on its own light with thunder scheduled by distance, snow that blows up into blizzards and keeps settling until the ground goes white, wet ground with puddles and splashes, and looping ambience that has no seam. Use for scene atmosphere, seasonal states, hero backdrops, or any world where clear/rain/storm/snow needs to be a control the viewer can turn."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: unicorn-studio
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/unicorn-studio"
+    skill_file: "agent-skills/web-design/unicorn-studio/SKILL.md"
+    references_file: "agent-skills/web-design/unicorn-studio/REFERENCES.md"
+    description: "Use when embedding and customizing Unicorn Studio interactive animations on the web (embed, responsive sizing, performance, layering with UI, fallbacks)."
+    initial_decision: audit
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: vantajs
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/vantajs"
+    skill_file: "agent-skills/web-design/vantajs/SKILL.md"
+    references_file: "agent-skills/web-design/vantajs/REFERENCES.md"
+    description: "Use when adding animated WebGL background effects with Vanta.js (setup, parameters, resizing, performance, integration in React/Next.js)."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: webgl-3d-object
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/webgl-3d-object"
+    skill_file: "agent-skills/web-design/webgl-3d-object/SKILL.md"
+    references_file: null
+    description: "Create a real 3D WebGL object with geometric mesh depth, physically based material, directional and ambient lighting, perspective camera, subtle rotation, and floating motion. Use when a page needs a faceted 3D hero object or product-like visual with real lighting instead of CSS transform tricks."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: webgl-landing-steering
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/webgl-landing-steering"
+    skill_file: "agent-skills/web-design/webgl-landing-steering/SKILL.md"
+    references_file: "agent-skills/web-design/webgl-landing-steering/REFERENCES.md"
+    description: "Use when creating or refining WebGL-heavy landing pages and you need to steer toward a specific visual outcome (premium, technical, playful, cinematic) while balancing conversion clarity, performance, and implementation complexity."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"
+  - id: webgl-laser
+    source: "https://github.com/MengTo/Skills/tree/main/agent-skills/web-design/webgl-laser"
+    skill_file: "agent-skills/web-design/webgl-laser/SKILL.md"
+    references_file: null
+    description: "Create a fixed full-screen WebGL laser background effect with a thin white-hot vertical core, restrained brand-colored halo, and soft smoky fog around the beam. Use only for laser background effects, not full page layout, copy, generic hero scenes, particles, or unrelated motion systems."
+    initial_decision: spike
+    target: "Kaghaz-o-Baad component mapping pending capability audit"
+    fallback: "RTL/LTR, keyboard, touch, reduced-motion and no-JS required"

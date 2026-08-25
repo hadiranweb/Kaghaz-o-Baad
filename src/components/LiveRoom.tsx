@@ -14,10 +14,9 @@ import {
   ConnectionQuality,
   ExternalE2EEKeyProvider,
   type RemoteParticipant,
+  type RoomOptions,
 } from 'livekit-client';
-import E2EEWorker from 'livekit-client/e2ee-worker?worker';
-import * as pdfjs from 'pdfjs-dist';
-import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -30,13 +29,12 @@ import {
   MessageSquare, Users, Copy, LogOut, KeyRound, FileText, Download,
   Wifi, WifiOff, PlayCircle, MonitorX, Loader2, ArrowRight,
 } from 'lucide-react';
-import MDEditor from '@uiw/react-md-editor';
+import { MarkdownReadonly } from '@/components/MarkdownReadonly';
 import type { LiveKitTokenResponse, LiveRole, PresentationKind } from '@/hooks/useLiveKitToken';
 import type { SlideItem } from '@/pages/LiveRoomPage';
 import LiveHostControls from '@/components/LiveHostControls';
 import { createLiveInteraction } from '@/lib/backend-api';
 
-pdfjs.GlobalWorkerOptions.workerPort = new PdfWorker();
 
 // ————————————————————————————————————————————————————————————————
 // پیام‌های کانال دادهٔ LiveKit (همگام‌سازی اسلاید / ارائه / گفتگو / کنترل)
@@ -125,7 +123,7 @@ function PdfViewer({ url, page, canControl, onPageChange }: {
   const { locale } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const docRef = useRef<pdfjs.PDFDocumentProxy | null>(null);
+  const docRef = useRef<PDFDocumentProxy | null>(null);
   const renderSeq = useRef(0);
   const [numPages, setNumPages] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -137,9 +135,14 @@ function PdfViewer({ url, page, canControl, onPageChange }: {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    pdfjs
-      .getDocument({ url })
-      .promise.then((doc) => {
+    Promise.all([
+      import('pdfjs-dist'),
+      import('pdfjs-dist/build/pdf.worker.min.mjs?worker'),
+    ])
+      .then(([pdfModule, workerModule]) => {
+        pdfModule.GlobalWorkerOptions.workerPort = new workerModule.default();
+        return pdfModule.getDocument({ url }).promise;
+      }).then((doc) => {
         if (cancelled) {
           doc.destroy();
           return;
@@ -295,12 +298,15 @@ export const LiveRoom = ({
 
     (async () => {
       try {
+        let encryption: RoomOptions['encryption'] | undefined;
+        if (e2eeEnabled && keyProvider && passphrase) {
+          const { default: E2EEWorker } = await import('livekit-client/e2ee-worker?worker');
+          encryption = { keyProvider, worker: new E2EEWorker() };
+        }
         const r = new Room({
           dynacast: true,          // ارسال فقط لایه‌های موردنیاز هر بیننده
           adaptiveStream: true,    // توقف خودکار ویدیوی پنهان
-          ...(e2eeEnabled && keyProvider && passphrase
-            ? { encryption: { keyProvider, worker: new E2EEWorker() } }
-            : {}),
+          ...(encryption ? { encryption } : {}),
         });
 
         // شنود پیام‌های کانال داده (اسلاید / صفحه ارائه / گفتگو / کنترل)
@@ -934,7 +940,7 @@ function RoomBody({
             <CardContent className="py-6 flex-1 overflow-y-auto max-h-[560px]">
               <div className="prose prose-sm md:prose-base max-w-none dark:prose-invert">
                 <div data-color-mode="light">
-                  <MDEditor.Markdown source={(fa ? currentSlide.body_fa : currentSlide.body_en) || ''} />
+                  <MarkdownReadonly source={(fa ? currentSlide.body_fa : currentSlide.body_en) || ''} dir={fa ? 'rtl' : 'ltr'} />
                 </div>
               </div>
             </CardContent>

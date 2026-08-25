@@ -1,6 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { DeferredNotifications } from "@/components/DeferredNotifications";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -13,6 +12,7 @@ import { Footer } from "@/components/Footer";
 import { LocalizedRoute } from "@/components/LocalizedRoute";
 import { SeoGuard } from "@/components/SeoGuard";
 import { PublicSeoRoute } from "@/components/PublicSeoRoute";
+import { MotionProvider } from "@/components/creative/MotionProvider";
 const Home = lazy(() => import("./pages/Home"));
 const Read = lazy(() => import("./pages/Read"));
 const ArticleSlides = lazy(() => import("./pages/ArticleSlides"));
@@ -34,7 +34,7 @@ const ChangePassword = lazy(() => import("./pages/ChangePassword"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
 const RouteFallback = () => (
-  <div className="flex min-h-[40vh] items-center justify-center text-sm text-muted-foreground">
+  <div className="flex min-h-[calc(100vh-5.5rem)] items-center justify-center text-sm text-muted-foreground" aria-busy="true">
     در حال بارگذاری…
   </div>
 );
@@ -45,14 +45,14 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
       <LanguageProvider>
+        <MotionProvider>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
+          <DeferredNotifications />
           <BrowserRouter>
             <AuthProvider>
             <div className="flex flex-col min-h-screen">
               <Header />
-              <main className="flex-1">
+              <main className="flex-1 min-h-[calc(100vh-5.5rem)]">
                 <ErrorBoundary>
                   <Suspense fallback={<RouteFallback />}>
                     <Routes>
@@ -98,8 +98,10 @@ const App = () => (
             </div>
           </AuthProvider>
         </BrowserRouter>
-      </TooltipProvider>
-    </LanguageProvider>
+              </TooltipProvider>
+        </MotionProvider>
+      </LanguageProvider>
+
     </ThemeProvider>
   </QueryClientProvider>
 );

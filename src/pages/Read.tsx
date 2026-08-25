@@ -5,11 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowUpRight, BookOpen, Calendar, Grid2X2, List, Loader2, Search, X } from 'lucide-react';
+import { BookOpen, Calendar, Loader2, Search, X } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { listPublicArticles, listPublicProfiles, publishArticle } from '@/lib/backend-api';
 import { useToast } from '@/hooks/use-toast';
 import { useCallback, useEffect, useState } from 'react';
+import { ArticleShelf, RevealOnScroll } from '@/components/creative';
+import { normalizeShelfArticle } from '@/lib/article-shelf-data';
 
 interface AuthorProfile {
   id: string;
@@ -53,7 +55,6 @@ export default function Read() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [filterStatus, setFilterStatus] = useState<'published' | 'draft' | 'all'>('published');
-  const [viewMode, setViewMode] = useState<'shelf' | 'grid' | 'list'>('shelf');
 
   const loadInitial = useCallback(async () => {
     setLoading(true);
@@ -124,6 +125,7 @@ export default function Read() {
   };
 
   const clearSearch = () => setSearchParams({});
+  const shelfArticles = articles.map((article) => normalizeShelfArticle(article, locale, article.author_id ? authors[article.author_id] : undefined));
 
   return (
     <div className="min-h-screen py-12">
@@ -195,68 +197,42 @@ export default function Read() {
           )}
         </div>
 
-        {!loading && (
-          <div className="kb-archive-toolbar mb-8 flex flex-wrap items-center justify-between gap-4" aria-label={locale === 'fa' ? 'تنظیمات نمایش آرشیو' : 'Archive display settings'}>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <BookOpen className="h-4 w-4 text-primary" />
-              <span>{locale === 'fa' ? 'قفسهٔ مقالات' : 'Article shelf'}</span>
-            </div>
-            <div className="inline-flex rounded-xl border border-border/60 bg-card/50 p-1" role="group" aria-label={locale === 'fa' ? 'حالت نمایش' : 'View mode'}>
-              {[
-                { id: 'shelf' as const, labelFa: 'قفسه', labelEn: 'Shelf', Icon: BookOpen },
-                { id: 'grid' as const, labelFa: 'شبکه', labelEn: 'Grid', Icon: Grid2X2 },
-                { id: 'list' as const, labelFa: 'فهرست', labelEn: 'List', Icon: List },
-              ].map(({ id, labelFa, labelEn, Icon }) => (
-                <button
-                  key={id}
-                  type="button"
-                  aria-pressed={viewMode === id}
-                  onClick={() => setViewMode(id)}
-                  className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring ${viewMode === id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {locale === 'fa' ? labelFa : labelEn}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Loading State */}
         {loading && (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="mx-auto flex max-w-xl flex-col items-center justify-center gap-3 rounded-3xl border border-border/60 bg-card/40 py-16 text-center" role="status" aria-live="polite">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground">{locale === 'fa' ? 'در حال آماده‌سازی آرشیو مقالات…' : 'Preparing the article archive…'}</p>
           </div>
         )}
 
         {/* Articles Grid */}
         {!loading && articles && articles.length > 0 && (
           <>
-            <div className={`kb-archive-grid kb-archive-${viewMode}`}>
-              {articles.map((article) => {
+            <ArticleShelf direction={locale === 'fa' ? 'rtl' : 'ltr'} label={locale === 'fa' ? 'قفسهٔ مقالات' : 'Article shelf'}>
+              {shelfArticles.map((article) => {
                 const isUserArticle = user && article.author_id === user.id;
                 const authProfile = article.author_id ? authors[article.author_id] : undefined;
                 return (
+                  <RevealOnScroll key={article.id} as="article" className="h-full lg:min-w-[21rem] lg:flex-[0_0_21rem]" >
                   <Card 
                     key={article.id} 
-                    className={`kb-archive-card group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
+                    role="listitem"
+                    tabIndex={0}
+                    data-shelf-card="true"
+                    className={`group glass-surface hover:shadow-elegant transition-all duration-300 overflow-hidden ${
                       isUserArticle ? 'ring-1 ring-accent/30' : ''
                     }`}
                   >
-                    <div className={`kb-book-cover h-48 bg-gradient-to-br relative overflow-hidden ${
+                                              <div className={`h-48 bg-gradient-to-br relative overflow-hidden ${
+
                       isUserArticle 
                         ? 'from-accent/15 via-secondary to-card' 
                         : 'from-secondary via-card to-background'
-                    }`}>
-                      {article.cover_url ? (
-                        <img src={article.cover_url} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" loading="lazy" />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <BookOpen className="h-16 w-16 text-primary/20 group-hover:scale-110 transition-transform" />
-                        </div>
-                      )}
-                      <span className="kb-book-spine" aria-hidden="true" />
-                      <span className="kb-book-edition" aria-hidden="true">KB / {new Date(article.published_at || article.created_at).getFullYear()}</span>
+                          }`}>
+                      {article.hasCover && <img src={article.cover_url || undefined} alt="" loading="lazy" width="672" height="384" className="absolute inset-0 h-full w-full object-cover opacity-80 transition-transform duration-500 group-hover:scale-105" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <BookOpen className="h-16 w-16 text-primary/20 group-hover:scale-110 transition-transform" />
+                      </div>
                       {isUserArticle && (
                         <div className="absolute top-2 right-2">
                           <Badge variant="default" className="bg-accent text-accent-foreground">
@@ -283,11 +259,11 @@ export default function Read() {
                       </div>
                       
                       <CardTitle className="text-xl group-hover:text-primary transition-colors" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-                        {locale === 'fa' ? article.title_fa : article.title_en}
+                        {article.displayTitle}
                       </CardTitle>
                       
                       <CardDescription className="line-clamp-3" dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-                        {locale === 'fa' ? article.summary_fa : article.summary_en}
+                        {article.displaySummary}
                       </CardDescription>
                       
                       {authProfile && authProfile.show_on_cards && (
@@ -310,7 +286,8 @@ export default function Read() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>{new Date(article.published_at || article.created_at).toLocaleDateString(locale)}</span>
+                          <span>{article.dateLabel}</span>
+                          <span className="text-xs text-muted-foreground/80">{article.languageLabel}</span>
                         </div>
                       </div>
                       
@@ -329,15 +306,15 @@ export default function Read() {
                         <Button variant="ghost-ios" asChild className="w-full">
                           <Link to={`/read/${article.slug}`}>
                             {locale === 'fa' ? 'مطالعه مقاله' : 'Read Article'}
-                            <ArrowUpRight className="ms-2 h-4 w-4" />
                           </Link>
                         </Button>
                       )}
                     </CardContent>
                   </Card>
+                  </RevealOnScroll>
                 );
               })}
-            </div>
+            </ArticleShelf>
 
             {hasMore && (
               <div className="mt-10 flex justify-center">
@@ -364,11 +341,14 @@ export default function Read() {
 
         {/* Empty State */}
         {!loading && articles && articles.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            {searchQuery
-              ? (locale === 'fa' ? `نتیجه‌ای برای "${searchQuery}" پیدا نشد` : `No results found for "${searchQuery}"`)
-              : (locale === 'fa' ? 'هنوز مقاله‌ای در این دسته وجود ندارد' : 'No articles in this category yet')
-            }
+          <div className="mx-auto max-w-2xl rounded-[2rem] border border-primary/20 bg-primary/5 px-6 py-14 text-center">
+            <BookOpen className="mx-auto h-10 w-10 text-primary/70" aria-hidden="true" />
+            <h2 className="mt-5 text-2xl font-bold">{searchQuery ? (locale === 'fa' ? `نتیجه‌ای برای «${searchQuery}» پیدا نشد` : `No results found for “${searchQuery}”`) : (locale === 'fa' ? 'آرشیو مقاله‌ها هنوز در حال شکل‌گیری است' : 'The article archive is still taking shape')}</h2>
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-7 text-muted-foreground">{searchQuery ? (locale === 'fa' ? 'عبارت دیگری را امتحان کنید یا همهٔ مقاله‌ها را ببینید.' : 'Try another search or browse all articles.') : (locale === 'fa' ? 'در این فاصله با مسیر انتشار و ایدهٔ کاغذ و باد آشنا شوید.' : 'In the meantime, learn about the publishing path and the idea behind KaghazBaad.')}</p>
+            <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+              {searchQuery && <Button variant="outline" onClick={clearSearch}>{locale === 'fa' ? 'نمایش همهٔ مقالات' : 'Browse all articles'}</Button>}
+              <Button variant="ghost-ios" asChild><Link to="/about-project">{locale === 'fa' ? 'شرح پروژه' : 'About the project'}</Link></Button>
+            </div>
           </div>
         )}
       </div>

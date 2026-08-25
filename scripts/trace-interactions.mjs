@@ -1,0 +1,32 @@
+import fs from 'node:fs';
+import puppeteer from 'puppeteer-core';
+
+const [url = 'http://localhost:8080/', output = 'reports/interaction-trace.json'] = process.argv.slice(2);
+const sleep = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+const browser = await puppeteer.launch({ executablePath: '/usr/bin/chromium', headless: 'new', args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+await page.emulateNetworkConditions({ offline: false, latency: 150, download: 1600 * 1024 / 8, upload: 750 * 1024 / 8 });
+await page.emulateCPUThrottling(4);
+await page.evaluateOnNewDocument(() => {
+  window.__trace = { events: [], lcp: null, cls: 0, longTasks: [] };
+  new PerformanceObserver((list) => list.getEntries().forEach((entry) => { window.__trace.lcp = Math.max(window.__trace.lcp || 0, entry.startTime); })).observe({ type: 'largest-contentful-paint', buffered: true });
+  new PerformanceObserver((list) => list.getEntries().forEach((entry) => { if (!entry.hadRecentInput) window.__trace.cls += entry.value; })).observe({ type: 'layout-shift', buffered: true });
+  new PerformanceObserver((list) => list.getEntries().forEach((entry) => { window.__trace.longTasks.push({ startTime: entry.startTime, duration: entry.duration }); })).observe({ type: 'longtask', buffered: true });
+  new PerformanceObserver((list) => list.getEntries().forEach((entry) => { if (entry.interactionId) window.__trace.events.push({ name: entry.name, startTime: entry.startTime, processingStart: entry.processingStart, duration: entry.duration, interactionId: entry.interactionId }); })).observe({ type: 'event', buffered: true, durationThreshold: 16 });
+});
+const started = Date.now();
+await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 }).catch(() => {});
+await sleep(500);
+await page.keyboard.press('Tab');
+await page.keyboard.press('ArrowRight');
+await sleep(150);
+await page.mouse.click(320, 420);
+await sleep(300);
+const trace = await page.evaluate(() => ({ ...window.__trace, navigation: performance.getEntriesByType('navigation')[0]?.toJSON(), capturedAt: Date.now() }));
+trace.url = url;
+trace.elapsedMs = Date.now() - started;
+trace.inpEstimateMs = trace.events.length ? Math.max(...trace.events.map((event) => event.duration)) : null;
+fs.mkdirSync(new URL(`file://${process.cwd()}/${output}`).pathname.replace(/\/[^/]*$/, ''), { recursive: true });
+fs.writeFileSync(output, JSON.stringify(trace, null, 2));
+console.log(JSON.stringify({ url, lcpMs: trace.lcp, cls: trace.cls, inpEstimateMs: trace.inpEstimateMs, longTasks: trace.longTasks.length, events: trace.events.length, output }));
+await browser.close();

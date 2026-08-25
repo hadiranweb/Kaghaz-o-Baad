@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Search, User, Shield, Menu, X, Moon, Sun, ChevronDown, BookOpen, Film, Info, FileText, Users, LayoutDashboard, Globe, Settings, LogOut } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { EditorialDock } from '@/components/creative/EditorialDock';
 import { useEffect, useState } from 'react';
 import {
   DropdownMenu,
@@ -37,20 +38,33 @@ export const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-[hsl(var(--glass-border))] bg-background/80 backdrop-blur-[24px]">
+      <header className="kb-masthead sticky top-0 z-50 w-full border-b border-[hsl(var(--glass-border))] bg-background/85 backdrop-blur-[24px]">
         <div className="container mx-auto px-4 lg:px-8">
-          <div className="flex h-14 items-center justify-between gap-4">
-            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
-              <div className="text-lg font-bold font-[IRANSharp] text-foreground">
-                {locale === 'fa' ? 'کاغذ و باد' : 'KaghazBaad'}
-              </div>
+          <div className="flex h-16 items-center justify-between gap-4">
+            <Link to="/" className="kb-brand-lockup group flex items-center gap-3 shrink-0" aria-label={locale === 'fa' ? 'کاغذ و باد — صفحهٔ اصلی' : 'KaghazBaad — Home'}>
+              <span className="kb-brand-mark" aria-hidden="true"><span /></span>
+              <span className="flex flex-col leading-none">
+                <span className="kb-brand-name text-lg font-bold text-foreground transition-colors group-hover:text-primary">{locale === 'fa' ? 'کاغذ و باد' : 'KaghazBaad'}</span>
+                <span className="kb-brand-caption mt-1 hidden text-[9px] uppercase tracking-[.24em] text-muted-foreground sm:block">{locale === 'fa' ? 'نوشتن · خواندن · گفت‌وگو' : 'write · read · return'}</span>
+              </span>
             </Link>
 
-            {/* Desktop — سلسله‌مراتبی */}
-            <nav className="hidden md:flex items-center gap-1">
+            {/* Desktop — editorial dock / Sylva proximity port */}
+            <EditorialDock
+              ariaLabel={locale === 'fa' ? 'ناوبری اصلی' : 'Primary navigation'}
+              items={[
+                { id: 'home', label: t('خانه', 'Home'), href: '/', active: isActive('/') },
+                { id: 'read', label: t('مطالعه', 'Read'), href: '/read', active: isContentActive && location.pathname.startsWith('/read') },
+                { id: 'media', label: t('رسانه', 'Media'), href: '/media', active: location.pathname.startsWith('/media') },
+                { id: 'live', label: t('زنده', 'Live'), href: '/live', active: location.pathname.startsWith('/live') },
+                { id: 'about', label: t('پروژه', 'Project'), href: '/about-project', active: isAboutActive },
+              ]}
+              className="hidden md:flex"
+            />
+            <nav className="kb-primary-nav hidden items-center gap-1" aria-label={locale === 'fa' ? 'ناوبری اصلی' : 'Primary navigation'}>
               <Link
                 to="/"
-                className={`px-3 py-2 rounded-lg text-sm font-light transition-colors ${isActive('/') ? 'text-foreground bg-accent/10' : 'text-foreground/70 hover:text-foreground hover:bg-accent/5'}`}
+                className={`kb-nav-link px-3 py-2 rounded-lg text-sm font-light transition-colors ${isActive('/') ? 'is-active text-foreground bg-accent/10' : 'text-foreground/70 hover:text-foreground hover:bg-accent/5'}`}
               >
                 {t('nav.home')}
               </Link>
@@ -80,7 +94,7 @@ export const Header = () => {
 
               <Link
                 to="/live"
-                className={`px-3 py-2 rounded-lg text-sm font-light transition-colors ${isActive('/live') || location.pathname.startsWith('/live') ? 'text-foreground bg-accent/10' : 'text-foreground/70 hover:text-foreground hover:bg-accent/5'}`}
+                className={`kb-nav-link px-3 py-2 rounded-lg text-sm font-light transition-colors ${isActive('/live') || location.pathname.startsWith('/live') ? 'is-active text-foreground bg-accent/10' : 'text-foreground/70 hover:text-foreground hover:bg-accent/5'}`}
               >
                 {locale === 'fa' ? 'پخش زنده' : 'Live'}
               </Link>
@@ -250,7 +264,7 @@ export const Header = () => {
             className="absolute inset-0 bg-background/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <nav className="absolute top-14 left-0 right-0 bg-background/95 backdrop-blur-[24px] border-b border-[hsl(var(--glass-border))] p-4 space-y-4 animate-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <nav className="kb-mobile-nav absolute top-16 left-0 right-0 bg-background/95 backdrop-blur-[24px] border-b border-[hsl(var(--glass-border))] p-4 space-y-4 animate-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-4rem)] overflow-y-auto" aria-label={locale === 'fa' ? 'ناوبری موبایل' : 'Mobile navigation'}>
             <Link
               to="/"
               className={`block px-4 py-3 rounded-xl text-base font-light ${isActive('/') ? 'text-foreground bg-accent/10' : 'text-foreground/70'}`}

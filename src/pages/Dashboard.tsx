@@ -17,7 +17,7 @@ import {
   Shield, Users, Activity, ScrollText, BookOpen, Eye, Save
 } from 'lucide-react';
 import { z } from 'zod';
-import MDEditor from '@uiw/react-md-editor';
+import { LazyMarkdownEditor } from '@/components/LazyMarkdownEditor';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu,
   SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, SidebarInset, SidebarHeader,
@@ -883,7 +883,7 @@ export default function Dashboard() {
                               <div>
                                 <Label>{t('متن فارسی (مارکدون)', 'Body FA (Markdown)')}</Label>
                                 <div data-color-mode="light">
-                                  <MDEditor
+                                  <LazyMarkdownEditor
                                     value={slide.body_fa || ''}
                                     onChange={(val) => handleUpdateSlide(slide.id, 'body_fa', val || '')}
                                     height={200}
@@ -894,7 +894,7 @@ export default function Dashboard() {
                               <div>
                                 <Label>{t('متن انگلیسی (مارکدون)', 'Body EN (Markdown)')}</Label>
                                 <div data-color-mode="light">
-                                  <MDEditor
+                                  <LazyMarkdownEditor
                                     value={slide.body_en || ''}
                                     onChange={(val) => handleUpdateSlide(slide.id, 'body_en', val || '')}
                                     height={200}
@@ -952,13 +952,13 @@ export default function Dashboard() {
                             <div className="space-y-2">
                               <Label>{t('خلاصه فارسی (مارکدون)', 'Summary FA (Markdown)')}</Label>
                               <div data-color-mode="light">
-                                <MDEditor value={newArticle.summary_fa} onChange={(val) => setNewArticle({ ...newArticle, summary_fa: val || '' })} height={150} preview="edit" />
+                                <LazyMarkdownEditor value={newArticle.summary_fa} onChange={(val) => setNewArticle({ ...newArticle, summary_fa: val || '' })} height={150} preview="edit" />
                               </div>
                             </div>
                             <div className="space-y-2">
                               <Label>{t('خلاصه انگلیسی (مارکدون)', 'Summary EN (Markdown)')}</Label>
                               <div data-color-mode="light">
-                                <MDEditor value={newArticle.summary_en} onChange={(val) => setNewArticle({ ...newArticle, summary_en: val || '' })} height={150} preview="edit" direction="ltr" />
+                                <LazyMarkdownEditor value={newArticle.summary_en} onChange={(val) => setNewArticle({ ...newArticle, summary_en: val || '' })} height={150} preview="edit" direction="ltr" />
                               </div>
                             </div>
                           </div>

@@ -10,7 +10,7 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="mt-auto border-t border-border/40 bg-background/50 backdrop-blur-[12px]">
+    <footer className="mt-auto min-h-[5.5rem] border-t border-border/40 bg-background/50 backdrop-blur-[12px]" data-layout-stable="footer">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 py-5 text-[11.5px] leading-6">
           {/* حقوق — استاندارد */}

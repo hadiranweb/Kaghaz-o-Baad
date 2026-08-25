@@ -1,0 +1,98 @@
+{
+  "events": [
+    {
+      "name": "keydown",
+      "startTime": 24320.399999976158,
+      "processingStart": 24321.299999952316,
+      "duration": 24,
+      "interactionId": 491
+    },
+    {
+      "name": "pointerdown",
+      "startTime": 24488.399999976158,
+      "processingStart": 24494.299999952316,
+      "duration": 24,
+      "interactionId": 505
+    },
+    {
+      "name": "pointerup",
+      "startTime": 24488.799999952316,
+      "processingStart": 24499.399999976158,
+      "duration": 24,
+      "interactionId": 505
+    },
+    {
+      "name": "click",
+      "startTime": 24488.799999952316,
+      "processingStart": 24499.399999976158,
+      "duration": 24,
+      "interactionId": 505
+    }
+  ],
+  "lcp": 22764,
+  "cls": 0.02225721228027344,
+  "longTasks": [
+    {
+      "startTime": 20556.299999952316,
+      "duration": 266
+    },
+    {
+      "startTime": 20830.799999952316,
+      "duration": 465
+    }
+  ],
+  "navigation": {
+    "name": "http://localhost:8080/read",
+    "entryType": "navigation",
+    "startTime": 0,
+    "duration": 20829.5,
+    "navigationId": 5396,
+    "initiatorType": "navigation",
+    "deliveryType": "",
+    "nextHopProtocol": "http/1.1",
+    "renderBlockingStatus": "non-blocking",
+    "contentType": "text/html",
+    "contentEncoding": "",
+    "workerStart": 0,
+    "workerRouterEvaluationStart": 0,
+    "workerCacheLookupStart": 0,
+    "workerMatchedSourceType": "",
+    "workerFinalSourceType": "",
+    "redirectStart": 0,
+    "redirectEnd": 0,
+    "fetchStart": 1.1999999284744263,
+    "domainLookupStart": 1.1999999284744263,
+    "domainLookupEnd": 1.1999999284744263,
+    "connectStart": 1.1999999284744263,
+    "secureConnectionStart": 0,
+    "connectEnd": 1.1999999284744263,
+    "requestStart": 2.600000023841858,
+    "responseStart": 6.600000023841858,
+    "firstInterimResponseStart": 0,
+    "finalResponseHeadersStart": 6.600000023841858,
+    "responseEnd": 170.10000002384186,
+    "transferSize": 3804,
+    "encodedBodySize": 3504,
+    "decodedBodySize": 3504,
+    "responseStatus": 200,
+    "serverTiming": [],
+    "unloadEventStart": 0,
+    "unloadEventEnd": 0,
+    "domInteractive": 204.5,
+    "domContentLoadedEventStart": 20813,
+    "domContentLoadedEventEnd": 20813.799999952316,
+    "domComplete": 20829.199999928474,
+    "loadEventStart": 20829.5,
+    "loadEventEnd": 20829.5,
+    "type": "navigate",
+    "redirectCount": 0,
+    "activationStart": 0,
+    "criticalCHRestart": 0,
+    "notRestoredReasons": null,
+    "confidence": {}
+  },
+  "capturedAt": 1787374997894,
+  "url": "http://localhost:8080/read",
+  "elapsedMs": 24809,
+  "inpEstimateMs": 24
+}
