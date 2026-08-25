@@ -1,12 +1,18 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { getAuthUser, hasRole } from '../../auth/service.js';
+import { getAuthUser, isManager } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
 import type { AppEnv } from '../../config/env.js';
-import { createUploadUrl, deleteObject, storageConfigured } from '../storage/service.js';
+import {
+  createUploadUrl,
+  createDownloadUrl,
+  deleteObject,
+  storageConfigured,
+} from '../storage/service.js';
 
 const uuidParams = z.object({ id: z.string().uuid() });
 const articleParams = z.object({ articleId: z.string().uuid() });
+
 const profileSchema = z.object({
   firstName: z.string().trim().max(120).optional().nullable(),
   lastName: z.string().trim().max(120).optional().nullable(),
@@ -15,6 +21,7 @@ const profileSchema = z.object({
   avatarUrl: z.string().url().max(2000).optional().nullable(),
   metadata: z.record(z.unknown()).optional(),
 });
+
 const mediaSchema = z.object({
   type: z.string().trim().min(1).max(80),
   title: z.string().max(300).optional().default(''),
@@ -24,17 +31,30 @@ const mediaSchema = z.object({
   visibility: z.enum(['private', 'public']).optional().default('private'),
   metadata: z.record(z.unknown()).optional().default({}),
   fileSize: z.number().int().nonnegative().max(10_000_000_000).optional().default(0),
+  mimeType: z.string().max(120).optional().nullable(),
+  checksumSha256: z.string().max(64).optional().nullable(),
 });
+
+const uploadUrlSchema = z.object({
+  fileName: z.string().trim().min(1).max(255),
+  contentType: z.string().trim().min(1).max(200),
+  type: z.string().trim().min(1).max(80).optional(),
+  fileSize: z.number().int().positive().max(1_000_000_000).optional(),
+  expiresIn: z.number().int().min(60).max(3600).optional(),
+});
+
 const projectSchema = z.object({
   title: z.string().max(300).optional().default(''),
   description: z.string().max(10000).optional().default(''),
   metadata: z.record(z.unknown()).optional().default({}),
 });
+
 const slideSchema = z.object({
   title: z.string().max(300).optional().default(''),
   content: z.record(z.unknown()).optional().default({}),
   sortOrder: z.number().int().min(0).optional().default(0),
 });
+
 const liveSessionSchema = z.object({
   title: z.string().max(300).optional().default(''),
   titleFa: z.string().max(300).optional(),
@@ -54,7 +74,7 @@ const liveSessionSchema = z.object({
 });
 
 function canManageAll(user: { roles: string[] }) {
-  return hasRole(user, 'editor', 'admin', 'senior_manager', 'technical_manager');
+  return isManager(user);
 }
 
 export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) {
@@ -62,12 +82,63 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
     const user = await getAuthUser(request);
     if (!user) return reply.status(401).send({ error: 'unauthorized' });
     if (!env || !storageConfigured(env)) return reply.status(503).send({ error: 'storage_not_configured' });
-    const body = z.object({ fileName: z.string().trim().min(1).max(255), contentType: z.string().trim().min(1).max(200), type: z.string().trim().min(1).max(80) }).safeParse(request.body);
-    if (!body.success) return reply.status(400).send({ error: 'invalid_input' });
-    const safeName = body.data.fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const key = `${user.id}/${body.data.type}/${Date.now()}-${safeName}`;
-    const upload = await createUploadUrl(env, { key, contentType: body.data.contentType });
-    return reply.send({ ok: true, ...upload });
+
+    const body = uploadUrlSchema.safeParse(request.body);
+    if (!body.success) return reply.status(400).send({ error: 'invalid_input', details: body.error.flatten() });
+
+    try {
+      const upload = await createUploadUrl(env, {
+        userId: user.id,
+        fileName: body.data.fileName,
+        contentType: body.data.contentType,
+        type: body.data.type,
+        fileSize: body.data.fileSize,
+        expiresIn: body.data.expiresIn,
+      });
+      return reply.send({ ok: true, ...upload });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'upload_url_failed';
+      return reply.status(400).send({ error: message });
+    }
+  });
+
+  app.get('/api/v1/media/:id/download-url', async (request, reply) => {
+    const user = await getAuthUser(request);
+    const params = uuidParams.safeParse(request.params);
+    if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
+
+    const result = await db.query<{
+      id: string;
+      owner_id: string | null;
+      file_path: string | null;
+      public_url: string | null;
+      visibility: 'private' | 'public';
+      title: string;
+    }>(
+      'SELECT id, owner_id, file_path, public_url, visibility, title FROM media WHERE id = $1',
+      [params.data.id],
+    );
+    const media = result.rows[0];
+    if (!media) return reply.status(404).send({ error: 'media_not_found' });
+
+    if (media.visibility === 'private') {
+      if (!user) return reply.status(401).send({ error: 'unauthorized' });
+      if (media.owner_id !== user.id && !canManageAll(user)) return reply.status(403).send({ error: 'forbidden' });
+    }
+
+    if (media.visibility === 'public' && media.public_url) {
+      return reply.send({ ok: true, downloadUrl: media.public_url, visibility: 'public' });
+    }
+
+    if (!env || !storageConfigured(env) || !media.file_path) {
+      return reply.status(503).send({ error: 'storage_not_configured' });
+    }
+
+    const download = await createDownloadUrl(env, {
+      key: media.file_path,
+      downloadName: media.title || media.file_path,
+    });
+    return reply.send({ ok: true, ...download, visibility: media.visibility });
   });
 
   app.get('/api/v1/me/profile', async (request, reply) => {
@@ -142,18 +213,25 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
 
   app.get('/api/v1/media', async (request, reply) => {
     const user = await getAuthUser(request);
-    const query = request.query as { type?: string; visibility?: string; mine?: string };
+    const query = request.query as { type?: string; visibility?: string; mine?: string; all?: string };
     const values: unknown[] = [];
     const conditions = ['(visibility = \'public\''] as string[];
     if (user) { values.push(user.id); conditions[0] += ` OR owner_id = $${values.length}`; }
     conditions[0] += ')';
+
+    if (query.all === 'true' && user && canManageAll(user)) {
+      conditions.length = 0; // manager viewing all
+    }
+
     if (query.type) { values.push(query.type); conditions.push(`type = $${values.length}`); }
     if (query.visibility === 'public') conditions.push("visibility = 'public'");
     if (query.mine === 'true') {
       if (!user) return reply.status(401).send({ error: 'unauthorized' });
-      conditions.push(`owner_id = $1`);
+      values.push(user.id);
+      conditions.push(`owner_id = $${values.length}`);
     }
-    const result = await db.query(`SELECT * FROM media WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC LIMIT 100`, values);
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const result = await db.query(`SELECT * FROM media ${whereClause} ORDER BY created_at DESC LIMIT 100`, values);
     return reply.send({ ok: true, media: result.rows });
   });
 
@@ -164,9 +242,9 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
     if (!body.success) return reply.status(400).send({ error: 'invalid_input', details: body.error.flatten() });
     const d = body.data;
     const result = await db.query(
-      `INSERT INTO media (owner_id, created_by, type, title, description, file_path, public_url, visibility, metadata, file_size)
-       VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [user.id, d.type, d.title, d.description, d.filePath ?? null, d.publicUrl ?? null, d.visibility, d.metadata, d.fileSize],
+      `INSERT INTO media (owner_id, created_by, type, title, description, file_path, public_url, visibility, metadata, file_size, mime_type, checksum_sha256)
+       VALUES ($1, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [user.id, d.type, d.title, d.description, d.filePath ?? null, d.publicUrl ?? null, d.visibility, d.metadata, d.fileSize, d.mimeType ?? null, d.checksumSha256 ?? null],
     );
     return reply.status(201).send({ ok: true, media: result.rows[0] });
   });
@@ -180,9 +258,24 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
     const current = await db.query('SELECT * FROM media WHERE id = $1', [params.data.id]);
     if (!current.rows[0]) return reply.status(404).send({ error: 'media_not_found' });
     if (!canManageAll(user) && current.rows[0].owner_id !== user.id) return reply.status(403).send({ error: 'forbidden' });
-    const map: Record<string, string> = { type: 'type', title: 'title', description: 'description', filePath: 'file_path', publicUrl: 'public_url', visibility: 'visibility', metadata: 'metadata', fileSize: 'file_size' };
+
+    const map: Record<string, string> = {
+      type: 'type',
+      title: 'title',
+      description: 'description',
+      filePath: 'file_path',
+      publicUrl: 'public_url',
+      visibility: 'visibility',
+      metadata: 'metadata',
+      fileSize: 'file_size',
+      mimeType: 'mime_type',
+      checksumSha256: 'checksum_sha256',
+    };
     const values: unknown[] = [];
-    const fields = Object.entries(body.data).map(([key, value]) => { values.push(value ?? null); return `${map[key]} = $${values.length}`; });
+    const fields = Object.entries(body.data).map(([key, value]) => {
+      values.push(value ?? null);
+      return `${map[key]} = $${values.length}`;
+    });
     values.push(params.data.id);
     const updated = await db.query(`UPDATE media SET ${fields.join(', ')}, updated_at = now() WHERE id = $${values.length} RETURNING *`, values);
     return reply.send({ ok: true, media: updated.rows[0] });
@@ -193,9 +286,15 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
     if (!user) return reply.status(401).send({ error: 'unauthorized' });
     const params = uuidParams.safeParse(request.params);
     if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
-    const result = await db.query<{ id: string; file_path: string | null }>('DELETE FROM media WHERE id = $1 AND (owner_id = $2 OR $3 = TRUE) RETURNING id, file_path', [params.data.id, user.id, canManageAll(user)]);
+
+    const result = await db.query<{ id: string; file_path: string | null }>(
+      'DELETE FROM media WHERE id = $1 AND (owner_id = $2 OR $3 = TRUE) RETURNING id, file_path',
+      [params.data.id, user.id, canManageAll(user)],
+    );
     if (!result.rows[0]) return reply.status(404).send({ error: 'media_not_found' });
-    if (env && result.rows[0].file_path && storageConfigured(env)) await deleteObject(env, result.rows[0].file_path).catch(() => undefined);
+    if (env && result.rows[0].file_path && storageConfigured(env)) {
+      await deleteObject(env, result.rows[0].file_path).catch(() => undefined);
+    }
     return reply.status(204).send();
   });
 
@@ -251,7 +350,7 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
     if (!params.success || !body.success) return reply.status(400).send({ error: 'invalid_input' });
     const owner = await db.query('SELECT owner_id FROM slides WHERE id = $1', [params.data.slideId]);
     if (!owner.rows[0]) return reply.status(404).send({ error: 'slide_not_found' });
-    if (owner.rows[0].owner_id !== user.id && !hasRole(user, 'editor', 'admin', 'senior_manager', 'technical_manager')) return reply.status(403).send({ error: 'forbidden' });
+    if (owner.rows[0].owner_id !== user.id && !canManageAll(user)) return reply.status(403).send({ error: 'forbidden' });
     const fields: string[] = [];
     const values: unknown[] = [];
     if (body.data.title !== undefined) { values.push(body.data.title); fields.push(`title = $${values.length}`); }
@@ -270,7 +369,7 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
     if (!params.success) return reply.status(400).send({ error: 'invalid_input' });
     const owner = await db.query('SELECT owner_id FROM slides WHERE id = $1', [params.data.slideId]);
     if (!owner.rows[0]) return reply.status(404).send({ error: 'slide_not_found' });
-    if (owner.rows[0].owner_id !== user.id && !hasRole(user, 'editor', 'admin', 'senior_manager', 'technical_manager')) return reply.status(403).send({ error: 'forbidden' });
+    if (owner.rows[0].owner_id !== user.id && !canManageAll(user)) return reply.status(403).send({ error: 'forbidden' });
     await db.query('DELETE FROM slides WHERE id = $1', [params.data.slideId]);
     return reply.status(204).send();
   });
@@ -305,6 +404,26 @@ export async function registerContentRoutes(app: FastifyInstance, env?: AppEnv) 
     const d = body.data;
     const result = await db.query('INSERT INTO slides (article_id, owner_id, title, content, sort_order) VALUES ($1, $2, $3, $4, $5) RETURNING *', [params.data.articleId, user.id, d.title, d.content, d.sortOrder]);
     return reply.status(201).send({ ok: true, slide: result.rows[0] });
+  });
+
+  app.put('/api/v1/articles/:articleId/slides/reorder', async (request, reply) => {
+    const user = await getAuthUser(request);
+    if (!user) return reply.status(401).send({ error: 'unauthorized' });
+    const params = articleParams.safeParse(request.params);
+    const body = z.object({
+      slides: z.array(z.object({ id: z.string().uuid(), sortOrder: z.number().int().min(0) })).min(1),
+    }).safeParse(request.body);
+    if (!params.success || !body.success) return reply.status(400).send({ error: 'invalid_input' });
+
+    const article = await db.query<{ author_id: string | null }>('SELECT author_id FROM articles WHERE id = $1', [params.data.articleId]);
+    if (!article.rows[0]) return reply.status(404).send({ error: 'article_not_found' });
+    if (article.rows[0].author_id !== user.id && !canManageAll(user)) return reply.status(403).send({ error: 'forbidden' });
+
+    for (const item of body.data.slides) {
+      await db.query('UPDATE slides SET sort_order = $1, updated_at = now() WHERE id = $2 AND article_id = $3', [item.sortOrder, item.id, params.data.articleId]);
+    }
+    const updated = await db.query('SELECT * FROM slides WHERE article_id = $1 ORDER BY sort_order, created_at', [params.data.articleId]);
+    return reply.send({ ok: true, slides: updated.rows });
   });
 
   app.get('/api/v1/live-sessions', async (_request, reply) => {

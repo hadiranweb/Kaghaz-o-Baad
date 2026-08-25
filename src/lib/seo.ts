@@ -25,6 +25,8 @@ export const SEO_ROUTE_POLICIES: SeoRoutePolicy[] = [
   { pattern: '/about-project', indexing: 'index', follow: true, public: true, reason: 'public project blueprint' },
   { pattern: '/read', indexing: 'index', follow: true, public: true, reason: 'public article hub' },
   { pattern: '/read/:slug', indexing: 'index', follow: true, public: true, reason: 'published article only' },
+  { pattern: '/terms', indexing: 'index', follow: true, public: true, reason: 'public terms of service' },
+  { pattern: '/privacy', indexing: 'index', follow: true, public: true, reason: 'public privacy policy' },
   { pattern: '/media', indexing: 'index', follow: true, public: true, reason: 'public media hub when content is available' },
   { pattern: '/community', indexing: 'noindex', follow: true, public: false, reason: 'user/community surface requires content policy review' },
   { pattern: '/live', indexing: 'noindex', follow: true, public: false, reason: 'session directory requires public event policy' },

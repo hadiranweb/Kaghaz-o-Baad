@@ -1,0 +1,77 @@
+/* === Sprint 12 — Creative UI Phase 1 Design Tokens === */
+/* Extracted from src/index.css (Kashan profile + Glassmorphism) */
+
+@layer base {
+  /* Modern glass variables — for component isolation */
+  :root {
+    --glass-fill-from: 42 68% 98%;
+    --glass-fill-to: 40 64% 92%;
+    --glass-fill-opacity: 0.82;
+    --glass-border: 225 8% 80% / 0.45;
+    --glass-blur: 20px;
+    --glass-shadow-outer: 0 8px 24px hsla(211, 51%, 12%, 0.08);
+    --glass-shadow-inner: inset 0 1px 0 hsla(0, 0%, 100%, 0.7);
+  }
+
+  .dark {
+    --glass-fill-from: 211 56% 20%;
+    --glass-fill-to: 211 51% 12%;
+    --glass-fill-opacity: 0.88;
+    --glass-border: 40 64% 87% / 0.13;
+    --glass-blur: 24px;
+    --glass-shadow-outer: 0 14px 30px hsla(211, 51%, 5%, 0.55);
+    --glass-shadow-inner: inset 0 1px 0 hsla(40, 64%, 87%, 0.06);
+  }
+
+  /* Typography scale — MengTo-inspired, modern academic */
+  .text-hero {
+    font-family: 'IRANSharp', Vazirmatn, sans-serif;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    font-size: clamp(3rem, 8vw, 6rem);
+  }
+
+  .text-subhero {
+    font-family: 'IRANSharp', Vazirmatn, sans-serif;
+    font-weight: 400;
+    line-height: 1.55;
+    letter-spacing: -0.01em;
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Modern button with glassmorphism */
+  .btn-glass {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    background: linear-gradient(
+      145deg,
+      hsla(var(--glass-fill-from), var(--glass-fill-opacity)),
+      hsla(var(--glass-fill-to), var(--glass-fill-opacity))
+    );
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid hsl(var(--glass-border));
+    box-shadow: var(--glass-shadow-outer), var(--glass-shadow-inner);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .btn-glass:hover {
+    background: linear-gradient(
+      145deg,
+      hsla(var(--glass-hover-from, var(--glass-fill-from)), 0.94),
+      hsla(var(--glass-hover-to, var(--glass-fill-to)), 0.96)
+    );
+    box-shadow: 0 14px 36px -12px hsla(var(--primary), 0.34), var(--glass-shadow-inner);
+    transform: translateY(-2px);
+  }
+}

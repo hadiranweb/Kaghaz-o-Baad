@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-08-23",
+  "base": {
+    "branch": "main",
+    "commit": "0a7903e14f59338223e3883d56e98da25c8fb3e7",
+    "integrationBranch": "integration/product-finalization"
+  },
+  "toolchain": {
+    "requiredNode": "22.12.0",
+    "observedNode": "20.20.2",
+    "observedNpm": "10.8.2",
+    "observedGit": "2.47.3",
+    "ciNodeMajor": 22
+  },
+  "inventory": {
+    "trackedFiles": 308,
+    "remoteBranches": 21,
+    "backendMigrations": 18,
+    "supabaseTrackedFiles": 40,
+    "frontendPages": 20,
+    "backendTypeScriptFiles": 46,
+    "backendRouteDeclarations": 83,
+    "unitTestFiles": 0,
+    "smokeAndLoadTestFiles": 2,
+    "githubWorkflows": 1
+  },
+  "checks": {
+    "frontendInstall": "pass",
+    "frontendLint": "fail: 23 errors, 19 warnings",
+    "frontendBuild": "pass",
+    "frontendSeoVerification": "pass",
+    "frontendProductionAudit": "pass-threshold-high: 2 moderate",
+    "frontendFullAudit": "fail: 1 high, 3 moderate",
+    "backendInstall": "pass",
+    "backendTypeCheck": "pass",
+    "backendBuild": "pass",
+    "backendMigrationDryRun": "pass: 18 files enumerated",
+    "backendProductionAudit": "pass: 0 vulnerabilities",
+    "installerInstall": "pass-with-local-node-engine-warning",
+    "installerTypeCheck": "pass",
+    "installerBuild": "pass",
+    "installerProductionAudit": "fail: 1 high",
+    "installerFullAudit": "fail: 2 high",
+    "secretScan": "pass for tracked repository patterns",
+    "integrationTests": "not-run: database/runtime and test identity unavailable",
+    "loadTests": "not-run: k6/runtime unavailable",
+    "push": "pass: integration branch and baseline tag published"
+  },
+  "github": {
+    "visibility": "public",
+    "defaultBranch": "main",
+    "visibleEnvironments": ["github-pages"],
+    "branchProtection": "not-audited: authenticated API access required",
+    "latestMainWorkflow": "success"
+  },
+  "releaseBlockers": [
+    "Exposed GitHub credential must be revoked and replaced outside chat",
+    "Direct main-to-production flow lacks an audited protected environment gate",
+    "Frontend lint fails",
+    "No unit test files exist",
+    "Installer production dependency has a high-severity advisory with no direct fix",
+    "Frontend full dependency graph has one high-severity advisory",
+    "Integration and load tests have not been executed",
+    "Local audit ran on Node 20 while CI and installer require Node 22"
+  ]
+}

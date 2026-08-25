@@ -1,0 +1,41 @@
+{
+  "capturedAt": "2026-08-23",
+  "repository": "hadiranweb/Kaghaz-o-Baad",
+  "defaultBranch": "main",
+  "branchProtection": {
+    "branch": "main",
+    "requirePullRequest": true,
+    "requiredApprovingReviews": 0,
+    "dismissStaleReviews": true,
+    "strictStatusChecks": true,
+    "requiredStatusChecks": [
+      "Frontend check and build",
+      "Backend check, build and migration dry-run",
+      "Windows EXE installer",
+      "Public repository secret scan"
+    ],
+    "enforceAdmins": true,
+    "requireConversationResolution": true,
+    "allowForcePushes": false,
+    "allowDeletions": false
+  },
+  "environments": {
+    "production": {
+      "protectedBranches": true,
+      "customBranchPolicies": false
+    },
+    "staging": {
+      "protectedBranches": false,
+      "customBranchPolicies": true,
+      "allowedBranch": "integration/product-finalization"
+    }
+  },
+  "actions": {
+    "enabled": true,
+    "allowedActions": "all",
+    "shaPinningRequired": false,
+    "defaultWorkflowPermissions": "read",
+    "canApprovePullRequestReviews": false
+  },
+  "deleteBranchOnMerge": true
+}

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { getAuthUser, hasRole } from '../../auth/service.js';
+import { getAuthUser, isAuthor, isManager } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
 
 const createSchema = z.object({
@@ -18,11 +18,11 @@ const updateSchema = createSchema.partial().extend({
 const idSchema = z.object({ articleId: z.string().uuid() });
 
 function canManageAll(user: { roles: string[] }) {
-  return hasRole(user, 'editor', 'admin', 'senior_manager', 'technical_manager');
+  return isManager(user);
 }
 
 function isAuthorRole(user: { roles: string[] }) {
-  return hasRole(user, 'author', 'contributor');
+  return isAuthor(user);
 }
 
 export async function registerArticleRoutes(app: FastifyInstance) {
@@ -33,6 +33,9 @@ export async function registerArticleRoutes(app: FastifyInstance) {
     const body = createSchema.safeParse(request.body);
     if (!body.success) return reply.status(400).send({ error: 'invalid_input', details: body.error.flatten() });
 
+    const requestHeader = request.headers['x-request-id'];
+    const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
+
     try {
       const result = await db.query(
         `INSERT INTO articles (author_id, slug, title_fa, title_en, content_fa, content_en)
@@ -42,9 +45,9 @@ export async function registerArticleRoutes(app: FastifyInstance) {
       );
       const article = result.rows[0];
       await db.query(
-        `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, metadata)
-         VALUES ($1, 'article.created', 'article', $2, $3)`,
-        [user.id, article.id, { status: article.status }],
+        `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, request_id, metadata)
+         VALUES ($1, 'article.created', 'article', $2, $3, $4)`,
+        [user.id, article.id, requestId, { status: article.status }],
       );
       return reply.status(201).send({ ok: true, article });
     } catch (error: unknown) {
@@ -77,7 +80,16 @@ export async function registerArticleRoutes(app: FastifyInstance) {
     const article = result.rows[0];
     if (!article) return reply.status(404).send({ error: 'article_not_found' });
     if (!canManageAll(user) && article.author_id !== user.id) return reply.status(403).send({ error: 'forbidden' });
+
+    const requestHeader = request.headers['x-request-id'];
+    const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
+
     await db.query('DELETE FROM articles WHERE id = $1', [params.data.articleId]);
+    await db.query(
+      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, request_id, metadata)
+       VALUES ($1, 'article.deleted', 'article', $2, $3, $4)`,
+      [user.id, params.data.articleId, requestId, {}],
+    );
     return reply.status(204).send();
   });
 
@@ -107,15 +119,18 @@ export async function registerArticleRoutes(app: FastifyInstance) {
     if (!privileged && current.author_id !== user.id) return reply.status(403).send({ error: 'forbidden' });
     if (!privileged && !['draft', 'changes_requested'].includes(current.status)) return reply.status(409).send({ error: 'article_not_editable_in_current_status' });
 
+    const requestHeader = request.headers['x-request-id'];
+    const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
+
     const fields = [['slug', body.data.slug], ['title_fa', body.data.titleFa], ['title_en', body.data.titleEn], ['content_fa', body.data.contentFa], ['content_en', body.data.contentEn] as const].filter(([, value]) => value !== undefined);
     const values: unknown[] = [];
     const assignments = fields.map(([column, value]) => { values.push(value); return `${column} = $${values.length}`; });
     values.push(params.data.articleId);
     const updated = await db.query(`UPDATE articles SET ${assignments.join(', ')}, updated_at = now() WHERE id = $${values.length} RETURNING *`, values);
     await db.query(
-      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, metadata)
-       VALUES ($1, 'article.updated', 'article', $2, $3)`,
-      [user.id, current.id, { fields: fields.map(([column]) => column) }],
+      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, request_id, metadata)
+       VALUES ($1, 'article.updated', 'article', $2, $3, $4)`,
+      [user.id, current.id, requestId, { fields: fields.map(([column]) => column) }],
     );
     return reply.send({ ok: true, article: updated.rows[0] });
   });

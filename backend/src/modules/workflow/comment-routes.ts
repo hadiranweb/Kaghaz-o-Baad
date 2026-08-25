@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { getAuthUser } from '../../auth/service.js';
+import { getAuthUser, isManager } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
 import type { AuthUser } from '../../auth/service.js';
 
@@ -16,7 +16,7 @@ const resolveSchema = z.object({
 });
 
 function canReview(user: AuthUser, authorId: string | null) {
-  return authorId === user.id || user.roles.includes('editor') || user.roles.includes('admin');
+  return authorId === user.id || isManager(user);
 }
 
 export async function registerCommentRoutes(app: FastifyInstance) {
@@ -50,6 +50,9 @@ export async function registerCommentRoutes(app: FastifyInstance) {
     if (!row) return reply.status(404).send({ error: 'article_not_found' });
     if (!canReview(user, row.author_id)) return reply.status(403).send({ error: 'forbidden' });
 
+    const requestHeader = request.headers['x-request-id'];
+    const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
+
     const result = await db.query(
       `INSERT INTO article_comments (article_id, author_id, source, body, suggested_text, anchor)
        VALUES ($1, $2, $3, $4, $5, $6)
@@ -57,9 +60,9 @@ export async function registerCommentRoutes(app: FastifyInstance) {
       [params.data.articleId, user.id, body.data.source, body.data.body, body.data.suggestedText ?? null, body.data.anchor],
     );
     await db.query(
-      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, metadata)
-       VALUES ($1, 'article.comment.created', 'article', $2, $3)`,
-      [user.id, params.data.articleId, { source: body.data.source }],
+      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, request_id, metadata)
+       VALUES ($1, 'article.comment.created', 'article', $2, $3, $4)`,
+      [user.id, params.data.articleId, requestId, { source: body.data.source, comment_id: result.rows[0]?.id }],
     );
     return reply.status(201).send({ ok: true, comment: result.rows[0] });
   });
@@ -72,8 +75,17 @@ export async function registerCommentRoutes(app: FastifyInstance) {
     const result = await db.query<{ id: string; author_id: string | null; article_id: string }>('SELECT id, author_id, article_id FROM article_comments WHERE id = $1', [params.data.commentId]);
     const comment = result.rows[0];
     if (!comment) return reply.status(404).send({ error: 'comment_not_found' });
-    if (comment.author_id !== user.id && !user.roles.some((role) => ['editor', 'admin'].includes(role))) return reply.status(403).send({ error: 'forbidden' });
+    if (comment.author_id !== user.id && !isManager(user)) return reply.status(403).send({ error: 'forbidden' });
+
+    const requestHeader = request.headers['x-request-id'];
+    const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
+
     await db.query('DELETE FROM article_comments WHERE id = $1', [params.data.commentId]);
+    await db.query(
+      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, request_id, metadata)
+       VALUES ($1, 'article.comment.deleted', 'comment', $2, $3, $4)`,
+      [user.id, params.data.commentId, requestId, { article_id: comment.article_id }],
+    );
     return reply.status(204).send();
   });
 
@@ -94,6 +106,9 @@ export async function registerCommentRoutes(app: FastifyInstance) {
     if (!comment) return reply.status(404).send({ error: 'comment_not_found' });
     if (!canReview(user, comment.author_id)) return reply.status(403).send({ error: 'forbidden' });
 
+    const requestHeader = request.headers['x-request-id'];
+    const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
+
     const updated = await db.query(
       `UPDATE article_comments
        SET status = $1,
@@ -104,9 +119,9 @@ export async function registerCommentRoutes(app: FastifyInstance) {
       [body.data.status, user.id, params.data.commentId],
     );
     await db.query(
-      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, metadata)
-       VALUES ($1, 'article.comment.resolved', 'comment', $2, $3)`,
-      [user.id, params.data.commentId, { status: body.data.status }],
+      `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, request_id, metadata)
+       VALUES ($1, 'article.comment.resolved', 'comment', $2, $3, $4)`,
+      [user.id, params.data.commentId, requestId, { status: body.data.status, article_id: comment.article_id }],
     );
     return reply.send({ ok: true, comment: updated.rows[0] });
   });

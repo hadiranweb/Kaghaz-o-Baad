@@ -99,15 +99,13 @@ export async function registerBillingRoutes(app: FastifyInstance, env: AppEnv) {
       await markPaymentFailed({ attemptId: attempt.id, code: 'cancelled', message: 'customer_cancelled', rawResponse: query.data });
       return reply.send({ ok: false, status: 'cancelled' });
     }
-    try {
-      const verified = await verifyZarinpalPayment(env, { authority: query.data.Authority, amountMinor: Number(attempt.amount_minor) });
-      if (!verified.success) {
-        await markPaymentFailed({ attemptId: attempt.id, code: String(verified.providerCode), message: 'verification_failed', rawResponse: verified.rawResponse });
-        return reply.status(400).send({ ok: false, status: 'failed', code: verified.providerCode });
-      }
-      const paymentAttempt = await markPaymentSucceeded({ attemptId: attempt.id, refId: verified.refId, rawResponse: verified.rawResponse });
-      return reply.send({ ok: true, status: 'paid', refId: verified.refId, paymentAttemptId: paymentAttempt.id });
-    } catch (error) { throw error; }
+    const verified = await verifyZarinpalPayment(env, { authority: query.data.Authority, amountMinor: Number(attempt.amount_minor) });
+    if (!verified.success) {
+      await markPaymentFailed({ attemptId: attempt.id, code: String(verified.providerCode), message: 'verification_failed', rawResponse: verified.rawResponse });
+      return reply.status(400).send({ ok: false, status: 'failed', code: verified.providerCode });
+    }
+    const paymentAttempt = await markPaymentSucceeded({ attemptId: attempt.id, refId: verified.refId, rawResponse: verified.rawResponse });
+    return reply.send({ ok: true, status: 'paid', refId: verified.refId, paymentAttemptId: paymentAttempt.id });
   });
 
   app.post('/api/v1/billing/payment-attempts', async (request, reply) => {

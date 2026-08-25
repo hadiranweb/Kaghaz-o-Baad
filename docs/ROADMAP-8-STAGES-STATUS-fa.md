@@ -1,97 +1,126 @@
-# نقشهٔ راه هشت‌مرحله‌ای کاغذ و باد
+# وضعیت هشت حوزهٔ توسعهٔ کاغذ و باد
 
-## نتیجهٔ اجرایی
+**به‌روزرسانی:** ۲۰۲۶-۰۸-۲۳
+**مبنای کد:** `main@0a7903e`
+**قاعده:** وجود کد یا Build موفق با آمادگی عملیاتی برابر نیست.
 
-فایل پیوست، **نقشهٔ راه محصول و backend عملیاتی** است؛ installer و EXE در این هشت مرحله قرار نمی‌گیرند و باید به‌عنوان ابزار تحویل و آماده‌سازی deployment در کنار پروژه مدیریت شوند.
+## واژگان وضعیت
 
-با ممیزی repository فعلی، پروژه هنوز در **مرحلهٔ اول** قرار دارد؛ البته بخشی از زیرساخت احراز هویت و migration ساخته شده است. مرحلهٔ اول هنوز قابل‌خروج نیست، زیرا endpointهای کامل workflow مقاله، ثبت eventهای عملیاتی، comment و کنترل نقش در مسیرهای واقعی backend تکمیل نشده‌اند.
-
-## وضعیت واقعی امروز
-
-| حوزه | وضعیت فعلی |
+| وضعیت | تعریف |
 |---|---|
-| backend مستقل Fastify/PostgreSQL | foundation ایجاد شده است. |
-| migration runner و schema | ایجاد شده و برای اجرای مقصد آماده است؛ اجرای production هنوز انجام نشده است. |
-| ثبت‌نام، ورود، logout و session | در backend مستقل وجود دارد. |
-| نقش پایهٔ کاربر | هنگام ثبت‌نام نقش author ایجاد می‌شود و سرویس احراز هویت نقش‌ها را می‌خواند. |
-| workflow مقاله در backend | هنوز endpointهای کامل انتقال وضعیت در backend فعلی دیده نمی‌شود و باید تکمیل شود. |
-| activity و article workflow events | schema/foundation در برنامه وجود دارد، اما ثبت عملیاتی همهٔ مسیرها تکمیل نیست. |
-| usage، quota و entitlement | schema و قراردادهای پایه وجود دارند؛ runtime enforcement هنوز ساخته نشده است. |
-| AI provider و attribution | قراردادها/فیلدهای پایه وجود دارند؛ اتصال واقعی provider و ثبت token باقی است. |
-| پلن‌های رایگان، دانشجویی و استادی | seed/foundation موجود است؛ پنل مدیر و سیاست نهایی باقی است. |
-| پرداخت و subscription | schema پایه وجود دارد؛ درگاه، callback، invoice و تمدید باقی است. |
-| LiveKit | در معماری تعریف شده؛ token endpoint، webhook و usage واقعی باقی است. |
-| استقرار Liara | معماری و installer آماده‌سازی شده‌اند؛ staging، migration واقعی و production deployment باقی است. |
-| installer EXE | EXE ساخته می‌شود، مسیر repository را خودکار تشخیص می‌دهد، preview و تأیید دارد و فقط کپی پیکربندی‌شده می‌سازد. |
+| طراحی‌شده | قرارداد یا سند وجود دارد، ولی Runtime کامل نیست. |
+| پیاده‌سازی‌شده | کد و Migration وجود دارد و Build می‌شود. |
+| تأییدشده | تست خودکار روی PostgreSQL و سرویس واقعی/جایگزین کنترل‌شده پاس شده است. |
+| عملیاتی | در Staging یا Production Deploy، مانیتور و با Runbook تأیید شده است. |
 
-## هشت مرحلهٔ اصلی
+## نتیجهٔ ممیزی
 
-### مرحلهٔ اول: backend پایهٔ کاغذ و باد
+Repository از Roadmap قدیمی جلوتر رفته است. Workflow، Usage، Quota، LiveKit، Billing و Deployment دیگر صرفاً Foundation نیستند؛ برای آن‌ها Runtime وجود دارد. خلأ اصلی اکنون **تست، یکدست‌سازی قراردادها، Staging، امنیت، Observability و Rollback** است.
 
-هدف این مرحله ساخت مسیر قطعی احراز هویت، RBAC، workflow مقاله، comment و activity است. احراز هویت مستقل و session پایه در repository فعلی وجود دارد، اما مرحله زمانی کامل محسوب می‌شود که endpointهای `submit_for_review`، `request_changes`، `approve`، `schedule`، `publish` و `archive` در backend پیاده‌سازی شوند.
+هیچ مرحله‌ای فقط بر اساس وجود فایل «تمام‌شده» اعلام نمی‌شود.
 
-هر endpoint باید کاربر، نقش، مالکیت یا مسئولیت ویراستاری، وضعیت قبلی، انتقال مجاز، ثبت event و خطاهای قابل‌ردیابی را بررسی کند. frontend نباید منبع حقیقت انتقال وضعیت باشد.
+| حوزه | وضعیت کد | وضعیت عملیاتی | Gate باقیمانده |
+|---|---|---|---|
+| ۱. Backend، Auth، RBAC، Workflow و Comment | پیاده‌سازی‌شده | تأییدنشده | تست Integration و منفی RBAC، یکدست‌سازی Roleها، Staging DB |
+| ۲. Usage Gateway و Attribution | پیاده‌سازی‌شده | تأییدنشده | تست success/error/timeout، Pricing snapshot و Audit |
+| ۳. Quota و Entitlement | پیاده‌سازی‌شده | تأییدنشده | تست هم‌زمانی، idempotency و rollback مصرف |
+| ۴. مدیریت Plan و گزارش | بخشی پیاده‌سازی‌شده | تأییدنشده | API مدیریت کامل Plan، Audit و تست مجوز |
+| ۵. AI Provider و Automation | Provider پایه پیاده‌سازی‌شده | تأییدنشده | Feature Flag، Cost guard، Human approval و AI Stack مستقل |
+| ۶. LiveKit | Route، Token، Webhook، Recording و UI پیاده‌سازی‌شده | تأییدنشده | تست سرویس واقعی، consent، reconnect، quota و Runbook |
+| ۷. Billing و Subscription | Zarinpal adapter و lifecycle پیاده‌سازی‌شده | تأییدنشده | Sandbox E2E، callback تکراری/دستکاری‌شده، reconciliation |
+| ۸. Liara و Release | Deployment خودکار `main` پیاده‌سازی‌شده | Production workflow مشاهده شده؛ Staging نامشخص | Branch Protection، Staging، backup، health verification و rollback |
 
-**معیار خروج:** تست API برای نقش‌های author، editor و admin؛ ثبت `article_workflow_events`؛ ثبت comment؛ جلوگیری از انتقال غیرمجاز؛ و اتصال frontend به endpoint مستقل.
+## حوزهٔ ۱ — Backend و Workflow
 
-### مرحلهٔ دوم: usage gateway
+کد موجود:
 
-تمام قابلیت‌های AI و ابزارهای قابل‌مصرف باید از gateway مشترک عبور کنند. gateway باید `request_id` بسازد، provider/model را ثبت کند، وضعیت اجرا و خطا را نگه دارد، tokenهای ورودی/خروجی/cache را دریافت کند و event قابل‌حسابرسی بسازد.
+- Auth مستقل، Session، OTP، OAuth و Verification؛
+- CRUD مقاله؛
+- انتقال‌های `submit_for_review`، `request_changes`، `approve`، `schedule`، `publish`، `archive` و `restore_draft`؛
+- Row lock و Transaction برای تغییر وضعیت؛
+- `article_workflow_events` و `activity_events`؛
+- Comment routes؛
+- Admin routes.
 
-**معیار خروج:** حداقل یک provider واقعی از طریق adapter اجرا شود و برای موفقیت، خطا و timeout رکورد usage تولید کند؛ بدون اینکه frontend بتواند مقدار مصرف را جعل کند.
+ریسک مهم: نام Roleها میان Migration اولیه، Routeهای Admin و Roleهای مدیریتی جدید کاملاً یکدست نیست. پیش از تأیید باید ماتریس رسمی Role و Migration سازگار تثبیت شود.
 
-### مرحلهٔ سوم: enforcement سهمیه و entitlement
+**Gate:** تست API برای مالک/غیرمالک و نقش‌های author، contributor، editor، admin و نقش‌های مدیریتی؛ تست Transition نامعتبر و ثبت Event اتمیک.
 
-پیش از اجرای قابلیت، entitlement و quota باید در backend بررسی شود. ثبت مصرف باید اتمیک باشد تا درخواست‌های هم‌زمان نتوانند از سهمیه عبور کنند. تشخیص ارزان محل ویرایش، rewrite پس از کلیک، پیشنهاد عنوان و تولید محتوای پس از انتشار باید هرکدام feature key و policy مستقل داشته باشند.
+## حوزهٔ ۲ — Usage Gateway
 
-**معیار خروج:** تست هم‌زمانی، رد درخواست پس از پایان quota، ثبت مصرف فقط پس از اجرای معتبر، و rollback مصرف در خطاهای قابل‌جبران.
+Gateway، Repository، Provider سازگار با OpenAI و Routeهای پیشنهاد عنوان/بازنویسی وجود دارند. Attribution و Request ID در کد دیده می‌شود.
 
-### مرحلهٔ چهارم: داشبورد مدیر
+**Gate:** اثبات ثبت Execution برای موفقیت، خطا، Timeout و Cache؛ تعیین نسخهٔ Pricing و جلوگیری از پذیرش هزینه از Frontend/Provider به‌عنوان منبع حقیقت.
 
-پنل مدیر باید `plans`، `plan_parameters`، `plan_parameter_values` و entitlementها را کنترل کند. مدیر باید بتواند مقدار، واحد، دوره، فعال‌بودن و رفتار پایان سهمیه را تغییر دهد. هر تغییر باید audit شود و cache دسترسی invalid گردد.
+## حوزهٔ ۳ — Quota و Entitlement
 
-**معیار خروج:** تغییر یک پارامتر از داشبورد، اثر آن در gateway، ثبت audit و عدم امکان تغییر توسط نقش غیرمجاز.
+Migration و Service مربوط به Plan، Entitlement، Counter، Reservation، Commit و Release وجود دارد و به حداقل یک قابلیت AI متصل شده است.
 
-### مرحلهٔ پنجم: AI providerها و adapterهای OpenClaw-style
+**Gate:** تست Race روی PostgreSQL واقعی، Idempotency درخواست تکراری و آزادشدن Reservation پس از خطا.
 
-در این مرحله قراردادهای موجود به providerهای واقعی متصل می‌شوند. مدل ارزان برای تشخیص annotation و مدل قوی‌تر فقط پس از اقدام کاربر استفاده می‌شود. agent پس از انتشار ابتدا draft خلاصه، فلش‌کارت و محتوای شبکهٔ اجتماعی تولید می‌کند؛ ارسال واقعی به مقصد فقط با approval انجام می‌شود.
+## حوزهٔ ۴ — مدیریت Plan
 
-**معیار خروج:** حداقل یک provider واقعی، ثبت attribution و token، draft قابل ویرایش، approval انسانی و عدم ارسال خودکار بدون تأیید.
+UI و بخشی از مدل داده/گزارش وجود دارد، ولی API مدیریتی کامل و تست Audit هنوز اثبات نشده است.
 
-### مرحلهٔ ششم: LiveKit مستقل
+**Gate:** تغییر Parameter فقط توسط نقش مجاز، ثبت Audit، Cache invalidation و اثر قابل مشاهده در Quota Gateway.
 
-LiveKit media server روی VM جداگانهٔ Liara یا LiveKit Cloud قرار می‌گیرد؛ اما token endpoint، کنترل نقش و پلن، webhook و محاسبهٔ usage در backend کاغذ و باد باقی می‌ماند. LiveKit نباید منبع حقیقت entitlement یا پرداخت باشد.
+## حوزهٔ ۵ — AI و Automation
 
-**معیار خروج:** صدور token از backend، اعمال grant بر اساس نقش/پلن، دریافت webhook، ثبت حضور و تست قطع/اتصال مجدد. installer فقط مقادیر لازم را آماده می‌کند و به LiveKit متصل نمی‌شود.
+Provider server-side و دو قابلیت AI وجود دارند. n8n، OpenClaw و Open WebUI هنوز در خط Production `main` نیستند و باید سرویس‌های کمکی مستقل باشند.
 
-### مرحلهٔ هفتم: پرداخت و subscription
+**Gate:** Feature Flag و Kill Switch، Redaction، Budget، Timeout، Circuit Breaker، Human approval و عدم دسترسی مستقیم Agent به Production DB.
 
-پس از تثبیت entitlement، invoice در backend ساخته می‌شود، کاربر به زرین‌پال یا IDPay می‌رود، callback دریافت و server-to-server تأیید می‌شود، payment event با idempotency ثبت می‌گردد و subscription/entitlement فعال می‌شود. frontend یا AI هرگز نباید پرداخت را تأیید کند.
+## حوزهٔ ۶ — LiveKit
 
-**معیار خروج:** invoice، callback موفق/ناموفق، callback تکراری، پرداخت منقضی، فعال‌سازی پلن و audit کامل.
+Backend فعلی Token، Webhook، Role، Participant management، Interaction و Recording را پوشش می‌دهد. Frontend نیز Room، E2EE اختیاری، Presentation و Reconnect را دارد.
 
-### مرحلهٔ هشتم: staging و استقرار Liara
+**Gate:** تست Staging با LiveKit واقعی، امضای Webhook، نقش‌ها، E2EE، Consent ضبط، Reconnect و پایان جلسه.
 
-پس از تست محلی و staging، frontend و backend روی Liara PaaS، PostgreSQL روی DBaaS، رسانه روی Object Storage و LiveKit روی VM جدا مستقر می‌شوند. مهاجرت Supabase فقط پس از export، import آزمایشی، تطبیق شمارش و checksum، تست application و rollback انجام می‌شود.
+## حوزهٔ ۷ — Billing
 
-**معیار خروج:** محیط staging سالم، migration قابل rollback، health check، backup، secretهای server-side، دامنه/HTTPS، observability و runbook عملیاتی.
+Invoice، Payment attempt، Callback زرین‌پال، Subscription و Lifecycle job وجود دارند.
 
-## ترتیب کار از امروز
+**Gate:** Sandbox E2E، Server-to-server verification، Idempotency callback، Expiration، Reconciliation و Audit مالی.
 
-کار بعدی نباید پرداخت یا AI provider باشد. ابتدا باید مرحلهٔ اول را قابل‌خروج کنیم: workflow endpointها، RBAC واقعی، comment و event ثبت‌شده در backend مستقل. سپس usage gateway و quota ساخته می‌شوند؛ زیرا پرداخت باید به entitlement پایدار متصل باشد و AI نیز باید از quota عبور کند.
+## حوزهٔ ۸ — Liara و Release
 
-ترتیب اجرایی پیشنهادی چنین است:
+Workflow فعلی پس از Push موفق به `main`، Backend، Mailbox Worker و Frontend را روی Liara Deploy می‌کند. این رفتار خودکار است و توضیح قدیمیِ «غیرخودکار» نادرست بود.
+
+**Gate:**
+
+- Pull Request و Required Checks برای `main`؛
+- Environment مستقل Production؛
+- محیط Staging؛
+- Migration واقعی روی DB موقت/Staging؛
+- Health verification پس از Deploy؛
+- Backup/Restore drill؛
+- Rollback مستند.
+
+## مسیر اجرایی فعلی
+
+Roadmap قبلی ساخت قابلیت را مرحلهٔ اصلی می‌دانست. خط فعلی نهایی‌سازی بر Hardening متمرکز است:
 
 ```text
-مرحلهٔ اول → مرحلهٔ دوم → مرحلهٔ سوم → مرحلهٔ چهارم
-      ↓
-مرحلهٔ پنجم → مرحلهٔ ششم → مرحلهٔ هفتم → مرحلهٔ هشتم
+Baseline و قرارداد معماری
+  → Backend/Auth/Mail Worker
+  → حذف Legacy Supabase
+  → Storage/LiveKit
+  → Usage/Quota/Billing
+  → AI Stack اختیاری
+  → UI جامع
+  → CI/CD و Observability
+  → Staging/UAT
+  → Production
 ```
 
-## جایگاه installer در این نقشه
+برنامهٔ تفصیلی در `docs/finalization/roadmap-fa.md` و گزارش هر اسپرینت در `docs/finalization/` نگهداری می‌شود.
 
-installer EXE یک **مسیر موازی تحویل** است، نه یکی از مراحل runtime محصول. وظیفهٔ آن تشخیص repository، گرفتن مقصد و تنظیمات، preview، تأیید و ساخت کپی خروجی است. installer نباید منتظر تکمیل پرداخت یا LiveKit بماند؛ فقط باید برای متغیرها و فایل‌های رسمی integrationهای موجود template داشته باشد.
+## تصمیم رسمی فعلی
 
-## تصمیم فعلی
+وضعیت محصول:
 
-وضعیت رسمی پروژه باید چنین ثبت شود: **Stage 1 — In Progress**. احراز هویت مستقل، session و migration foundation ساخته شده‌اند؛ workflow کامل backend و ثبت عملیاتی eventها هنوز معیار خروج مرحلهٔ اول را تأمین نمی‌کنند. اجرای توسعه از endpointهای workflow و تست نقش‌ها شروع می‌شود.
+```text
+Production Hardening — In Progress
+```
+
+قابلیت‌های اصلی در سطح کد گسترده‌اند، اما Release نهایی تا عبور از Test، Security، Staging، Observability و Rollback Gateها اعلام نمی‌شود.

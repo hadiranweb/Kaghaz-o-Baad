@@ -1,29 +1,36 @@
-# وضعیت میراث انتقالی Supabase
+# وضعیت میراث Supabase و گزارش خروج کامل (Decommissioned)
 
-## تصمیم معماری
+**تاریخ تکمیل خروج:** ۲۴ اوت ۲۰۲۶ (۳ شهریور ۱۴۰۵ — Sprint 5)  
+**وضعیت:** تکمیل‌شده و حذف‌شده با ۰ باقیمانده (Zero Runtime Residue)
 
-مسیر production هدف کاغذ و باد، **Node.js/Fastify + PostgreSQL مستقل** است. migrationهای اجرایی این مسیر در `backend/migrations/` قرار دارند و برای Liara DBaaS یا PostgreSQL روی یک سرور مستقل طراحی شده‌اند.
+---
 
-پوشهٔ `supabase/` فعلاً به‌عنوان میراث انتقالی نگه داشته می‌شود، زیرا بخشی از frontend موجود هنوز از `src/integrations/supabase/` و `@supabase/supabase-js` استفاده می‌کند. حذف این پوشه یا dependency در وضعیت فعلی باعث خراب شدن build یا بخشی از قابلیت‌های سایت می‌شود.
+## ۱. بیانیهٔ قطعی خروج
 
-## معیار حذف کامل
+پوشهٔ تاریخی `supabase/` و کلیهٔ وابستگی‌ها، Edge Functionها، فایل‌های پیکربندی و مراجع مرتبط با آن در **اسپرینت ۵** به صورت کامل و تحت ممیزی دقیق از مخزن حذف شدند.
 
-حذف Supabase فقط پس از انجام همهٔ موارد زیر مجاز است:
+قبل از حذف، کلیهٔ ۴۰ فایل تاریخی بررسی و شناسنامهٔ رمزنگاری‌شدهٔ SHA-256 آن‌ها در سند زیر آرشیو گردید:
+```text
+docs/archive/legacy-supabase-manifest-2026-08-24.json
+```
 
-1. انتقال Auth و session به endpointهای مستقل backend.
-2. انتقال CRUD مقاله، community، media و profile به API مستقل.
-3. انتقال storage و URLهای رسانه به Liara Object Storage.
-4. جایگزینی RPCها و Edge Functionهای استفاده‌شده در frontend.
-5. حذف همهٔ importهای `@/integrations/supabase` و `@supabase/supabase-js`.
-6. اجرای build frontend، تست integration و smoke test روی staging.
-7. ثبت rollback و تأیید سلامت داده‌های منتقل‌شده.
+---
 
-تا پیش از عبور از این معیارها، Supabase نباید به‌عنوان مسیر جدید توسعه یا production استفاده شود؛ فقط کد انتقالی موجود است.
+## ۲. ممیزی عدم وجود هرگونه وابستگی (Zero Residue Audit)
 
-## منابع مستقل فعلی
+1. **وابستگی‌های پکیج (`package.json`):** هیچ پکیجی از قبیل `@supabase/supabase-js` در هیچ‌یک از پروژه‌ها (`frontend`, `backend`, `installer`) وجود ندارد.
+2. **سورس‌کد کلاینت و سرور (`src/`, `backend/src/`):** ۰ خط ارجاع به `@supabase`، `integrations/supabase` یا متدهای `supabase.*`.
+3. **متغیرهای محیطی:** هیچ متغیر `VITE_SUPABASE_*` یا `SUPABASE_*` در محیط‌های فعال یا نمونه‌ها وجود ندارد.
+4. **خط لوله CI/CD:** هیچ دستوری برای Deploy یا تعامل با Supabase در `.github/workflows/ci.yml` وجود ندارد.
+5. **محافظ خودکار معماری:** اسکریپت `scripts/check-architecture-contract.mjs` در هر بیلد و در گیت‌هاب CI تضمین می‌کند که هیچ پوشه یا ایمپورتی از Supabase به پروژه بازنگردد.
 
-- schema و migrationهای مقصد: `backend/migrations/`
-- API مستقل: `backend/src/`
-- پایگاه‌داده محلی: `docker-compose.local.yml`
-- اجرای migration: `backend/src/db/migrate.ts`
-- آماده‌سازی استقرار: `installer/`
+---
+
+## ۳. منابع فعال سیستم مستقل
+
+- **هستهٔ سرور:** `backend/src/` (Fastify + TypeScript)
+- **پایگاه‌داده و مایگریشن‌ها:** `backend/migrations/` (PostgreSQL مستقل روی Liara / Docker)
+- **فضای ذخیره‌سازی ابری:** `backend/src/modules/storage/` (S3 / Liara Object Storage)
+- **ارتباطات زنده و WebRTC:** `backend/src/modules/live/` (LiveKit Server SDK)
+- **سیستم مدیریت هویت و ایمیل:** `backend/src/modules/mail/` و `backend/src/auth/`
+- **احراز هویت پیامکی:** `backend/src/auth/smsir.ts` (SMS.ir UltraFast OTP)

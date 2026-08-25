@@ -18,6 +18,9 @@ export async function registerWorkflowRoutes(app: FastifyInstance) {
     const body = bodySchema.safeParse(request.body);
     if (!params.success || !body.success) return reply.status(400).send({ error: 'invalid_input' });
 
+    const requestHeader = request.headers['x-request-id'];
+    const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
+
     try {
       const transition = await transitionArticle({
         articleId: params.data.articleId,
@@ -25,6 +28,7 @@ export async function registerWorkflowRoutes(app: FastifyInstance) {
         note: body.data.note,
         metadata: body.data.metadata,
         actor,
+        requestId,
       });
       return reply.send({ ok: true, transition });
     } catch (error: unknown) {

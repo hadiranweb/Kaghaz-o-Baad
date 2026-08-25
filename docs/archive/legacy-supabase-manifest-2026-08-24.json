@@ -1,0 +1,207 @@
+{
+  "decommissionDate": "2026-08-24T19:00:00.000Z",
+  "totalFiles": 40,
+  "totalBytes": 163597,
+  "files": [
+    {
+      "path": "supabase/config.toml",
+      "size": 448,
+      "sha256": "8dfb986e451f2ca3c18425b244a085918fbfd67e7cec9ce08b07a49f1f69e8a2"
+    },
+    {
+      "path": "supabase/functions/admin-users/index.ts",
+      "size": 6254,
+      "sha256": "e7577345bf968db5c97dee39b2e19c72410c5f4a4eb64a92793d6d957b2b074d"
+    },
+    {
+      "path": "supabase/functions/article-comment/index.ts",
+      "size": 3497,
+      "sha256": "cca24570f6a5cbf5332300cabcc92c4bffb6d8d36d465dd9e59d389732095eba"
+    },
+    {
+      "path": "supabase/functions/article-workflow/index.ts",
+      "size": 2882,
+      "sha256": "3b902e9ead1a6e6f29bdd874af15d76b2bcd62bb8541e13490eb1441a0bea9a5"
+    },
+    {
+      "path": "supabase/functions/create-admin/index.ts",
+      "size": 3722,
+      "sha256": "c37d83367cda028444a9a7627f27877cf68edd45b7aa923edd047fc3fd5dfef8"
+    },
+    {
+      "path": "supabase/functions/create-test-users/index.ts",
+      "size": 3496,
+      "sha256": "45071a0e12965768fff21c2e176072f024e234ef29c52a02aae3deb3ab61c41e"
+    },
+    {
+      "path": "supabase/functions/livekit-token/index.ts",
+      "size": 6624,
+      "sha256": "c22ef7caf766c684393760549bed44224fa9767b3d75bea1a5874fb2b6d5c7ed"
+    },
+    {
+      "path": "supabase/functions/livekit-webhook/index.ts",
+      "size": 2347,
+      "sha256": "1b3cd247874aeec822162a998490c43abb4909fc5f266450aeac11017ab4e25c"
+    },
+    {
+      "path": "supabase/functions/rewrite-article/index.ts",
+      "size": 8743,
+      "sha256": "6b9bb8249a084b78c02162f8707d78d4597e201bfc75cccd1710dcd1b477c173"
+    },
+    {
+      "path": "supabase/functions/search-suggest/index.ts",
+      "size": 10855,
+      "sha256": "c40dc1e8bb7112b5d21e2cfde8bcd8f8e64680b2c640ff3e98633ded24924bd5"
+    },
+    {
+      "path": "supabase/functions/send-otp/index.ts",
+      "size": 12266,
+      "sha256": "8a35cf28b919c939dcc7b056ab8666aedde86ec6db548ee1f0bbb9733736bbea"
+    },
+    {
+      "path": "supabase/functions/verify-otp/index.ts",
+      "size": 8462,
+      "sha256": "100e510bf06f94e0fdfbb2fc9413212aefa449b3588857623694bd15818548a0"
+    },
+    {
+      "path": "supabase/migrations/20251108043404_290c734e-4fa1-4722-a25f-ad1e63182d4f.sql",
+      "size": 6630,
+      "sha256": "162f83cd25d72b4a41069c705d098bc22d0d87e20997d970e1be273dd60025bc"
+    },
+    {
+      "path": "supabase/migrations/20251123103128_109de83e-704e-4bf5-a84d-adf23e6c7287.sql",
+      "size": 2641,
+      "sha256": "25976e9b6105c65777a03c30f8026b8db28569e2423742f869923b7676311091"
+    },
+    {
+      "path": "supabase/migrations/20251123112451_dc792931-5b9f-44b5-ae64-cc88f0c97883.sql",
+      "size": 707,
+      "sha256": "11e9e73251bd107d0993f02949564058ef824ff97635a911c56acd22b02f52c4"
+    },
+    {
+      "path": "supabase/migrations/20260211010949_fffda625-b251-40fe-b48d-bae2b7561ea0.sql",
+      "size": 1503,
+      "sha256": "b0fa81a84491d218c539522e3a43b0b69254b293e6807fcf4fe39d7fd1bc25a0"
+    },
+    {
+      "path": "supabase/migrations/20260212162314_2d2b025d-1b1b-48be-9c70-fcd2085c4eae.sql",
+      "size": 1128,
+      "sha256": "73c38ecaa9a3941c8b80ae3bb6d4fa215a64974b6da9b02a480383dd2a2885bd"
+    },
+    {
+      "path": "supabase/migrations/20260217011343_6cfc9432-e9c1-439e-ac18-8e0a9fb0e395.sql",
+      "size": 198,
+      "sha256": "1183865ca2d647c6e4d151b6272d2e09cbfa75153a90029752d6ccf16d7f202e"
+    },
+    {
+      "path": "supabase/migrations/20260217011518_7af683db-9af7-4c86-acbe-f992a7090127.sql",
+      "size": 692,
+      "sha256": "242a800c45e4bbf052c3ffbd3d27af3a7ed73b67dad9fb69678da53081e2d8aa"
+    },
+    {
+      "path": "supabase/migrations/20260217011618_44d0b723-9b3a-42c1-a644-d6f673ec3d88.sql",
+      "size": 120,
+      "sha256": "f3ae9eac8b9b64173f6d3b22ddc089eb3f8792e9ff8a45b0c04aea5e9fc27767"
+    },
+    {
+      "path": "supabase/migrations/20260512101507_02df7e23-87f0-41b8-abee-8be08a8fa304.sql",
+      "size": 1457,
+      "sha256": "f784220c9cae119846624219272839523ca1319368ba23a2d4ed172d669d230a"
+    },
+    {
+      "path": "supabase/migrations/20260519064433_dc257c31-a7b7-4504-9bbe-dd8d970bc028.sql",
+      "size": 9946,
+      "sha256": "d97afb4dbea51345d9d9e4ea8a065c430cc4c16c6500453c9f06193b12ac0a09"
+    },
+    {
+      "path": "supabase/migrations/20260530213553_9d4f9e6d-4a37-46b5-8724-92a6be5aa1d8.sql",
+      "size": 3316,
+      "sha256": "295a8dae62ffbcb1025b4394fc3a506f2b0b2f62674349cc92207eee72997f18"
+    },
+    {
+      "path": "supabase/migrations/20260720140934_14f08091-910c-43ec-a696-cb1a28f48faa.sql",
+      "size": 359,
+      "sha256": "c47ac64f1f0be3da79a0e151a2eeb8a132888385464d9e8f61219baabd02d1fe"
+    },
+    {
+      "path": "supabase/migrations/20260720142257_4ab05043-b0b4-49dd-a091-f86a906d41cd.sql",
+      "size": 105,
+      "sha256": "117b44c68ccd1674fa35e37d1f4965ef29423753ee5effa20878aca148941d27"
+    },
+    {
+      "path": "supabase/migrations/20260807222905_346efd8c-df52-4738-9930-4f8c4c500361.sql",
+      "size": 361,
+      "sha256": "8988767459f5e0b7d7706039586b31c59477b06ba2e41626c6d8b0b789a730d5"
+    },
+    {
+      "path": "supabase/migrations/20260809140000_add_community_visibility.sql",
+      "size": 2144,
+      "sha256": "ce7ee7216b1932ab72a294558b65ff3e8f30c418ea4f29294e4748da00057cf9"
+    },
+    {
+      "path": "supabase/migrations/20260809150000_media_drive_storage.sql",
+      "size": 5273,
+      "sha256": "7732948dbc80e629c600c2b74e269e69a57102a2ac097fb63545fb0b35143102"
+    },
+    {
+      "path": "supabase/migrations/20260809160000_fix_rbac.sql",
+      "size": 12736,
+      "sha256": "87e002b2c0b3485e666954ab6d18a0408df868d5b4cd5ed2f593b4cd585eb786"
+    },
+    {
+      "path": "supabase/migrations/20260809170000_storage_quota_trigger_and_policies.sql",
+      "size": 7362,
+      "sha256": "0536d624724daedbb3799d64dd5bf44c168d52fbff9f82f6852780deda2637bf"
+    },
+    {
+      "path": "supabase/migrations/20260809180000_rate_limiting_and_edge_caching.sql",
+      "size": 4204,
+      "sha256": "e2d1fa3a36f039a5ae285849c30eb6132c93edd9f5e21d7207dbb4e0ac9b85a2"
+    },
+    {
+      "path": "supabase/migrations/20260809190000_cursor_pagination.sql",
+      "size": 2847,
+      "sha256": "991a20a11b36a21aaf3fe26bdd80180f20d315b4c2145e1dfa024f6e647b06a6"
+    },
+    {
+      "path": "supabase/migrations/20260809200000_circuit_breaker.sql",
+      "size": 5137,
+      "sha256": "7580c7b556a0023b354e9208829150a16dd83587184b6368f067bd2d3a5c874d"
+    },
+    {
+      "path": "supabase/migrations/20260809210000_circuit_breaker_monitor.sql",
+      "size": 2391,
+      "sha256": "0f05e2b9cf98bc4e760f96097ad4c7b8884ef07a11b849c538ec4236ae208820"
+    },
+    {
+      "path": "supabase/migrations/20260809220000_live_resilience_and_presentation.sql",
+      "size": 1602,
+      "sha256": "ced4434323849dfa3c2f59913b1a343e6d7f802d0ce2bf50368c51d47ec5d792"
+    },
+    {
+      "path": "supabase/migrations/20260813000000_live_complete_presentation.sql",
+      "size": 1812,
+      "sha256": "8820e8088bdedfe5aaa98a35d5bd7fb16eee657e246828d6b2bfc4409b58dfdb"
+    },
+    {
+      "path": "supabase/migrations/20260815010000_content_workflow_usage_plans.sql",
+      "size": 12798,
+      "sha256": "99a49e01fd7cf081024d8c03b7394d247b7a92b9b7b9162e181fbc9c0070aca7"
+    },
+    {
+      "path": "supabase/migrations/20260815010500_expand_article_workflow_statuses.sql",
+      "size": 369,
+      "sha256": "0092c64865ba9b918ac9df6c1ccacce9ff2747a6850621eb6c1f580b629e2e82"
+    },
+    {
+      "path": "supabase/migrations/20260815011000_article_workflow_transition_rpc.sql",
+      "size": 3174,
+      "sha256": "02e01a63f6883865d898cecf3ecc1e09238cde9c2931e067c7689057b20b84d6"
+    },
+    {
+      "path": "supabase/migrations/20260815012000_article_comments_rpc.sql",
+      "size": 2989,
+      "sha256": "17f8cd38d7f85e853124a0853f21a2f822219f2fa8a220bd6b83a35b63ad80bd"
+    }
+  ]
+}

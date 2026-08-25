@@ -23,8 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Supabase
-.supabase
+# Local environment files
 .env
 .env.local
 
@@ -36,3 +35,12 @@ backend/.env
 installer/node_modules/
 installer/dist/
 installer/release/
+
+# Generated test, coverage and performance artifacts
+coverage/
+playwright-report/
+test-results/
+reports/
+.lighthouseci/
+*.lighthouse.json
+*.trace.json

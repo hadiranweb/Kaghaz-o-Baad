@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { AppEnv } from '../../config/env.js';
 import { getAuthUser } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
+import { isCircuitBreakerOpen, recordFailure, recordSuccess } from '../circuit-breaker/service.js';
 import { suggestTitlesWithOpenAi } from './openai-compatible.js';
 import { runUsage } from '../usage/gateway.js';
 import { commitQuota, releaseQuota, reserveQuota, QuotaExceededError, QuotaNotConfiguredError } from '../quota/service.js';
@@ -58,6 +59,11 @@ export async function registerTitleSuggestionRoutes(app: FastifyInstance, env: A
         reply.header('RateLimit-Reset', Math.floor(aiLimit.resetAt.getTime() / 1000));
         void ipLimit;
         void userLimit;
+      }
+      // Circuit breaker check for AI provider
+      const aiBreakerOpen = await isCircuitBreakerOpen('ai-provider');
+      if (aiBreakerOpen) {
+        return reply.status(503).send({ error: 'ai_provider_circuit_breaker_open', requestId });
       }
       const cacheInput = {
         userId: user.id,
@@ -123,6 +129,7 @@ export async function registerTitleSuggestionRoutes(app: FastifyInstance, env: A
       if (env.AI_CACHE_ENABLED) {
         await putCachedTitleSuggestions(cacheInput, result.value, env.AI_TITLE_CACHE_TTL_SECONDS).catch(() => undefined);
       }
+      await recordSuccess('ai-provider');
       return reply.send({
         ok: true,
         requestId: result.requestId,
@@ -141,6 +148,7 @@ export async function registerTitleSuggestionRoutes(app: FastifyInstance, env: A
       }
       if (error instanceof QuotaExceededError) return reply.status(429).send({ error: 'quota_exceeded', featureKey: error.featureKey, remaining: error.remaining, requestId });
       if (error instanceof QuotaNotConfiguredError) return reply.status(403).send({ error: 'quota_not_configured', featureKey: error.featureKey, requestId });
+      await recordFailure('ai-provider');
       const status = errorStatus(error);
       if (status < 500) return reply.status(status).send({ error: error instanceof Error ? error.message : 'ai_provider_failed' });
       if (status === 503) return reply.status(503).send({ error: 'ai_provider_not_configured' });

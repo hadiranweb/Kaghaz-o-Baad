@@ -1,0 +1,52 @@
+# Liara PaaS Deployment Manifest — n8n Orchestrator
+# ADR-0003: Auxiliary AI Stack — Independent Network/Secret/App/Health
+# Isolation: No direct production database access. Only backend API endpoints allowed.
+# Feature Flag / Kill Switch: ENABLED via environment variable.
+
+service: n8n-orchestrator
+platform: liara-paas
+runtime: node:22-alpine
+port: 5678
+replicas: 1
+
+network_policy:
+  ingress:
+    - source: internal-backend-only
+    - source: admin-vpn
+  egress:
+    - destination: kaghazbaad-backend-api
+    - destination: ai-gateway
+    - deny_all_others: true
+
+secrets:
+  - name: N8N_ENCRYPTION_KEY
+    source: vault/liara/n8n-encryption
+  - name: N8N_API_KEY
+    source: vault/liara/n8n-api
+  - name: BACKEND_API_URL
+    source: vault/liara/backend-public-url
+
+health_checks:
+  endpoint: /healthz
+  interval: 30s
+  timeout: 5s
+
+environment:
+  NODE_ENV: production
+  N8N_PORT: 5678
+  N8N_HOST: 0.0.0.0
+  N8N_PROTOCOL: https
+  N8N_WEBHOOK_URL: https://n8n.kaghazobaad.ir/
+  # Isolation: backend URL only — no database connection strings allowed
+  BACKEND_API_URL: https://api.kaghazobaad.ir
+  FEATURE_FLAG_AUXILIARY_AI: enabled
+  KILL_SWITCH_AUXILIARY_AI: disabled
+
+volume_mounts:
+  - name: n8n-data
+    path: /home/node/.n8n
+    persistence: true
+
+rollback_policy:
+  max_failed_deployments: 3
+  automatic_rollback_on_health_fail: true
