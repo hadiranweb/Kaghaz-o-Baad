@@ -32,9 +32,8 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
   frontend-quality-diagnostics:
-    name: Frontend lint diagnostics (non-blocking)
+    name: Frontend lint diagnostics (advisory)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,7 +41,26 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run lint
+      - name: Report existing lint debt without blocking release gates
+        shell: bash
+        run: |
+          set +e
+          npm run lint > lint-report.txt 2>&1
+          lint_status=$?
+          cat lint-report.txt
+          if [ "$lint_status" -ne 0 ]; then
+            echo '::warning title=Frontend lint diagnostics::Existing lint findings were recorded. They are advisory and do not override build, test, security, or installer gates.'
+            {
+              echo '## Frontend lint diagnostics'
+              echo
+              echo 'Existing lint findings were recorded as advisory quality debt. This job does not override the required build, test, security, or installer gates.'
+              echo
+              echo '```text'
+              tail -n 120 lint-report.txt
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit 0
 
   backend:
     name: Backend check, build and migration dry-run
