@@ -25,8 +25,24 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm test
       - run: npm run build
       - run: npm run verify:seo
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+  frontend-quality-diagnostics:
+    name: Frontend lint diagnostics (non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
 
   backend:
     name: Backend check, build and migration dry-run
@@ -45,66 +61,8 @@ jobs:
       - run: npm run check
       - run: npm run build
       - run: npm run migrate:dry-run
-      - name: Dependency audit
+      - name: Production dependency audit
         run: npm audit --omit=dev --audit-level=high
-
-  deploy:
-    name: Deploy frontend and backend to Liara
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [frontend, backend]
-    runs-on: ubuntu-latest
-    concurrency:
-      group: liara-production-deploy
-      cancel-in-progress: false
-    env:
-      LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
-      LIARA_TEAM_ID: ${{ secrets.LIARA_TEAM_ID }}
-      FRONTEND_APP: kaghazbaad-frontend
-      BACKEND_APP: kaghazbaad-backend
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Validate deployment secrets
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -n "$LIARA_API_TOKEN" || { echo 'Missing LIARA_API_TOKEN repository secret.' >&2; exit 1; }
-          test -n "$LIARA_TEAM_ID" || { echo 'Missing LIARA_TEAM_ID repository secret.' >&2; exit 1; }
-
-      - name: Install Liara CLI
-        shell: bash
-        run: npm install --global @liara/cli@9.5.1
-
-      - name: Deploy backend first
-        shell: bash
-        run: |
-          set -euo pipefail
-          liara deploy \
-            --app "$BACKEND_APP" \
-            --team-id "$LIARA_TEAM_ID" \
-            --api-token "$LIARA_API_TOKEN" \
-            --path backend \
-            --dockerfile Dockerfile \
-            --port 8080 \
-            --no-app-logs \
-            --message "GitHub ${GITHUB_SHA}"
-
-      - name: Deploy frontend
-        shell: bash
-        run: |
-          set -euo pipefail
-          liara deploy \
-            --app "$FRONTEND_APP" \
-            --team-id "$LIARA_TEAM_ID" \
-            --api-token "$LIARA_API_TOKEN" \
-            --path . \
-            --no-app-logs \
-            --message "GitHub ${GITHUB_SHA}"
 
   installer:
     name: Windows EXE installer
@@ -151,5 +109,67 @@ jobs:
             exit 1
           fi
 
-# Deployment is intentionally not automatic. Liara or Single Server deployment
-# requires a human-reviewed environment, database URL, callback URL and secrets.
+  deploy:
+    name: Deploy frontend and backend to Liara
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [frontend, backend, installer, secret-scan]
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      deployments: write
+    concurrency:
+      group: liara-production-deploy
+      cancel-in-progress: false
+    env:
+      LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+      LIARA_TEAM_ID: ${{ secrets.LIARA_TEAM_ID }}
+      FRONTEND_APP: kaghazbaad-frontend
+      BACKEND_APP: kaghazbaad-backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Validate deployment secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$LIARA_API_TOKEN" || { echo 'Missing LIARA_API_TOKEN repository secret.' >&2; exit 1; }
+          test -n "$LIARA_TEAM_ID" || { echo 'Missing LIARA_TEAM_ID repository secret.' >&2; exit 1; }
+      - name: Install Liara CLI
+        shell: bash
+        run: npm install --global @liara/cli@9.5.1
+      - name: Deploy backend first
+        shell: bash
+        run: |
+          set -euo pipefail
+          liara deploy \
+            --app "$BACKEND_APP" \
+            --team-id "$LIARA_TEAM_ID" \
+            --api-token "$LIARA_API_TOKEN" \
+            --path backend \
+            --dockerfile Dockerfile \
+            --port 8080 \
+            --no-app-logs \
+            --message "GitHub ${GITHUB_SHA}"
+      - name: Deploy frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          liara deploy \
+            --app "$FRONTEND_APP" \
+            --team-id "$LIARA_TEAM_ID" \
+            --api-token "$LIARA_API_TOKEN" \
+            --path . \
+            --detach \
+            --no-app-logs \
+            --message "GitHub ${GITHUB_SHA}"
+
+# Deployment policy:
+# - Pull requests validate only; they never deploy production.
+# - A successful merge produces a push to main.
+# - Deploy runs only on that successful push, after all four required gates pass.
+# - Production credentials remain exclusively in GitHub and Liara secret stores.
+# - The mailbox worker remains independently managed because this source branch does not contain Worker.Dockerfile.
