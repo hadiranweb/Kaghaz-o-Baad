@@ -2,11 +2,15 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const repoRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)));
+const manifestDir = resolve(repoRoot, 'manifests/ai-stack');
 
 describe('AI Stack Isolation — ADR-0003 Contract', () => {
   describe('Manifest Isolation', () => {
     it('manifests contain no database connection variables', () => {
-      const dir = resolve('manifests/ai-stack');
+      const dir = manifestDir;
       const files = readdirSync(dir).filter((f) => f.endsWith('.yml'));
       const forbiddenPatterns = [
         /DATABASE_URL/i,
@@ -24,7 +28,7 @@ describe('AI Stack Isolation — ADR-0003 Contract', () => {
     });
 
     it('manifests declare kill switches and feature flags', () => {
-      const dir = resolve('manifests/ai-stack');
+      const dir = manifestDir;
       const files = readdirSync(dir).filter((f) => f.endsWith('.yml'));
       for (const file of files) {
         const content = readFileSync(resolve(dir, file), 'utf8');
