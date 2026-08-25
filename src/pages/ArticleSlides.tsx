@@ -177,7 +177,7 @@ export default function ArticleSlides() {
   return (
     <div className="fixed inset-0 bg-reading-bg z-50 flex flex-col">
       {/* Minimal Header */}
-      <div className="px-6 py-3 flex items-center justify-between shrink-0 opacity-60 hover:opacity-100 transition-opacity">
+      <div className="glass-surface px-6 py-3 flex items-center justify-between shrink-0 opacity-60 hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-3">
           {hasSlides && (
             <span className="text-xs text-reading-muted font-light tabular-nums">
@@ -189,7 +189,7 @@ export default function ArticleSlides() {
           </h1>
         </div>
         
-        <Button variant="ghost" size="icon" onClick={() => navigate('/read')} className="text-reading-muted hover:text-reading-fg">
+        <Button variant="ghost" size="icon" onClick={() => navigate('/read')} className="text-reading-muted hover:text-reading-fg btn-glass" aria-label="Close presentation">
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -235,7 +235,7 @@ export default function ArticleSlides() {
       {hasSlides && (
         <div className="h-0.5 bg-reading-fg/5 shrink-0">
           <div
-            className="h-full bg-reading-fg/20 transition-all duration-500 ease-out"
+            className="h-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--secondary))] transition-all duration-500 ease-out rounded-full"
             style={{ width: `${((currentSlide + 1) / articleData.slides.length) * 100}%` }}
           />
         </div>
