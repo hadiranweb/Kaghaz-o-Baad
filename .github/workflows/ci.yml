@@ -126,6 +126,7 @@ jobs:
       LIARA_TEAM_ID: ${{ secrets.LIARA_TEAM_ID }}
       FRONTEND_APP: kaghazbaad-frontend
       BACKEND_APP: kaghazbaad-backend
+      MAILBOX_WORKER_APP: kaghazbaad-mailbox-worker
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -154,6 +155,31 @@ jobs:
             --port 8080 \
             --no-app-logs \
             --message "GitHub ${GITHUB_SHA}"
+      - name: Deploy mailbox worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          liara deploy \
+            --app "$MAILBOX_WORKER_APP" \
+            --team-id "$LIARA_TEAM_ID" \
+            --api-token "$LIARA_API_TOKEN" \
+            --path backend \
+            --dockerfile Worker.Dockerfile \
+            --port 8080 \
+            --no-app-logs \
+            --message "GitHub ${GITHUB_SHA} mailbox-worker"
+      - name: Fetch mailbox worker runtime logs
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          liara logs \
+            --app "$MAILBOX_WORKER_APP" \
+            --team-id "$LIARA_TEAM_ID" \
+            --api-token "$LIARA_API_TOKEN" \
+            --last-lines \
+            --timestamps
       - name: Deploy frontend
         shell: bash
         run: |
@@ -172,4 +198,4 @@ jobs:
 # - A successful merge produces a push to main.
 # - Deploy runs only on that successful push, after all four required gates pass.
 # - Production credentials remain exclusively in GitHub and Liara secret stores.
-# - The mailbox worker remains independently managed because this source branch does not contain Worker.Dockerfile.
+# - The mailbox worker deploy is included because main contributes Worker.Dockerfile and its runtime implementation.

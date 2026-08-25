@@ -3,7 +3,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --no-audit --no-fund
 COPY tsconfig.json ./
-COPY migrations ./migrations
 COPY src ./src
 RUN npm run build
 
@@ -13,6 +12,6 @@ ENV NODE_ENV=production
 COPY package*.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/migrations ./migrations
+COPY migrations ./migrations
 EXPOSE 8080
-CMD ["sh", "-c", "node dist/db/migrate.js && node dist/server.js"]
+CMD ["node", "dist/jobs/mailbox-outbox-worker.js"]

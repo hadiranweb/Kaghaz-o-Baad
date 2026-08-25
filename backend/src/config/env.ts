@@ -6,7 +6,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8080),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   DATABASE_SSL: z.coerce.boolean().default(false),
-  AUTH_JWT_SECRET: z.string().min(32, 'AUTH_JWT_SECRET must be at least 32 characters'),
+  AUTH_JWT_SECRET: z.string().min(32, 'AUTH_JWT_SECRET must be at least 32 characters').optional(),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
   AI_PROVIDER: z.string().default('openai'),
   AI_API_KEY: z.string().optional(),
@@ -34,7 +34,7 @@ const envSchema = z.object({
   S3_SECRET_ACCESS_KEY: z.string().optional(),
   SMSIR_API_KEY: z.string().optional(),
   SMSIR_TEMPLATE_ID: z.coerce.number().int().positive().optional(),
-  SMSIR_CODE_PARAMETER: z.string().min(1).max(50).default('Code'),
+  SMSIR_CODE_PARAMETER: z.string().min(1).max(50).default('CODE'),
   SMSIR_TIMEOUT_MS: z.coerce.number().int().positive().max(30_000).default(10_000),
   OTP_TTL_SECONDS: z.coerce.number().int().positive().max(900).default(120),
   OTP_MAX_ATTEMPTS: z.coerce.number().int().positive().max(10).default(5),
@@ -53,15 +53,35 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
+  EMAIL_VERIFICATION_TTL_SECONDS: z.coerce.number().int().positive().max(86400).default(1800),
+  LIARA_MAIL_API_BASE_URL: z.string().url().default('https://mail-service.iran.liara.ir'),
+  LIARA_MAIL_API_TOKEN: z.string().min(1).optional(),
+  LIARA_MAIL_SERVER_ID: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+  LIARA_MAIL_DOMAIN: z.string().default('kaghazobaad.ir'),
+  MAILBOX_PROVISIONING_ENABLED: z.coerce.boolean().default(false),
+  MAILBOX_WORKER_ENABLED: z.coerce.boolean().default(false),
+  MAILBOX_WORKER_POLL_MS: z.coerce.number().int().positive().min(250).max(300_000).default(2_000),
+  MAILBOX_WORKER_BATCH_SIZE: z.coerce.number().int().positive().max(100).default(10),
+  MAILBOX_WORKER_CONCURRENCY: z.coerce.number().int().positive().max(10).default(2),
+  MAILBOX_MAX_ATTEMPTS: z.coerce.number().int().positive().max(20).default(8),
+  MAILBOX_BACKOFF_BASE_MS: z.coerce.number().int().positive().max(300_000).default(2_000),
+  MAILBOX_BACKOFF_MAX_MS: z.coerce.number().int().positive().max(86_400_000).default(900_000),
+  MAILBOX_LEASE_MS: z.coerce.number().int().positive().min(5_000).max(3_600_000).default(120_000),
+  MAILBOX_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().min(1_000).max(120_000).default(15_000),
+  MAILBOX_HEALTH_PORT: z.coerce.number().int().positive().max(65_535).default(8080),
+  MAILBOX_RECONCILE_ENABLED: z.coerce.boolean().default(false),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
 
-export function loadEnv(source: NodeJS.ProcessEnv = process.env): AppEnv {
+export function loadEnv(source: NodeJS.ProcessEnv = process.env, options: { requireAuthSecret?: boolean } = {}): AppEnv {
   const parsed = envSchema.safeParse(source);
   if (!parsed.success) {
     const details = parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
     throw new Error(`Invalid backend environment: ${details}`);
+  }
+  if (options.requireAuthSecret && !parsed.data.AUTH_JWT_SECRET) {
+    throw new Error('Invalid backend environment: AUTH_JWT_SECRET: Required');
   }
   return parsed.data;
 }

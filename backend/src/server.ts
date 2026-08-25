@@ -21,7 +21,7 @@ import { registerContentRoutes } from './modules/content/routes.js';
 import { registerSearchRoutes } from './modules/search/routes.js';
 import { registerLiveRoutes } from './modules/live/routes.js';
 
-const env = loadEnv();
+const env = loadEnv(process.env, { requireAuthSecret: true });
 const app = Fastify({ logger: true });
 
 app.addHook('onRequest', async (request, reply) => {
