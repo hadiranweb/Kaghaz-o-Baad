@@ -44,12 +44,22 @@ const services = {
     app: 'kaghazbaad-openwebui',
     host: 'ai.kaghazobaad.ir',
     disk: { name: 'openwebui-data', mount: '/app/backend/data' },
-    appKeys: ['WEBUI_SECRET_KEY', 'WEBUI_URL', 'WEBUI_ADMIN_EMAIL', 'WEBUI_ADMIN_PASSWORD', 'ENABLE_SIGNUP', 'KAGHAZBAAD_ACCESS_POLICY'],
+    appKeys: [
+      'WEBUI_SECRET_KEY',
+      'WEBUI_URL',
+      'WEBUI_ADMIN_EMAIL',
+      'WEBUI_ADMIN_PASSWORD',
+      'ENABLE_SIGNUP',
+      'ENABLE_LOGIN_FORM',
+      'ENABLE_PASSWORD_AUTH',
+      'WEBUI_SESSION_COOKIE_SECURE',
+      'WEBUI_SESSION_COOKIE_SAME_SITE',
+      'CORS_ALLOW_ORIGIN',
+    ],
     backendKeys: ['OPENWEBUI_BASE_URL'],
-    appUrls: ['WEBUI_URL'],
+    appUrls: ['WEBUI_URL', 'CORS_ALLOW_ORIGIN'],
     backendUrls: ['OPENWEBUI_BASE_URL'],
     strongSecrets: ['WEBUI_SECRET_KEY', 'WEBUI_ADMIN_PASSWORD'],
-    accessPolicy: 'authenticated-admin-only',
   },
 };
 
@@ -102,6 +112,14 @@ function assertAccessPolicy(envs, scope, expected) {
   }
 }
 
+function assertExactValues(envs, scope, expected) {
+  for (const [key, value] of Object.entries(expected)) {
+    if (envs.get(key) !== value) {
+      throw new PreflightError(`${scope} key ${key} must equal ${value}.`);
+    }
+  }
+}
+
 async function loadProject(app) {
   const details = await api(`/${encodeURIComponent(app)}`);
   const project = details.project;
@@ -132,9 +150,15 @@ try {
   requireKeys(backendEnv, 'kaghazbaad-backend', service.backendKeys);
   rejectDirectDatabaseAccess(aiEnv, service.app);
   assertStrongSecrets(aiEnv, service.app, service.strongSecrets);
-  assertAccessPolicy(aiEnv, service.app, service.accessPolicy);
-  if (target === 'openwebui' && aiEnv.get('ENABLE_SIGNUP') !== 'false') {
-    throw new PreflightError('Open WebUI must set ENABLE_SIGNUP=false before its first public release.');
+  if (service.accessPolicy) assertAccessPolicy(aiEnv, service.app, service.accessPolicy);
+  if (target === 'openwebui') {
+    assertExactValues(aiEnv, service.app, {
+      ENABLE_SIGNUP: 'false',
+      ENABLE_LOGIN_FORM: 'true',
+      ENABLE_PASSWORD_AUTH: 'true',
+      WEBUI_SESSION_COOKIE_SECURE: 'true',
+      WEBUI_SESSION_COOKIE_SAME_SITE: 'strict',
+    });
   }
   if (target === 'openclaw' && aiEnv.get('OPENCLAW_GATEWAY_TOKEN') !== backendEnv.get('OPENCLAW_GATEWAY_TOKEN')) {
     throw new PreflightError('OpenClaw gateway token must match the backend adapter token.');
