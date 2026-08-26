@@ -169,10 +169,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await logout();
-    setUser(null);
-    setSession(null);
-    navigate('/');
+    try {
+      await logout();
+    } catch (error) {
+      // Local logout must still complete if a best-effort server-side session revoke fails.
+      console.warn('Server-side session revoke failed; completing local logout.', error);
+    } finally {
+      setToken(null);
+      setUser(null);
+      setSession(null);
+      navigate('/', { replace: true });
+    }
   };
 
   const setSessionFromOtp = async (newSession: FrontendSession) => {
