@@ -12,6 +12,17 @@ export class EmailProviderError extends Error {
   }
 }
 
+type SmtpTransport = {
+  sendMail: (message: { from: string; to: string; subject: string; html: string }) => Promise<unknown>;
+};
+
+type SmtpTransportFactory = (options: {
+  host: string;
+  port: number;
+  secure: boolean;
+  auth: { user: string; pass: string };
+}) => SmtpTransport;
+
 function buildVerificationMessage(input: { env: AppEnv; token: string }) {
   const url = new URL('/auth/verify-email', input.env.FRONTEND_URL);
   url.searchParams.set('token', input.token);
@@ -26,6 +37,7 @@ export async function sendEmailVerification(input: {
   env: AppEnv;
   email: string;
   token: string;
+  smtpTransportFactory?: SmtpTransportFactory;
 }): Promise<void> {
   const { env } = input;
   if (!env.EMAIL_FROM) {
@@ -37,20 +49,25 @@ export async function sendEmailVerification(input: {
     if (!env.RESEND_API_KEY) {
       throw new EmailProviderError(503, 'email_provider_not_configured', 'resend');
     }
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({ from: env.EMAIL_FROM, to: [input.email], ...message }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!response.ok) {
-      throw new EmailProviderError(response.status === 429 ? 429 : 502, 'email_provider_failed', 'resend', response.status);
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ from: env.EMAIL_FROM, to: [input.email], ...message }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!response.ok) {
+        throw new EmailProviderError(response.status === 429 ? 429 : 502, 'email_provider_failed', 'resend', response.status);
+      }
+      return;
+    } catch (error) {
+      if (error instanceof EmailProviderError) throw error;
+      throw new EmailProviderError(502, 'email_provider_failed', 'resend');
     }
-    return;
   }
 
   if (env.EMAIL_PROVIDER === 'smtp') {
@@ -58,7 +75,8 @@ export async function sendEmailVerification(input: {
       throw new EmailProviderError(503, 'email_provider_not_configured', 'smtp');
     }
     try {
-      const transport = nodemailer.createTransport({
+      const transportFactory = input.smtpTransportFactory ?? ((options) => nodemailer.createTransport(options));
+      const transport = transportFactory({
         host: env.SMTP_HOST,
         port: env.SMTP_PORT,
         secure: env.SMTP_PORT === 465,
