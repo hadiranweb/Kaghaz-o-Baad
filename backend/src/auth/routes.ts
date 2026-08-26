@@ -74,7 +74,10 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
       );
       return reply.status(202).send({ pending: true, expires_in_seconds: env.EMAIL_VERIFICATION_TTL_SECONDS });
     } catch (error: unknown) {
-      if (error instanceof EmailProviderError) return reply.status(error.statusCode).send({ error: error.message });
+      if (error instanceof EmailProviderError) {
+        request.log.warn({ provider: error.provider, providerStatus: error.providerStatus, statusCode: error.statusCode }, 'email verification delivery failed');
+        return reply.status(error.statusCode).send({ error: error.message });
+      }
       if (error && typeof error === 'object' && 'code' in error && error.code === '23505') return reply.status(409).send({ error: 'email_already_registered' });
       throw error;
     }
@@ -181,7 +184,10 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
       return reply.send({ ok: true, expires_in_seconds: env.OTP_TTL_SECONDS });
     } catch (error) {
       await db.query(`UPDATE phone_login_codes SET consumed_at = now() WHERE id = $1`, [inserted.rows[0]?.id]);
-      if (error instanceof SmsProviderError) return reply.status(error.statusCode).send({ error: error.message });
+      if (error instanceof SmsProviderError) {
+        request.log.warn({ providerStatus: error.providerStatus, statusCode: error.statusCode }, 'phone OTP delivery failed');
+        return reply.status(error.statusCode).send({ error: error.message });
+      }
       throw error;
     }
   });
@@ -247,7 +253,10 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
       return reply.send({ ok: true, expires_in_seconds: env.OTP_TTL_SECONDS });
     } catch (error) {
       await db.query(`UPDATE phone_login_codes SET consumed_at = now() WHERE id = $1`, [inserted.rows[0]?.id]);
-      if (error instanceof SmsProviderError) return reply.status(error.statusCode).send({ error: error.message });
+      if (error instanceof SmsProviderError) {
+        request.log.warn({ providerStatus: error.providerStatus, statusCode: error.statusCode }, 'phone factor delivery failed');
+        return reply.status(error.statusCode).send({ error: error.message });
+      }
       throw error;
     }
   });

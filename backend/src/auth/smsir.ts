@@ -3,7 +3,11 @@ import { AppEnv } from '../config/env.js';
 const SMSIR_VERIFY_URL = 'https://api.sms.ir/v1/send/verify';
 
 export class SmsProviderError extends Error {
-  constructor(public readonly statusCode: number, message = 'sms_provider_failed') {
+  constructor(
+    public readonly statusCode: number,
+    message = 'sms_provider_failed',
+    public readonly providerStatus?: number,
+  ) {
     super(message);
   }
 }
@@ -39,7 +43,7 @@ export async function sendSmsIrVerificationCode(input: {
   };
   if (!response.ok || payload.status !== 1) {
     const providerStatus = response.status === 401 ? 502 : response.status === 429 ? 429 : 502;
-    throw new SmsProviderError(providerStatus, 'sms_provider_failed');
+    throw new SmsProviderError(providerStatus, 'sms_provider_failed', response.status);
   }
   return {
     messageId: payload.data?.messageId === undefined ? undefined : String(payload.data.messageId),

@@ -1,9 +1,25 @@
+import nodemailer from 'nodemailer';
 import type { AppEnv } from '../config/env.js';
 
 export class EmailProviderError extends Error {
-  constructor(public readonly statusCode: number, message = 'email_provider_failed') {
+  constructor(
+    public readonly statusCode: number,
+    message = 'email_provider_failed',
+    public readonly provider?: 'resend' | 'smtp',
+    public readonly providerStatus?: number,
+  ) {
     super(message);
   }
+}
+
+function buildVerificationMessage(input: { env: AppEnv; token: string }) {
+  const url = new URL('/auth/verify-email', input.env.FRONTEND_URL);
+  url.searchParams.set('token', input.token);
+  const expiresInMinutes = Math.floor(input.env.EMAIL_VERIFICATION_TTL_SECONDS / 60);
+  return {
+    subject: 'تأیید ایمیل کاغذ و باد',
+    html: `<div dir="rtl"><p>برای تکمیل ثبت‌نام کاغذ و باد روی پیوند زیر کلیک کنید:</p><p><a href="${url.toString()}">تأیید ایمیل</a></p><p>این پیوند پس از ${expiresInMinutes} دقیقه منقضی می‌شود.</p></div>`,
+  };
 }
 
 export async function sendEmailVerification(input: {
@@ -11,28 +27,49 @@ export async function sendEmailVerification(input: {
   email: string;
   token: string;
 }): Promise<void> {
-  if (input.env.EMAIL_PROVIDER !== 'resend' || !input.env.RESEND_API_KEY || !input.env.EMAIL_FROM) {
+  const { env } = input;
+  if (!env.EMAIL_FROM) {
     throw new EmailProviderError(503, 'email_provider_not_configured');
   }
 
-  const url = new URL('/auth/verify-email', input.env.FRONTEND_URL);
-  url.searchParams.set('token', input.token);
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${input.env.RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      from: input.env.EMAIL_FROM,
-      to: [input.email],
-      subject: 'تأیید ایمیل کاغذ و باد',
-      html: `<div dir="rtl"><p>برای تکمیل ثبت‌نام کاغذ و باد روی پیوند زیر کلیک کنید:</p><p><a href="${url.toString()}">تأیید ایمیل</a></p><p>این پیوند پس از ${Math.floor(input.env.EMAIL_VERIFICATION_TTL_SECONDS / 60)} دقیقه منقضی می‌شود.</p></div>`,
-    }),
-    signal: AbortSignal.timeout(10_000),
-  });
-  if (!response.ok) {
-    throw new EmailProviderError(response.status === 429 ? 429 : 502);
+  const message = buildVerificationMessage(input);
+  if (env.EMAIL_PROVIDER === 'resend') {
+    if (!env.RESEND_API_KEY) {
+      throw new EmailProviderError(503, 'email_provider_not_configured', 'resend');
+    }
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify({ from: env.EMAIL_FROM, to: [input.email], ...message }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) {
+      throw new EmailProviderError(response.status === 429 ? 429 : 502, 'email_provider_failed', 'resend', response.status);
+    }
+    return;
   }
+
+  if (env.EMAIL_PROVIDER === 'smtp') {
+    if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASSWORD) {
+      throw new EmailProviderError(503, 'email_provider_not_configured', 'smtp');
+    }
+    try {
+      const transport = nodemailer.createTransport({
+        host: env.SMTP_HOST,
+        port: env.SMTP_PORT,
+        secure: env.SMTP_PORT === 465,
+        auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD },
+      });
+      await transport.sendMail({ from: env.EMAIL_FROM, to: input.email, ...message });
+      return;
+    } catch {
+      throw new EmailProviderError(502, 'email_provider_failed', 'smtp');
+    }
+  }
+
+  throw new EmailProviderError(503, 'email_provider_not_configured');
 }

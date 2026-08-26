@@ -111,7 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await sendPhoneCode(phone);
       return { error: null, expiresIn: response.expires_in_seconds };
     } catch (error: unknown) {
-      toast({ variant: 'destructive', title: 'خطا در ارسال کد', description: error instanceof Error && error.message === 'sms_provider_not_configured' ? 'سرویس پیامک هنوز در backend تنظیم نشده است' : error instanceof Error ? error.message : 'خطای ناشناخته' });
+      const description = error instanceof Error && error.message === 'sms_provider_not_configured'
+        ? 'سرویس پیامک هنوز در backend تنظیم نشده است.'
+        : error instanceof Error && error.message === 'sms_provider_failed'
+          ? 'ارسال پیامک در حال حاضر ناموفق است. لطفاً چند دقیقه دیگر دوباره تلاش کنید یا از ورود ایمیلی استفاده کنید.'
+          : 'امکان ارسال کد ورود فراهم نشد. لطفاً دوباره تلاش کنید.';
+      toast({ variant: 'destructive', title: 'خطا در ارسال کد', description });
       return { error };
     }
   };
@@ -154,8 +159,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: error instanceof Error && error.message === 'email_already_registered'
           ? 'این ایمیل قبلاً ثبت شده است'
           : error instanceof Error && error.message === 'email_provider_not_configured'
-            ? 'ارسال ایمیل تأیید هنوز در backend تنظیم نشده است'
-            : error instanceof Error ? error.message : 'خطای ناشناخته',
+            ? 'ارسال ایمیل تأیید هنوز در backend تنظیم نشده است.'
+            : error instanceof Error && error.message === 'email_provider_failed'
+              ? 'ارسال ایمیل تأیید ناموفق بود. لطفاً چند دقیقه دیگر دوباره تلاش کنید یا از ورود با شمارهٔ تلفن استفاده کنید.'
+              : 'امکان تکمیل ثبت‌نام فراهم نشد. لطفاً دوباره تلاش کنید.',
       });
       return { error };
     }
