@@ -1,0 +1,162 @@
+name: Controlled AI Stack Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: Select exactly one isolated AI service to deploy.
+        required: true
+        type: choice
+        options:
+          - n8n
+          - openclaw
+          - openwebui
+      confirmation:
+        description: Type the service-specific confirmation token shown in the runbook.
+        required: true
+        type: string
+      release_note:
+        description: Short operator note explaining the approved rollout.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: liara-ai-production-${{ inputs.service }}
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    name: AI preflight (${{ inputs.service }})
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+      LIARA_TEAM_ID: ${{ secrets.LIARA_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require service-specific operator confirmation
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ inputs.service }}:${{ inputs.confirmation }}" in
+            n8n:DEPLOY_N8N|openclaw:DEPLOY_OPENCLAW|openwebui:DEPLOY_OPENWEBUI) ;;
+            *) echo 'The confirmation token does not match the selected service.' >&2; exit 1 ;;
+          esac
+      - name: Validate deployment credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$LIARA_API_TOKEN" || { echo 'Missing LIARA_API_TOKEN repository secret.' >&2; exit 1; }
+          test -n "$LIARA_TEAM_ID" || { echo 'Missing LIARA_TEAM_ID repository secret.' >&2; exit 1; }
+      - name: Validate non-secret manifest contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ inputs.service }}" in
+            n8n) context='n8n' ;;
+            openclaw) context='openclaw' ;;
+            openwebui) context='open-webui' ;;
+          esac
+          test -f "infra/paas/${context}/Dockerfile"
+          test -f "infra/paas/${context}/liara.json"
+          node -e "JSON.parse(require('node:fs').readFileSync('infra/paas/${context}/liara.json', 'utf8'))"
+          if grep -RInE '"(env|envs)"\s*:' "infra/paas/${context}"; then
+            echo 'AI manifests must not embed runtime environment values.' >&2
+            exit 1
+          fi
+          if grep -RInE 'latest' "infra/paas/${context}/Dockerfile"; then
+            echo 'AI images must be pinned; latest is not permitted.' >&2
+            exit 1
+          fi
+      - name: Verify runtime isolation and prerequisites without exposing secrets
+        run: node scripts/ai-stack-preflight.mjs "${{ inputs.service }}" preflight
+
+  deploy:
+    name: Deploy isolated AI service (${{ inputs.service }})
+    needs: preflight
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+      LIARA_TEAM_ID: ${{ secrets.LIARA_TEAM_ID }}
+      RELEASE_NOTE: ${{ inputs.release_note }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Liara CLI
+        run: npm install --global @liara/cli@9.5.1
+      - name: Deploy one approved service
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ inputs.service }}" in
+            n8n)
+              app='kaghazbaad-n8n'
+              context='n8n'
+              port='5678'
+              ;;
+            openclaw)
+              app='kaghazbaad-openclaw'
+              context='openclaw'
+              port='18789'
+              ;;
+            openwebui)
+              app='kaghazbaad-openwebui'
+              context='open-webui'
+              port='8080'
+              ;;
+          esac
+          liara deploy \
+            --app "$app" \
+            --team-id "$LIARA_TEAM_ID" \
+            --api-token "$LIARA_API_TOKEN" \
+            --path "infra/paas/${context}" \
+            --dockerfile Dockerfile \
+            --port "$port" \
+            --no-app-logs \
+            --message "GitHub ${GITHUB_SHA} controlled ${context}: ${RELEASE_NOTE}"
+      - name: Verify READY release and persistent-disk isolation
+        run: node scripts/ai-stack-preflight.mjs "${{ inputs.service }}" verify-release
+      - name: Probe the public health route where public exposure is explicitly expected
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${{ inputs.service }}" in
+            n8n)
+              curl --fail --show-error --silent --retry 8 --retry-delay 5 --retry-connrefused https://n8n.kaghazobaad.ir/healthz >/dev/null
+              ;;
+            openwebui)
+              curl --fail --show-error --silent --retry 8 --retry-delay 5 --retry-connrefused https://ai.kaghazobaad.ir/health >/dev/null
+              ;;
+            openclaw)
+              echo 'OpenClaw public probe is intentionally omitted: access stays restricted and Liara container health is the release gate.'
+              ;;
+          esac
+      - name: Record non-sensitive deployment summary
+        shell: bash
+        run: |
+          {
+            echo '## Controlled AI deployment'
+            echo
+            echo "- Service: \`${{ inputs.service }}\`"
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Operator note: ${{ inputs.release_note }}"
+            echo '- Runtime secrets were validated but not printed.'
+            echo '- Direct product-database configuration was rejected by preflight.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+# Policy:
+# - This workflow has no push/pull_request trigger and never auto-deploys AI services.
+# - It deploys exactly one App per approved run through the protected production environment.
+# - Every run validates the service-specific disk, runtime keys, HTTPS origin, secret strength,
+#   and absence of direct product-database environment variables before deployment.
+# - n8n, OpenClaw, and Open WebUI must each be approved and rolled out separately.

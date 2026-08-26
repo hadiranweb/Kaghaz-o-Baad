@@ -63,6 +63,7 @@ jobs:
           exit 0
 
   backend:
+    # This exact check name is referenced by GitHub branch protection.
     name: Backend check, build and migration dry-run
     runs-on: ubuntu-latest
     defaults:
@@ -77,6 +78,7 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
       - run: npm run check
+      - run: npm run test:auth
       - run: npm run build
       - run: npm run migrate:dry-run
       - name: Production dependency audit
