@@ -160,8 +160,9 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
       return reply.status(401).send({ error: 'invalid_email_or_password' });
     }
     const token = await createSession(user.id);
+    const roleResult = await db.query<{ role: string }>(`SELECT role::text FROM user_roles WHERE user_id = $1 ORDER BY role`, [user.id]);
     await recordAuthEvent({ request, eventType: 'password_login', outcome: 'success', userId: user.id, email: user.email, startedAt });
-    return reply.send({ user: { id: user.id, email: user.email }, token });
+    return reply.send({ user: { id: user.id, email: user.email, roles: roleResult.rows.map((row) => row.role) }, token });
   });
 
   app.post('/api/v1/auth/phone/send-code', async (request, reply) => {
