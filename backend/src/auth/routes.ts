@@ -284,11 +284,12 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
 
   app.post('/api/v1/auth/logout', async (request, reply) => {
     const header = request.headers.authorization;
-    if (!header?.startsWith('Bearer ')) return reply.status(204).send();
-    const token = header.slice(7);
-    const { hashSessionToken } = await import('./service.js');
-    await db.query('UPDATE sessions SET revoked_at = now() WHERE token_hash = $1', [hashSessionToken(token)]);
-    return reply.status(204).send();
+    const token = header?.startsWith('Bearer ') ? header.slice(7).trim() : '';
+    if (token) {
+      const { hashSessionToken } = await import('./service.js');
+      await db.query('UPDATE sessions SET revoked_at = now() WHERE token_hash = $1', [hashSessionToken(token)]);
+    }
+    return reply.status(200).send({ ok: true });
   });
 
   app.get('/api/v1/auth/me', async (request, reply) => {
