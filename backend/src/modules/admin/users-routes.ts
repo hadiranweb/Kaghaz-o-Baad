@@ -27,7 +27,9 @@ export async function registerAdminUsersRoutes(app: FastifyInstance) {
     const d = body.data;
     if (d.action === 'list') {
       const result = await db.query(`
-        SELECT u.id, u.email, u.created_at, u.last_sign_in_at, u.email_confirmed_at,
+        SELECT u.id, u.email, u.created_at,
+               NULL::timestamptz AS last_sign_in_at,
+               u.email_verified_at AS email_confirmed_at,
                COALESCE(array_agg(ur.role::text) FILTER (WHERE ur.role IS NOT NULL), '{}') AS roles,
                jsonb_build_object('first_name', p.first_name, 'last_name', p.last_name, 'phone', p.phone) AS profile
         FROM users u
