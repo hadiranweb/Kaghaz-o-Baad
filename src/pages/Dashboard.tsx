@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import {
   LogOut, Plus, Edit, Trash2, LayoutDashboard, FileText, Video, User, Settings, Globe, HardDrive,
-  Shield, Users, Activity, ScrollText, BookOpen, Eye, Save
+  Shield, Users, Activity, ScrollText, BookOpen, Eye, Save, Network
 } from 'lucide-react';
 import { z } from 'zod';
 import { LazyMarkdownEditor } from '@/components/LazyMarkdownEditor';
@@ -33,6 +33,7 @@ import CircuitBreakerMonitor from '@/components/admin/CircuitBreakerMonitor';
 import SystemWiki from '@/components/admin/SystemWiki';
 import UsageCostReport from '@/components/admin/UsageCostReport';
 import VerifiedFactorsCard from '@/components/auth/VerifiedFactorsCard';
+import OpenWebUiAccessManager from '@/components/admin/OpenWebUiAccessManager';
 
 type DashboardView =
   | 'articles'
@@ -43,6 +44,7 @@ type DashboardView =
   | 'project'
   | 'wiki'
   | 'usage_report'
+  | 'openwebui_access'
   | 'security';
 
 const articleSchema = z.object({
@@ -377,6 +379,7 @@ export default function Dashboard() {
     if (activeView === 'resilience') return t('تاب‌آوری و مدارشکن‌ها', 'Resilience & Breakers');
     if (activeView === 'all_live') return t('پایش پخش‌های زنده', 'Live Sessions (Monitor)');
     if (activeView === 'project') return t('ویرایش شرح پروژه', 'Project Description');
+    if (activeView === 'openwebui_access') return t('دسترسی شبکه‌ای Open WebUI', 'Open WebUI Network Access');
     if (activeView === 'security') return t('امنیت و عوامل تأیید', 'Security & Verified Factors');
     if (activeView === 'wiki') return t('ویکی و راهنمای سامانه', 'System Wiki & Etiquette');
     return t('میز کار کاربری', 'User Workspace');
@@ -512,6 +515,17 @@ export default function Dashboard() {
                       {isAdmin && (
                         <SidebarMenuItem>
                           <SidebarMenuButton
+                            isActive={activeView === 'openwebui_access'}
+                            onClick={() => handleSelectView('openwebui_access')}
+                          >
+                            <Network className="h-4 w-4 text-violet-500" />
+                            <span>{t('دسترسی شبکه‌ای Open WebUI', 'Open WebUI Network Access')}</span>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      )}
+                      {isAdmin && (
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
                             isActive={activeView === 'project'}
                             onClick={() => handleSelectView('project')}
                           >
@@ -598,6 +612,8 @@ export default function Dashboard() {
               {activeView === 'resilience' && canAccessAdmin && <CircuitBreakerMonitor />}
 
               {activeView === 'usage_report' && isAdmin && <UsageCostReport />}
+
+              {activeView === 'openwebui_access' && isAdmin && <OpenWebUiAccessManager />}
 
               {/* VIEW: 'all_live' (پایش پخش‌های زنده — بدون دکمه ایجاد جلسه مدیریتی) */}
               {activeView === 'all_live' && canAccessAdmin && <LiveSessionsManager />}

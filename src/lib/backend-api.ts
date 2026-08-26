@@ -434,6 +434,37 @@ export function adminUsers(input: Record<string, unknown>) {
   return backendRequest<{ ok: true; users?: AdminUserRecord[]; forcedPasswordChange?: boolean }>('/admin/users', { method: 'POST', body: JSON.stringify(input) });
 }
 
+export type OpenWebUiAllowlistEntry = {
+  id: string;
+  cidr: string;
+  label: string;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type OpenWebUiAllowlistSync = {
+  edgeConfigured: boolean;
+  desiredRevision: number;
+  appliedRevision: number;
+  isInSync: boolean;
+  lastSyncStatus: 'not_configured' | 'pending' | 'syncing' | 'succeeded' | 'failed';
+  lastSyncAt: string | null;
+  lastErrorCode: string | null;
+  lastErrorMessage: string | null;
+};
+
+export type OpenWebUiAllowlistResponse = {
+  ok: true;
+  entries?: OpenWebUiAllowlistEntry[];
+  entry?: OpenWebUiAllowlistEntry;
+  sync?: OpenWebUiAllowlistSync;
+};
+
+export function adminOpenWebUiAccess(input: Record<string, unknown>) {
+  return backendRequest<OpenWebUiAllowlistResponse>('/admin/openwebui-access', { method: 'POST', body: JSON.stringify(input) });
+}
+
 export type BackendCircuitBreaker = {
   service_name: string;
   state: 'CLOSED' | 'OPEN' | 'HALF_OPEN';

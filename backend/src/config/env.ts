@@ -76,6 +76,12 @@ const envSchema = z.object({
   OPENCLAW_BASE_URL: z.string().url().optional(),
   OPENCLAW_GATEWAY_TOKEN: z.string().min(32).optional(),
   OPENWEBUI_BASE_URL: z.string().url().optional(),
+  CLOUDFLARE_API_TOKEN: z.string().min(20).optional(),
+  CLOUDFLARE_ACCOUNT_ID: z.string().regex(/^[a-f0-9]{32}$/i).optional(),
+  CLOUDFLARE_ZONE_ID: z.string().regex(/^[a-f0-9]{32}$/i).optional(),
+  OPENWEBUI_EDGE_ALLOWLIST_NAME: z.string().regex(/^[a-z0-9_]{1,50}$/).default('kaghazbaad_openwebui_admin_ips'),
+  OPENWEBUI_EDGE_HOST: z.string().regex(/^[a-z0-9.-]+$/i).default('ai.kaghazobaad.ir'),
+  CLOUDFLARE_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().max(30_000).default(12_000),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
