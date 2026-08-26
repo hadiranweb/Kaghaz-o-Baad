@@ -16,6 +16,7 @@ import { registerUsageReportRoutes } from './modules/admin/usage-report-routes.j
 import { registerAdminUsersRoutes } from './modules/admin/users-routes.js';
 import { registerAdminAuthRoutes } from './modules/admin/auth-routes.js';
 import { registerCircuitRoutes } from './modules/admin/circuit-routes.js';
+import { registerOpenWebUiAccessRoutes } from './modules/admin/openwebui-access-routes.js';
 import { registerBillingRoutes } from './modules/billing/routes.js';
 import { registerContentRoutes } from './modules/content/routes.js';
 import { registerSearchRoutes } from './modules/search/routes.js';
@@ -55,6 +56,7 @@ await registerUsageReportRoutes(app);
 await registerAdminUsersRoutes(app);
 await registerAdminAuthRoutes(app, env);
 await registerCircuitRoutes(app);
+await registerOpenWebUiAccessRoutes(app, env);
 await registerBillingRoutes(app, env);
 await registerContentRoutes(app, env);
 await registerSearchRoutes(app);
