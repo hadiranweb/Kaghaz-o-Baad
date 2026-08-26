@@ -17,7 +17,7 @@
 | 0 | Auth/SMS/SMTP | delivery کنترل‌شدهٔ یک OTP و یک email verification | delivery موفق و log redacted بدون خطای provider |
 | 1 | n8n | webhook تشخیصی HMAC و read-only | disk، domain policy، health، reject signature/replay و rollback |
 | 2 | OpenClaw | یک Gateway مدیرمحور با ابزارهای read-only | Gateway token، security audit، deny شدن exec/filesystem/automation و revoke |
-| 3 | Open WebUI | یک admin و یک مدل محدود | access policy، عدم signup عمومی، health، login و revoke |
+| 3 | Open WebUI | یک admin و یک مدل محدود | login داخلی، عدم signup عمومی، health، مدل محدود و revoke |
 
 هیچ مرحله‌ای با عبور مرحله قبل جایگزین نمی‌شود. در صورت failure delivery Auth، health check، disk، domain policy یا rollback، release بعدی اجرا نمی‌شود.
 
@@ -29,9 +29,9 @@
 |---|---|---|---|---|
 | `kaghazbaad-n8n` | `n8n-data` | `/home/node/.n8n` | `n8n.kaghazobaad.ir` | `admin-only` پشت Cloudflare Access/IP allowlist |
 | `kaghazbaad-openclaw` | `openclaw-state` | `/home/node/.openclaw` | `agent.kaghazobaad.ir` | `admin-only`؛ public exposure ممنوع |
-| `kaghazbaad-openwebui` | `openwebui-data` | `/app/backend/data` | `ai.kaghazobaad.ir` | `authenticated-admin-only` پشت access policy |
+| `kaghazbaad-openwebui` | `openwebui-data` | `/app/backend/data` | `ai.kaghazobaad.ir` | login داخلی Open WebUI، signup غیرفعال؛ Cloudflare Access/IP allowlist ندارد |
 
-برای custom domain، domain باید در Liara ایجاد و سپس با شناسهٔ domain و project به App وصل شود.[3] قبل از ثبت attestation مربوط به access policy، کنترل بیرونی باید واقعاً اعمال شده باشد؛ متغیر `KAGHAZBAAD_ACCESS_POLICY` صرفاً شاهد configuration است، نه جایگزین reverse proxy یا identity provider.
+برای custom domain، domain باید در Liara ایجاد و سپس با شناسهٔ domain و project به App وصل شود.[3] سیاست بیرونی دسترسی فقط برای سرویس‌هایی مانند n8n/OpenClaw که در جدول بالا صراحتاً آن را می‌خواهند ارزیابی می‌شود. Open WebUI در این rollout فقط از login محلی خود استفاده می‌کند و هیچ attestation، Cloudflare Access یا IP allowlist ندارد.
 
 ## تنظیم Secretها در Liara
 
@@ -79,7 +79,10 @@ n8n Webhook Node از روش‌های authentication از جمله Basic، Heade
 | `WEBUI_ADMIN_EMAIL` | email مدیر bootstrap؛ فقط در Secret store. |
 | `WEBUI_ADMIN_PASSWORD` | password قوی و یکتا، حداقل ۳۲ کاراکتر؛ فقط در Secret store. |
 | `ENABLE_SIGNUP` | دقیقاً `false` |
-| `KAGHAZBAAD_ACCESS_POLICY` | دقیقاً `authenticated-admin-only` بعد از اعمال policy بیرونی |
+| `ENABLE_LOGIN_FORM` و `ENABLE_PASSWORD_AUTH` | دقیقاً `true` تا login محلی قابل استفاده باشد |
+| `WEBUI_SESSION_COOKIE_SECURE` و `WEBUI_SESSION_COOKIE_SAME_SITE` | به‌ترتیب `true` و `strict` روی HTTPS |
+| `JWT_EXPIRES_IN` | حداکثر `4h` در نبود Redis برای token revocation |
+| `CORS_ALLOW_ORIGIN` | دقیقاً `https://ai.kaghazobaad.ir` |
 
 Open WebUI RBAC و کنترل resource را ارائه می‌کند؛ resourceها private-by-default هستند، اما role و group به‌صورت additive عمل می‌کنند. بنابراین در rollout اول تنها یک admin ایجاد و تنها یک مدل publish می‌شود.[6] `WEBUI_SECRET_KEY` باید صریح و پایدار باشد، زیرا برای امضای JWT و encryption دادهٔ حساس به کار می‌رود؛ تغییر آن tokenها و secretهای رمز‌شدهٔ پیشین را بی‌اعتبار می‌کند.[7]
 
@@ -91,7 +94,7 @@ Open WebUI RBAC و کنترل resource را ارائه می‌کند؛ resource�
 2. حداقل طول Secretهای حساس، تطابق token OpenClaw با backend و URLهای HTTPS صحیح.
 3. وجود disk و mount موردنیاز.
 4. ممنوع‌بودن پیکربندی database مستقیم در App AI.
-5. وجود access-policy attestation بعد از فعال‌سازی واقعی policy.
+5. برای n8n/OpenClaw، وجود access-policy attestation بعد از فعال‌سازی واقعی policy؛ Open WebUI از این gate مستثنا است و login داخلی دارد.
 6. pinned بودن image و نبودن `env/envs` در manifest.
 
 | سرویس انتخابی | confirmation لازم در workflow | health/release verification |
@@ -112,7 +115,7 @@ Open WebUI RBAC و کنترل resource را ارائه می‌کند؛ resource�
 | OpenClaw | Gateway auth با token معتبر، `security audit --deep` پاک، agent بدون exec/fs | token غلط باید reject شود؛ revoke token و بازگشت release قبلی |
 | Open WebUI | login admin، signup غیرفعال، مدل محدود، route health | revoke دسترسی، حذف model exposure و بازگشت release قبلی |
 
-اگر نیاز به rollback باشد، ابتدا access policy را فعال نگه دارید، App را به release آمادهٔ قبلی در Liara برگردانید، tokenهای مشکوک را rotate کنید و سپس logهای redacted را بررسی کنید. rollback هر سرویس مستقل از frontend/backend/core است.
+اگر نیاز به rollback باشد، App را به release آمادهٔ قبلی در Liara برگردانید، tokenهای مشکوک را rotate کنید و سپس logهای redacted را بررسی کنید. برای n8n/OpenClaw کنترل بیرونی دسترسی در طول rollback حفظ می‌شود؛ Open WebUI بر login داخلی خود متکی است. rollback هر سرویس مستقل از frontend/backend/core است.
 
 ## وضعیت فعلی و شرط شروع
 
