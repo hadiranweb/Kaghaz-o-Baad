@@ -127,7 +127,7 @@ export async function changePassword(password: string) {
 
 export async function logout() {
   try {
-    await request('/auth/logout', { method: 'POST' });
+    await request('/auth/logout', { method: 'POST', body: '{}' });
   } finally {
     setToken(null);
   }
