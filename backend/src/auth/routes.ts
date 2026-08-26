@@ -26,7 +26,7 @@ const verifyPhoneCodeSchema = z.object({ phone: phoneSchema, code: z.string().tr
 const verifyFactorCodeSchema = verifyPhoneCodeSchema;
 const verifyEmailSchema = z.object({ token: z.string().trim().min(20).max(200) });
 
-function normalizePhone(input: string) {
+export function normalizePhone(input: string) {
   const persianDigits = '۰۱۲۳۴۵۶۷۸۹';
   const arabicDigits = '٠١٢٣٤٥٦٧٨٩';
   const translated = input

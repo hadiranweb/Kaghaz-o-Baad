@@ -12,4 +12,7 @@ ENV HOME=/home/node \
     OPENCLAW_DISABLE_BONJOUR=1 \
     TZ=Asia/Tehran
 
-CMD ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
+COPY --chown=node:node entrypoint.sh /usr/local/bin/kaghazbaad-openclaw-entrypoint
+RUN chmod 0755 /usr/local/bin/kaghazbaad-openclaw-entrypoint
+
+ENTRYPOINT ["/usr/local/bin/kaghazbaad-openclaw-entrypoint"]
