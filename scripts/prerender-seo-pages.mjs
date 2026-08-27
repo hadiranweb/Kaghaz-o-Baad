@@ -19,6 +19,59 @@ function localizedPath(path, locale) {
   if (path === '/') return `/${locale}`;
   return `/${locale}${path}`;
 }
+function rootWithStaticContent(html, content = '') {
+  if (!content) return html;
+  return html.replace(/<div id="root"><\/div>/i, `<div id="root">${content}</div>`);
+}
+
+function homeStaticContent(locale) {
+  const fa = locale === 'fa';
+  const prefix = fa ? '/fa' : '/en';
+  const copy = fa ? {
+    lang: 'fa', dir: 'rtl',
+    title: 'کاغذ و باد؛ نشر آکادمیک دوزبانه و گفت‌وگوی پس از انتشار',
+    intro: 'کاغذ و باد بستری برای یافتن، خواندن و ادامه‌دادن ایده‌های پژوهشی است. مقاله، ارائه و گفت‌وگوی زنده در اینجا به هم پیوند می‌خورند تا انتشار، آغاز مسیر یک گفت‌وگو باشد.',
+    discoveryTitle: 'برای دنبال‌کردن یک مسئله، از کجا شروع کنیم؟',
+    discovery: 'در مقالات منتشرشده جست‌وجو کنید، رسانه و ارائه‌های مرتبط را ببینید و جلسه‌های زنده پیرامون آثار را دنبال کنید.',
+    read: 'مرور مقالات پژوهشی منتشرشده', media: 'دیدن رسانه‌ها و ارائه‌های مرتبط', live: 'مشاهدهٔ جلسه‌های زنده',
+    approachTitle: 'از انتشار مقاله تا گفت‌وگوی ادامه‌دار',
+    approach: 'هر اثر می‌تواند با متن کامل، ارائه و گفت‌وگوی زنده دنبال شود. این مسیر به خواننده کمک می‌کند مسئله را در زمینهٔ خود ببیند و به نویسنده فرصت می‌دهد پرسش‌ها و بازخوردها را روشن پیگیری کند.',
+    project: 'شرح پروژهٔ کاغذ و باد', about: 'دربارهٔ کاغذ و باد',
+  } : {
+    lang: 'en', dir: 'ltr',
+    title: 'KaghazBaad: bilingual academic publishing and post-publication dialogue',
+    intro: 'KaghazBaad is a place to find, read, and continue research ideas. Articles, presentations, and live dialogue are connected so publication can begin a conversation.',
+    discoveryTitle: 'Where can you start following a question?',
+    discovery: 'Search published articles, explore related media and presentations, and follow live sessions around published works.',
+    read: 'Explore published research articles', media: 'View related media and presentations', live: 'View live sessions',
+    approachTitle: 'From published work to continuing dialogue',
+    approach: 'Each work can be followed through its full text, presentation, and live conversation. This path helps readers see a question in context and gives authors a clear way to continue with questions and feedback.',
+    project: 'KaghazBaad project details', about: 'About KaghazBaad',
+  };
+  return `<main lang="${copy.lang}" dir="${copy.dir}">
+    <section aria-labelledby="home-prerender-title">
+      <h1 id="home-prerender-title">${copy.title}</h1>
+      <p>${copy.intro}</p>
+    </section>
+    <section aria-labelledby="home-prerender-discovery">
+      <h2 id="home-prerender-discovery">${copy.discoveryTitle}</h2>
+      <p>${copy.discovery}</p>
+      <nav aria-label="${fa ? 'مسیرهای اصلی کاغذ و باد' : 'KaghazBaad main paths'}">
+        <ul>
+          <li><a href="${prefix}/read">${copy.read}</a></li>
+          <li><a href="${prefix}/media">${copy.media}</a></li>
+          <li><a href="${prefix}/live">${copy.live}</a></li>
+        </ul>
+      </nav>
+    </section>
+    <section aria-labelledby="home-prerender-approach">
+      <h2 id="home-prerender-approach">${copy.approachTitle}</h2>
+      <p>${copy.approach}</p>
+      <p><a href="${prefix}/about-project">${copy.project}</a> · <a href="${prefix}/about">${copy.about}</a></p>
+    </section>
+  </main>`;
+}
+
 function headFor({ path, title, description, locale = 'fa_IR', type = 'website', image, structuredData }) {
   const normalizedPath = normalizePath(path);
   const canonical = `${origin}${normalizedPath}`;
@@ -105,13 +158,13 @@ async function writeRoute(path, html) {
 for (const page of pages) {
   const faStructuredData = [{ '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'خانه', item: `${origin}/` }, { '@type': 'ListItem', position: 2, name: page.fa[0] }] }];
   if (page.path === '/about-project') faStructuredData.push({ '@type': 'FAQPage', '@id': `${origin}/about-project#faq`, mainEntity: projectFaqs });
-  await writeRoute(page.path, headFor({ path: page.path, title: page.fa[0], description: page.fa[1], locale: 'fa_IR', structuredData: faStructuredData }));
+  await writeRoute(page.path, rootWithStaticContent(headFor({ path: page.path, title: page.fa[0], description: page.fa[1], locale: 'fa_IR', structuredData: faStructuredData }), page.path === '/' ? homeStaticContent('fa') : ''));
   const faLocalizedStructuredData = [{ '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'خانه', item: `${origin}/fa` }, { '@type': 'ListItem', position: 2, name: page.fa[0] }] }];
   if (page.path === '/about-project') faLocalizedStructuredData.push({ '@type': 'FAQPage', '@id': `${origin}/fa/about-project#faq`, mainEntity: projectFaqs });
-  await writeRoute(localizedPath(page.path, 'fa'), headFor({ path: localizedPath(page.path, 'fa'), title: page.fa[0], description: page.fa[1], locale: 'fa_IR', structuredData: faLocalizedStructuredData }));
+  await writeRoute(localizedPath(page.path, 'fa'), rootWithStaticContent(headFor({ path: localizedPath(page.path, 'fa'), title: page.fa[0], description: page.fa[1], locale: 'fa_IR', structuredData: faLocalizedStructuredData }), page.path === '/' ? homeStaticContent('fa') : ''));
   const enStructuredData = [{ '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/en` }, { '@type': 'ListItem', position: 2, name: page.en[0] }] }];
   if (page.path === '/about-project') enStructuredData.push({ '@type': 'FAQPage', '@id': `${origin}/en/about-project#faq`, mainEntity: projectFaqs });
-  await writeRoute(localizedPath(page.path, 'en'), headFor({ path: localizedPath(page.path, 'en'), title: page.en[0], description: page.en[1], locale: 'en_US', structuredData: enStructuredData }));
+  await writeRoute(localizedPath(page.path, 'en'), rootWithStaticContent(headFor({ path: localizedPath(page.path, 'en'), title: page.en[0], description: page.en[1], locale: 'en_US', structuredData: enStructuredData }), page.path === '/' ? homeStaticContent('en') : ''));
 }
 
 const articles = await fetchArticles();
