@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { capabilitiesForContext, STUDIO_CATALOG_VERSION, studioCapabilityCatalog } from '../../src/modules/studio/catalog.js';
+import { capabilitiesForContext, STUDIO_CATALOG_VERSION, studioCapabilityCatalog, studioCapabilityPreviewByKey } from '../../src/modules/studio/catalog.js';
 
 test('Studio catalog is versioned and keeps all capabilities review-gated', () => {
   assert.match(STUDIO_CATALOG_VERSION, /^\d{4}-\d{2}-\d{2}$/);
@@ -15,6 +15,14 @@ test('Studio catalog includes the highest-priority content and media journeys', 
   assert.equal(byKey.get('publication.instagram_caption')?.readiness, 'contract_pending');
   assert.equal(byKey.get('live_recording.transcription')?.requiresConsent, true);
   assert.equal(byKey.get('live_recording.transcription')?.risk, 'high');
+});
+
+test('Every Studio capability has a static, safe educational preview', () => {
+  assert.equal(Object.keys(studioCapabilityPreviewByKey).length, studioCapabilityCatalog.length);
+  assert.ok(studioCapabilityCatalog.every((capability) => capability.preview === studioCapabilityPreviewByKey[capability.key]));
+  assert.ok(studioCapabilityCatalog.every((capability) => capability.preview.scenarioFa.length > 10));
+  assert.ok(studioCapabilityCatalog.every((capability) => capability.preview.sampleOutputFa.length > 20));
+  assert.ok(studioCapabilityCatalog.every((capability) => capability.preview.safetyNoteFa.includes('محتوای ساختگی')));
 });
 
 test('Studio catalog context filter keeps journeys isolated', () => {

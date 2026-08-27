@@ -547,6 +547,11 @@ export type StudioCatalogCapability = {
   requiresHumanReview: true;
   requiresConsent: boolean;
   activationBlockedByFa: string;
+  preview: {
+    scenarioFa: string;
+    sampleOutputFa: string;
+    safetyNoteFa: string;
+  };
   enabled: false;
   status: 'disabled';
 };
