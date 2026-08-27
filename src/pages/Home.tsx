@@ -144,7 +144,7 @@ export default function Home() {
               <button
                 type="submit"
                 disabled={!query.trim()}
-                className="absolute end-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 sm:h-10 sm:w-10"
+                className="absolute end-1.5 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label={t('جست‌وجو در مقالات', 'Search articles')}
                 title={t('جست‌وجو در مقالات', 'Search articles')}
               >
