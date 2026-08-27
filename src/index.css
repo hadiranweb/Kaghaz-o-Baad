@@ -705,10 +705,10 @@
   .kb-word-reveal__word { opacity: 1; transform: none; transition: none; }
 }
 
-/* Source-level port from MengTo/sylva dock: transform-only proximity and plain mobile fallback. */
+/* Primary navigation: hover never changes geometry, so adjacent labels cannot overlap. */
 .kb-editorial-dock {
   align-items: center;
-  gap: .2rem;
+  gap: .35rem;
   justify-content: center;
   min-width: 0;
 }
@@ -724,19 +724,14 @@
   font-size: .76rem;
   font-weight: 500;
   text-decoration: none;
-  transform: scale(var(--dock-scale, 1));
-  transform-origin: center bottom;
-  transition: color 160ms ease, background-color 160ms ease, transform 80ms linear;
-  will-change: transform;
+  transition: color 160ms ease, background-color 160ms ease;
 }
 .kb-dock-item:hover,
 .kb-dock-item:focus-visible,
 .kb-dock-item.is-active { color: hsl(var(--foreground)); }
 .kb-dock-item:hover,
 .kb-dock-item:focus-visible { background: hsl(var(--accent) / .08); }
-.kb-editorial-dock[data-sylva-state="nearby"] .kb-dock-item:not(:hover):not(:focus-visible) { opacity: .78; }
-.kb-editorial-dock[data-sylva-state="touch-fallback"] .kb-dock-item { transform: none; }
-.kb-dock-item[data-dock-state="focused"] { outline: 2px solid hsl(var(--ring) / .55); outline-offset: 3px; }
+.kb-dock-item:focus-visible { outline: 2px solid hsl(var(--ring) / .55); outline-offset: 3px; }
 .kb-dock-item.is-active::after {
   position: absolute;
   right: 1rem;
@@ -747,12 +742,8 @@
   content: '';
 }
 .kb-dock-index { color: hsl(var(--accent)); font-family: Inter, sans-serif; font-size: .58rem; letter-spacing: .08em; }
-@media (max-width: 767px), (hover: none) {
-  .kb-dock-item { transform: none; transition: color 160ms ease, background-color 160ms ease; }
-}
 @media (prefers-reduced-motion: reduce) {
-  .kb-editorial-dock { --dock-scale: 1 !important; }
-  .kb-dock-item { transform: none; transition: none; }
+  .kb-dock-item { transition: none; }
 }
 
 /* Shared motion foundation: presentation-only masks; content remains in the DOM. */
