@@ -4,6 +4,12 @@ import { shelfReducer, type ShelfState } from './shelf-state';
 
 type ArticleShelfProps = PropsWithChildren<{ direction?: 'ltr' | 'rtl'; label: string }>;
 
+const interactiveSelector = 'a, button, input, select, textarea, [role="button"], [role="link"]';
+
+function isInteractiveEventTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest(interactiveSelector));
+}
+
 export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShelfProps) {
   const shelfRef = useRef<HTMLDivElement>(null);
   const instructionsId = useId();
@@ -23,6 +29,8 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
   }, [cards, reducedMotion]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    // Native controls inside a card must retain their own click and Enter behavior.
+    if (isInteractiveEventTarget(event.target)) return;
     const forward = direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
     const backward = direction === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
     const index = state.activeIndex ?? 0;
@@ -35,6 +43,9 @@ export function ArticleShelf({ children, direction = 'ltr', label }: ArticleShel
   };
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    // Do not capture a pointer that originates from a real link or control.
+    // Otherwise the card animation can prevent the link from navigating.
+    if (isInteractiveEventTarget(event.target)) return;
     const card = (event.target as HTMLElement).closest<HTMLElement>('[data-shelf-card]');
     if (!card) return;
     const index = cards().indexOf(card);
