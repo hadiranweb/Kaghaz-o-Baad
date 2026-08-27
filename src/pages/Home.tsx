@@ -91,7 +91,7 @@ export default function Home() {
     handleSearch(activeIndex >= 0 ? suggestions[activeIndex] : query);
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'ArrowDown' && suggestions.length) {
       event.preventDefault();
       setShowDropdown(true);
@@ -119,17 +119,18 @@ export default function Home() {
           {t('امروز می‌خواهید چه مسئله‌ای را حل کنید؟', 'What problem would you like to solve today?')}
         </p>
 
-        <div ref={containerRef} className="relative mt-7 w-full max-w-2xl sm:mt-9">
+        <div ref={containerRef} className="relative mt-7 w-full max-w-xl sm:mt-9">
           <form onSubmit={handleSubmit} role="search" className="relative text-start">
             <label htmlFor={inputId} className="sr-only">{t('مسئله یا پرسش خود را بنویسید', 'Describe your problem or question')}</label>
-            <div className={`rounded-[1.35rem] border bg-card/90 p-2 shadow-[0_18px_55px_-28px_hsl(var(--foreground)/0.65)] backdrop-blur transition focus-within:border-primary/60 focus-within:ring-4 focus-within:ring-primary/10 ${showDropdown && suggestions.length ? 'border-primary/40 rounded-b-none' : 'border-border/75'}`}>
-              <textarea
+            <div className={`relative rounded-2xl border bg-card/90 p-1.5 shadow-[0_18px_55px_-28px_hsl(var(--foreground)/0.65)] backdrop-blur transition focus-within:border-primary/60 focus-within:ring-4 focus-within:ring-primary/10 ${showDropdown && suggestions.length ? 'rounded-b-none border-primary/40' : 'border-border/75'}`}>
+              <input
                 id={inputId}
+                type="search"
                 value={query}
                 onChange={(event) => { setQuery(event.target.value); setActiveIndex(-1); }}
                 onFocus={() => { if (suggestions.length) setShowDropdown(true); }}
                 onKeyDown={handleKeyDown}
-                className="min-h-28 w-full resize-none bg-transparent px-3 pb-2 pt-3 text-base leading-7 text-foreground outline-none placeholder:text-muted-foreground/85 sm:min-h-32 sm:px-4 sm:text-lg"
+                className="h-12 w-full bg-transparent px-3 pe-14 text-base text-foreground outline-none placeholder:text-muted-foreground/85 sm:h-14 sm:px-4 sm:pe-16 sm:text-lg"
                 dir={isFa ? 'rtl' : 'ltr'}
                 placeholder={t('مسئله، پرسش یا کلیدواژهٔ خود را بنویسید…', 'Describe a problem, question, or keyword…')}
                 autoComplete="off"
@@ -140,24 +141,18 @@ export default function Home() {
                 aria-activedescendant={activeIndex >= 0 ? `article-suggestion-${activeIndex}` : undefined}
                 aria-busy={isLoadingSuggestions}
               />
-              <div className="flex items-center justify-between gap-3 px-1 pb-1">
-                <span className="inline-flex items-center gap-1.5 px-2 text-xs text-muted-foreground">
-                  {isLoadingSuggestions ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Search className="h-3.5 w-3.5" aria-hidden="true" />}
-                  {t('جست‌وجو در مقالات منتشرشده', 'Search published articles')}
-                </span>
-                <button
-                  type="submit"
-                  disabled={!query.trim()}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label={t('جست‌وجو در مقالات', 'Search articles')}
-                  title={t('جست‌وجو در مقالات', 'Search articles')}
-                >
-                  <ArrowUp className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={!query.trim()}
+                className="absolute end-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40 sm:h-10 sm:w-10"
+                aria-label={t('جست‌وجو در مقالات', 'Search articles')}
+                title={t('جست‌وجو در مقالات', 'Search articles')}
+              >
+                {isLoadingSuggestions ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Search className="h-4 w-4" aria-hidden="true" />}
+              </button>
             </div>
             {showDropdown && suggestions.length > 0 && (
-              <div id="article-suggestions" role="listbox" aria-label={t('مقاله‌های مرتبط', 'Related articles')} className="absolute inset-x-0 z-20 overflow-hidden rounded-b-[1.35rem] border border-t-0 border-primary/40 bg-card/95 p-2 shadow-[0_22px_55px_-30px_hsl(var(--foreground)/0.65)] backdrop-blur">
+              <div id="article-suggestions" role="listbox" aria-label={t('مقاله‌های مرتبط', 'Related articles')} className="absolute inset-x-0 z-20 overflow-hidden rounded-b-2xl border border-t-0 border-primary/40 bg-card/95 p-2 shadow-[0_22px_55px_-30px_hsl(var(--foreground)/0.65)] backdrop-blur">
                 {suggestions.map((suggestion, index) => (
                   <button
                     key={`${suggestion}-${index}`}
