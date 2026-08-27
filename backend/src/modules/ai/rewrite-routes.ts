@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { AppEnv } from '../../config/env.js';
 import { getAuthUser } from '../../auth/service.js';
 import { runUsage } from '../usage/gateway.js';
-import { rewriteWithOpenAi, AiProviderError } from './openai-compatible.js';
+import { requestAcademicRewrite, StudioProviderError } from '../studio/service.js';
 
 const bodySchema = z.object({
   source: z.string().trim().min(30).max(100000),
@@ -15,11 +15,10 @@ const bodySchema = z.object({
 });
 
 function statusFor(error: unknown) {
-  if (error instanceof AiProviderError) {
-    if (error.code === 'ai_provider_not_configured') return 503;
-    if (error.code === 'ai_provider_timeout') return 504;
-    if (error.code.startsWith('ai_provider_http_')) return 502;
-  }
+  const code = error && typeof error === 'object' && 'code' in error ? String(error.code) : '';
+  if (code === 'ai_provider_not_configured' || code === 'studio_not_configured' || code === 'studio_external_not_ready' || code === 'studio_direct_compatibility_disabled') return 503;
+  if (code === 'ai_provider_timeout') return 504;
+  if (code.startsWith('ai_provider_http_') || code === 'studio_provider_request_failed') return 502;
   return 500;
 }
 
@@ -45,14 +44,14 @@ export async function registerRewriteRoutes(app: FastifyInstance, env: AppEnv) {
           metadata: { tone: body.data.tone, targetLang: body.data.targetLang, length: body.data.length },
         },
         async () => {
-          const generated = await rewriteWithOpenAi(env, body.data);
+          const generated = await requestAcademicRewrite(env, body.data);
           return { value: generated.content, metrics: generated.metrics };
         },
       );
       return reply.send({ ok: true, content: result.value, requestId: result.requestId, usageId: result.usageId, provider: env.AI_PROVIDER, model: env.AI_MODEL });
     } catch (error) {
       const status = statusFor(error);
-      if (status === 503) return reply.status(status).send({ error: 'ai_provider_not_configured' });
+      if (status === 503) return reply.status(status).send({ error: error instanceof StudioProviderError ? error.code : 'studio_not_configured' });
       if (status === 504) return reply.status(status).send({ error: 'ai_provider_timeout', requestId });
       return reply.status(status).send({ error: 'ai_provider_failed', requestId });
     }

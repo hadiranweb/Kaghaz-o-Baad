@@ -512,3 +512,19 @@ export function getCasioIntegrationStatus() {
     outbox: { pending: number; leased: number; delivered: number; deadLetter: number; oldestPendingAt: string | null };
   }>('/admin/integrations/casio/status');
 }
+
+export function getStudioReadiness() {
+  return backendRequest<{
+    ok: true;
+    studio: {
+      provider: 'disabled' | 'direct_compat' | 'external_studio';
+      directCompatibilityEnabled: boolean;
+      externalStudioConfigured: boolean;
+      capabilities: {
+        titleSuggestions: boolean;
+        academicRewrite: boolean;
+        editorialProposals: boolean;
+      };
+    };
+  }>('/admin/studio/readiness');
+}

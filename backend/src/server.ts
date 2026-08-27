@@ -21,6 +21,7 @@ import { registerContentRoutes } from './modules/content/routes.js';
 import { registerSearchRoutes } from './modules/search/routes.js';
 import { registerLiveRoutes } from './modules/live/routes.js';
 import { registerArticleAiRoutes } from './modules/article-ai/routes.js';
+import { registerStudioRoutes } from './modules/studio/routes.js';
 
 const env = loadEnv(process.env, { requireAuthSecret: true });
 const app = Fastify({ logger: true });
@@ -56,6 +57,7 @@ await registerUsageReportRoutes(app);
 await registerAdminUsersRoutes(app);
 await registerAdminAuthRoutes(app, env);
 await registerCircuitRoutes(app);
+await registerStudioRoutes(app, env);
 await registerBillingRoutes(app, env);
 await registerContentRoutes(app, env);
 await registerSearchRoutes(app);

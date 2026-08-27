@@ -8,6 +8,8 @@ const envSchema = z.object({
   DATABASE_SSL: z.coerce.boolean().default(false),
   AUTH_JWT_SECRET: z.string().min(32, 'AUTH_JWT_SECRET must be at least 32 characters').optional(),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  STUDIO_PROVIDER: z.enum(['disabled', 'direct_compat', 'external_studio']).default('disabled'),
+  STUDIO_DIRECT_COMPAT_ENABLED: z.coerce.boolean().default(false),
   AI_PROVIDER: z.string().default('openai'),
   AI_API_KEY: z.string().optional(),
   AI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
@@ -108,6 +110,12 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env, options: { requ
   }
   if (options.requireAuthSecret && !parsed.data.AUTH_JWT_SECRET) {
     throw new Error('Invalid backend environment: AUTH_JWT_SECRET: Required');
+  }
+  if (parsed.data.STUDIO_PROVIDER === 'external_studio' && !parsed.data.CASIO_PLUS_ENABLED) {
+    throw new Error('Invalid backend environment: STUDIO_PROVIDER=external_studio requires CASIO_PLUS_ENABLED');
+  }
+  if (parsed.data.STUDIO_PROVIDER === 'direct_compat' && !parsed.data.STUDIO_DIRECT_COMPAT_ENABLED) {
+    throw new Error('Invalid backend environment: STUDIO_PROVIDER=direct_compat requires STUDIO_DIRECT_COMPAT_ENABLED');
   }
   if (parsed.data.CASIO_PLUS_ENABLED) {
     if (!parsed.data.CASIO_PLUS_BASE_URL || !parsed.data.KAGHAZBAAD_TO_CASIO_HMAC_SECRET || !parsed.data.CASIO_TO_KAGHAZBAAD_HMAC_SECRET) {

@@ -31,6 +31,7 @@ import UsersManager from '@/components/admin/UsersManager';
 import LiveSessionsManager from '@/components/admin/LiveSessionsManager';
 import CircuitBreakerMonitor from '@/components/admin/CircuitBreakerMonitor';
 import { CasioIntegrationStatus } from '@/components/admin/CasioIntegrationStatus';
+import { StudioReadinessCard } from '@/components/admin/StudioReadinessCard';
 import SystemWiki from '@/components/admin/SystemWiki';
 import UsageCostReport from '@/components/admin/UsageCostReport';
 import VerifiedFactorsCard from '@/components/auth/VerifiedFactorsCard';
@@ -608,6 +609,7 @@ export default function Dashboard() {
               {/* VIEW: 'resilience' (مدارشکن‌ها و تاب‌آوری) */}
               {activeView === 'resilience' && canAccessAdmin && (
                 <div className="space-y-4">
+                  <StudioReadinessCard />
                   <CasioIntegrationStatus />
                   <CircuitBreakerMonitor />
                 </div>

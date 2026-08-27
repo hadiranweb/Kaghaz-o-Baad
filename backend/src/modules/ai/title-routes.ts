@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { AppEnv } from '../../config/env.js';
 import { getAuthUser } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
-import { suggestTitlesWithOpenAi } from './openai-compatible.js';
+import { assertStudioCapability, requestTitleSuggestions, StudioProviderError } from '../studio/service.js';
 import { runUsage } from '../usage/gateway.js';
 import { commitQuota, releaseQuota, reserveQuota, QuotaExceededError, QuotaNotConfiguredError } from '../quota/service.js';
 import { enforceRateLimit, RateLimitExceededError } from '../rate-limit/service.js';
@@ -20,7 +20,7 @@ const bodySchema = z.object({
 function errorStatus(error: unknown) {
   if (error && typeof error === 'object' && 'code' in error) {
     const code = String(error.code);
-    if (code === 'ai_provider_not_configured') return 503;
+    if (code === 'ai_provider_not_configured' || code === 'studio_not_configured' || code === 'studio_external_not_ready' || code === 'studio_direct_compatibility_disabled') return 503;
     if (code === 'ai_provider_timeout') return 504;
     if (code.startsWith('ai_provider_http_')) return 502;
     if (code.startsWith('ai_provider_')) return 502;
@@ -49,6 +49,7 @@ export async function registerTitleSuggestionRoutes(app: FastifyInstance, env: A
     const requestId = typeof requestHeader === 'string' ? requestHeader : request.id;
     let reservation;
     try {
+      assertStudioCapability(env, 'title_suggestions');
       if (env.RATE_LIMIT_ENABLED) {
         const ipLimit = await enforceRateLimit({ key: `ip:${request.ip}`, config: { name: 'api-ip', limit: env.RATE_LIMIT_IP_PER_MINUTE, windowSeconds: 60 } });
         const userLimit = await enforceRateLimit({ key: `user:${user.id}`, config: { name: 'api-user', limit: env.RATE_LIMIT_USER_PER_MINUTE, windowSeconds: 60 } });
@@ -112,7 +113,7 @@ export async function registerTitleSuggestionRoutes(app: FastifyInstance, env: A
           metadata: { locale: body.data.locale, count: body.data.count ?? 5 },
         },
         async () => {
-          const generated = await suggestTitlesWithOpenAi(env, body.data);
+          const generated = await requestTitleSuggestions(env, body.data);
           return {
             value: generated.suggestions,
             metrics: generated.metrics,
@@ -143,7 +144,7 @@ export async function registerTitleSuggestionRoutes(app: FastifyInstance, env: A
       if (error instanceof QuotaNotConfiguredError) return reply.status(403).send({ error: 'quota_not_configured', featureKey: error.featureKey, requestId });
       const status = errorStatus(error);
       if (status < 500) return reply.status(status).send({ error: error instanceof Error ? error.message : 'ai_provider_failed' });
-      if (status === 503) return reply.status(503).send({ error: 'ai_provider_not_configured' });
+      if (status === 503) return reply.status(503).send({ error: error instanceof StudioProviderError ? error.code : 'studio_not_configured' });
       if (status === 504) return reply.status(504).send({ error: 'ai_provider_timeout', requestId });
       return reply.status(status).send({ error: 'ai_provider_failed', requestId });
     }

@@ -17,6 +17,7 @@
     "test:integration": "node ../tests/integration/api-smoke.mjs",
     "test:auth": "tsx --test tests/auth/*.test.ts",
     "test:casio": "tsx --test tests/casio-plus/*.test.ts",
+    "test:studio": "tsx --test tests/studio/*.test.ts",
     "test:k6": "k6 run ../tests/k6/kaghazbaad-api.js",
     "check": "tsc -p tsconfig.json --noEmit",
     "jobs:mailbox-worker": "tsx src/jobs/mailbox-outbox-worker.ts",
