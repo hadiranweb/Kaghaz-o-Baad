@@ -37,7 +37,7 @@ test('normalizePhone canonicalizes Iranian local, international, Persian and Ara
 
 test('SMS.ir adapter rejects a missing provider configuration before any network call', async () => {
   await assert.rejects(
-    () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: undefined, SMSIR_TEMPLATE_ID: undefined }), phone: '989121234567', code: '123456' }),
+    () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: undefined, SMSIR_TEMPLATE_ID: undefined }), phone: '09121234567', code: '123456' }),
     (error: unknown) => error instanceof SmsProviderError && error.statusCode === 503 && error.message === 'sms_provider_not_configured',
   );
 });
@@ -50,7 +50,7 @@ test('SMS.ir adapter sends the documented verification payload and maps a succes
   }, async () => {
     const result = await sendSmsIrVerificationCode({
       env: testEnv({ SMSIR_API_KEY: 'test-smsir-key', SMSIR_TEMPLATE_ID: '12345', SMSIR_CODE_PARAMETER: 'CODE' }),
-      phone: '989121234567',
+      phone: '09121234567',
       code: '123456',
     });
     assert.deepEqual(result, { messageId: '42', cost: 1200 });
@@ -60,16 +60,23 @@ test('SMS.ir adapter sends the documented verification payload and maps a succes
   assert.equal(observed?.init?.method, 'POST');
   assert.equal(new Headers(observed?.init?.headers).get('x-api-key'), 'test-smsir-key');
   assert.deepEqual(JSON.parse(String(observed?.init?.body)), {
-    mobile: '989121234567',
+    mobile: '9121234567',
     templateId: 12345,
     parameters: [{ name: 'CODE', value: '123456' }],
   });
 });
 
+test('SMS.ir adapter rejects a number outside the provider verification format before any network call', async () => {
+  await assert.rejects(
+    () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: 'test-smsir-key', SMSIR_TEMPLATE_ID: '12345' }), phone: '989121234567', code: '123456' }),
+    (error: unknown) => error instanceof SmsProviderError && error.statusCode === 400 && error.message === 'invalid_phone',
+  );
+});
+
 test('SMS.ir adapter preserves a provider 429 and records the upstream status safely', async () => {
   await withMockFetch(async () => new Response(JSON.stringify({ status: 0, message: 'throttled' }), { status: 429, headers: { 'content-type': 'application/json' } }), async () => {
     await assert.rejects(
-      () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: 'test-smsir-key', SMSIR_TEMPLATE_ID: '12345' }), phone: '989121234567', code: '123456' }),
+      () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: 'test-smsir-key', SMSIR_TEMPLATE_ID: '12345' }), phone: '09121234567', code: '123456' }),
       (error: unknown) => error instanceof SmsProviderError && error.statusCode === 429 && error.providerStatus === 429 && error.message === 'sms_provider_failed',
     );
   });
@@ -78,14 +85,14 @@ test('SMS.ir adapter preserves a provider 429 and records the upstream status sa
 test('SMS.ir adapter maps provider rejection and network failure to a retryable safe error', async () => {
   await withMockFetch(async () => new Response('upstream failure', { status: 500 }), async () => {
     await assert.rejects(
-      () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: 'test-smsir-key', SMSIR_TEMPLATE_ID: '12345' }), phone: '989121234567', code: '123456' }),
+      () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: 'test-smsir-key', SMSIR_TEMPLATE_ID: '12345' }), phone: '09121234567', code: '123456' }),
       (error: unknown) => error instanceof SmsProviderError && error.statusCode === 502 && error.providerStatus === 500,
     );
   });
 
   await withMockFetch(async () => { throw new Error('network unavailable'); }, async () => {
     await assert.rejects(
-      () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: 'test-smsir-key', SMSIR_TEMPLATE_ID: '12345' }), phone: '989121234567', code: '123456' }),
+      () => sendSmsIrVerificationCode({ env: testEnv({ SMSIR_API_KEY: 'test-smsir-key', SMSIR_TEMPLATE_ID: '12345' }), phone: '09121234567', code: '123456' }),
       (error: unknown) => error instanceof SmsProviderError && error.statusCode === 502 && error.message === 'sms_provider_failed',
     );
   });

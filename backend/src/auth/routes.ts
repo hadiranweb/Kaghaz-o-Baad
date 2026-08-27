@@ -180,7 +180,7 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
     const code = String(randomInt(100000, 1000000));
     const inserted = await db.query<{ id: string }>(`INSERT INTO phone_login_codes (phone, code_hash, expires_at, request_id) VALUES ($1, $2, now() + ($3 || ' seconds')::interval, $4) RETURNING id`, [phone, hashCode(code), env.OTP_TTL_SECONDS, request.id]);
     try {
-      const sms = await sendSmsIrVerificationCode({ env, phone: `98${phone.slice(1)}`, code });
+      const sms = await sendSmsIrVerificationCode({ env, phone, code });
       await db.query(`UPDATE phone_login_codes SET provider_message_id = $1 WHERE id = $2`, [sms.messageId ?? null, inserted.rows[0]?.id]);
       return reply.send({ ok: true, expires_in_seconds: env.OTP_TTL_SECONDS });
     } catch (error) {
@@ -249,7 +249,7 @@ export async function registerAuthRoutes(app: FastifyInstance, env: AppEnv) {
     const code = String(randomInt(100000, 1000000));
     const inserted = await db.query<{ id: string }>(`INSERT INTO phone_login_codes (phone, code_hash, purpose, expires_at, request_id) VALUES ($1, $2, 'phone_verification', now() + ($3 || ' seconds')::interval, $4) RETURNING id`, [phone, hashCode(code), env.OTP_TTL_SECONDS, request.id]);
     try {
-      const sms = await sendSmsIrVerificationCode({ env, phone: `98${phone.slice(1)}`, code });
+      const sms = await sendSmsIrVerificationCode({ env, phone, code });
       await db.query(`UPDATE phone_login_codes SET provider_message_id = $1 WHERE id = $2`, [sms.messageId ?? null, inserted.rows[0]?.id]);
       return reply.send({ ok: true, expires_in_seconds: env.OTP_TTL_SECONDS });
     } catch (error) {
