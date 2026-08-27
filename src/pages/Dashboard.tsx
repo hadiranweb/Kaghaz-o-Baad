@@ -14,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import {
   LogOut, Plus, Edit, Trash2, LayoutDashboard, FileText, Video, User, Settings, Globe, HardDrive,
-  Shield, Users, Activity, ScrollText, BookOpen, Eye, Save
+  Shield, Users, Activity, ScrollText, BookOpen, Eye, Save, Sparkles
 } from 'lucide-react';
 import { z } from 'zod';
 import { LazyMarkdownEditor } from '@/components/LazyMarkdownEditor';
@@ -30,9 +30,14 @@ import {
 import UsersManager from '@/components/admin/UsersManager';
 import LiveSessionsManager from '@/components/admin/LiveSessionsManager';
 import CircuitBreakerMonitor from '@/components/admin/CircuitBreakerMonitor';
+import { CasioIntegrationStatus } from '@/components/admin/CasioIntegrationStatus';
+import { StudioReadinessCard } from '@/components/admin/StudioReadinessCard';
+import { StudioCatalog } from '@/components/studio/StudioCatalog';
+import { StudioContextPanel } from '@/components/studio/StudioContextPanel';
 import SystemWiki from '@/components/admin/SystemWiki';
 import UsageCostReport from '@/components/admin/UsageCostReport';
 import VerifiedFactorsCard from '@/components/auth/VerifiedFactorsCard';
+import { ArticleAiProposals } from '@/components/ArticleAiProposals';
 
 type DashboardView =
   | 'articles'
@@ -43,6 +48,7 @@ type DashboardView =
   | 'project'
   | 'wiki'
   | 'usage_report'
+  | 'studio'
   | 'security';
 
 const articleSchema = z.object({
@@ -75,6 +81,7 @@ export default function Dashboard() {
   // Slide management
   const [slides, setSlides] = useState<any[]>([]);
   const [managingSlidesFor, setManagingSlidesFor] = useState<string | null>(null);
+  const [managingAiFor, setManagingAiFor] = useState<string | null>(null);
 
   const [newArticle, setNewArticle] = useState({
     title_fa: '',
@@ -130,6 +137,7 @@ export default function Dashboard() {
     setSearchParams({ view });
     setShowForm(false);
     setManagingSlidesFor(null);
+    setManagingAiFor(null);
     if (view === 'all_articles') loadAllArticles();
     if (view === 'project') loadProjectSections();
   };
@@ -251,8 +259,15 @@ export default function Dashboard() {
   };
 
   const handleManageSlides = async (articleId: string) => {
+    setManagingAiFor(null);
     setManagingSlidesFor(articleId);
     await loadSlides(articleId);
+    setActiveView('articles');
+  };
+
+  const handleManageAiProposals = (articleId: string) => {
+    setManagingSlidesFor(null);
+    setManagingAiFor(articleId);
     setActiveView('articles');
   };
 
@@ -375,6 +390,7 @@ export default function Dashboard() {
     if (activeView === 'all_articles') return t('بررسی همه مقالات سامانه', 'All Articles (System Review)');
     if (activeView === 'users') return t('مدیریت کاربران و نقش‌ها', 'Users & Roles');
     if (activeView === 'resilience') return t('تاب‌آوری و مدارشکن‌ها', 'Resilience & Breakers');
+    if (activeView === 'studio') return t('Studio و نقشهٔ قابلیت‌ها', 'Studio & Capability Map');
     if (activeView === 'all_live') return t('پایش پخش‌های زنده', 'Live Sessions (Monitor)');
     if (activeView === 'project') return t('ویرایش شرح پروژه', 'Project Description');
     if (activeView === 'security') return t('امنیت و عوامل تأیید', 'Security & Verified Factors');
@@ -478,6 +494,15 @@ export default function Dashboard() {
                         >
                           <Users className="h-4 w-4 text-accent" />
                           <span>{t('کاربران و نقش‌ها', 'Users & Roles')}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={activeView === 'studio'}
+                          onClick={() => handleSelectView('studio')}
+                        >
+                          <Sparkles className="h-4 w-4 text-violet-500" />
+                          <span>{t('Studio و قابلیت‌ها', 'Studio & Capabilities')}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                       <SidebarMenuItem>
@@ -594,8 +619,17 @@ export default function Dashboard() {
               {/* VIEW: 'users' (مدیریت کاربران و نقش‌های RBAC) */}
               {activeView === 'users' && canAccessAdmin && <UsersManager />}
 
+              {/* VIEW: 'studio' (کاتالوگ قابلیت‌های Studio؛ همهٔ اجراها غیرفعال) */}
+              {activeView === 'studio' && canAccessAdmin && <StudioCatalog />}
+
               {/* VIEW: 'resilience' (مدارشکن‌ها و تاب‌آوری) */}
-              {activeView === 'resilience' && canAccessAdmin && <CircuitBreakerMonitor />}
+              {activeView === 'resilience' && canAccessAdmin && (
+                <div className="space-y-4">
+                  <StudioReadinessCard />
+                  <CasioIntegrationStatus />
+                  <CircuitBreakerMonitor />
+                </div>
+              )}
 
               {activeView === 'usage_report' && isAdmin && <UsageCostReport />}
 
@@ -741,11 +775,19 @@ export default function Dashboard() {
                               }`}>
                                 {article.status === 'published' ? t('منتشر شده', 'Published') : t('پیش‌نویس', 'Draft')}
                               </span>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => toggleArticleStatus(article.id, article.status)}
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleManageAiProposals(article.id)}
+                                      aria-label={t('پیشنهادهای هوشمند', 'Editorial suggestions')}
+                                    >
+                                      <Sparkles className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => toggleArticleStatus(article.id, article.status)}
                                 >
                                   <Eye className="w-4 h-4" />
                                 </Button>
@@ -819,6 +861,20 @@ export default function Dashboard() {
                           </Button>
                         </CardContent>
                       </Card>
+                    </div>
+                  )}
+
+                  {/* Casioplus editorial proposals */}
+                  {managingAiFor && (
+                    <div className="mb-8 space-y-3">
+                      <div className="flex justify-end">
+                        <Button size="sm" variant="outline" onClick={() => setManagingAiFor(null)}>
+                          {t('بستن پیشنهادها', 'Close suggestions')}
+                        </Button>
+                      </div>
+                      <StudioContextPanel context="article" />
+                      <StudioContextPanel context="publication" />
+                      <ArticleAiProposals articleId={managingAiFor} canRequest={canAccessAdmin} />
                     </div>
                   )}
 
@@ -1017,6 +1073,10 @@ export default function Dashboard() {
                                     <Button size="sm" variant="outline" onClick={() => handleEditArticle(article)}>
                                       <Edit className="w-4 h-4 me-1" />
                                       {t('ویرایش', 'Edit')}
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => handleManageAiProposals(article.id)}>
+                                      <Sparkles className="w-4 h-4 me-1" />
+                                      {t('پیشنهادها', 'Suggestions')}
                                     </Button>
                                     <Button size="sm" variant="secondary" onClick={() => handleManageSlides(article.id)}>
                                       {t('اسلایدها', 'Slides')}

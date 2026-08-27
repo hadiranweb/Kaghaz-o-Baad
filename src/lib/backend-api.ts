@@ -455,3 +455,108 @@ export function resetCircuitBreaker(service: string) {
 export function tripCircuitBreakerTest(service: string) {
   return backendRequest<{ ok: true }>('/admin/circuit-breakers/trip-test', { method: 'POST', body: JSON.stringify({ service }) });
 }
+
+export type BackendArticleAiProposal = {
+  id: string;
+  article_id: string;
+  snapshot_id: string;
+  invocation_id: string;
+  suggestion_index: number;
+  proposal_type: 'rewrite' | 'annotation' | 'checklist';
+  anchor: { start?: number; end?: number };
+  original_text?: string | null;
+  suggested_text?: string | null;
+  reason: string;
+  confidence?: string | number | null;
+  state: 'pending_review' | 'accepted' | 'rejected' | 'edited' | 'stale';
+  flow_key: string;
+  flow_version: string;
+  casio_run_id: string;
+  artifact_refs: string[];
+  memory_refs: string[];
+  provenance: Record<string, unknown>;
+  snapshot_content_revision: string | number;
+  created_at: string;
+  updated_at: string;
+};
+
+export function requestArticleEditorialSuggestion(articleId: string) {
+  return backendRequest<{
+    ok: true;
+    invocation: { id: string; state: string; requestId: string; idempotencyKey: string; flowKey: string };
+    snapshot: { id: string; contentRevision: number };
+    idempotent: boolean;
+  }>(`/articles/${articleId}/ai/editorial-suggestion`, { method: 'POST', body: '{}' });
+}
+
+export function listArticleAiProposals(articleId: string) {
+  return backendRequest<{
+    ok: true;
+    article: { id: string; contentRevision: string | number; status: string };
+    proposals: BackendArticleAiProposal[];
+  }>(`/articles/${articleId}/ai/proposals`);
+}
+
+export function decideArticleAiProposal(proposalId: string, input: { decision: 'accepted' | 'rejected' | 'edited'; note?: string }) {
+  return backendRequest<{ ok: true; proposal: BackendArticleAiProposal }>(`/article-ai/proposals/${proposalId}/decision`, {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function getCasioIntegrationStatus() {
+  return backendRequest<{
+    ok: true;
+    enabled: boolean;
+    workerEnabled: boolean;
+    outbox: { pending: number; leased: number; delivered: number; deadLetter: number; oldestPendingAt: string | null };
+  }>('/admin/integrations/casio/status');
+}
+
+export function getStudioReadiness() {
+  return backendRequest<{
+    ok: true;
+    studio: {
+      provider: 'disabled' | 'direct_compat' | 'external_studio';
+      directCompatibilityEnabled: boolean;
+      externalStudioConfigured: boolean;
+      capabilities: {
+        titleSuggestions: boolean;
+        academicRewrite: boolean;
+        editorialProposals: boolean;
+      };
+    };
+  }>('/admin/studio/readiness');
+}
+
+export type StudioCapabilityContext = 'article' | 'publication' | 'live' | 'media' | 'community' | 'operations';
+export type StudioReadiness = 'connection_ready' | 'contract_pending' | 'foundation_pending' | 'governance_pending';
+export type StudioRiskLevel = 'low' | 'medium' | 'high';
+
+export type StudioCatalogCapability = {
+  key: string;
+  context: StudioCapabilityContext;
+  titleFa: string;
+  titleEn: string;
+  descriptionFa: string;
+  descriptionEn: string;
+  inputSummaryFa: string;
+  outputSummaryFa: string;
+  readiness: StudioReadiness;
+  risk: StudioRiskLevel;
+  requiresHumanReview: true;
+  requiresConsent: boolean;
+  activationBlockedByFa: string;
+  enabled: false;
+  status: 'disabled';
+};
+
+export function listStudioCapabilities(context?: StudioCapabilityContext) {
+  const query = context ? `?context=${encodeURIComponent(context)}` : '';
+  return backendRequest<{
+    ok: true;
+    catalogVersion: string;
+    connection: { externalStudioConfigured: boolean; provider: 'disabled' | 'direct_compat' | 'external_studio' };
+    capabilities: StudioCatalogCapability[];
+  }>(`/studio/catalog${query}`);
+}

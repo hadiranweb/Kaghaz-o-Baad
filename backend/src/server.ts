@@ -20,6 +20,8 @@ import { registerBillingRoutes } from './modules/billing/routes.js';
 import { registerContentRoutes } from './modules/content/routes.js';
 import { registerSearchRoutes } from './modules/search/routes.js';
 import { registerLiveRoutes } from './modules/live/routes.js';
+import { registerArticleAiRoutes } from './modules/article-ai/routes.js';
+import { registerStudioRoutes } from './modules/studio/routes.js';
 
 const env = loadEnv(process.env, { requireAuthSecret: true });
 const app = Fastify({ logger: true });
@@ -35,7 +37,7 @@ await app.register(rawBody, {
   global: false,
   encoding: 'utf8',
   runFirst: true,
-  routes: ['/api/v1/live/webhooks/livekit'],
+  routes: ['/api/v1/live/webhooks/livekit', '/api/v1/integrations/casio/callback'],
 });
 
 await app.register(cors, {
@@ -55,10 +57,12 @@ await registerUsageReportRoutes(app);
 await registerAdminUsersRoutes(app);
 await registerAdminAuthRoutes(app, env);
 await registerCircuitRoutes(app);
+await registerStudioRoutes(app, env);
 await registerBillingRoutes(app, env);
 await registerContentRoutes(app, env);
 await registerSearchRoutes(app);
 await registerLiveRoutes(app, env);
+await registerArticleAiRoutes(app, env);
 await registerPasswordRoute(app);
 
 app.get('/health', async () => ({

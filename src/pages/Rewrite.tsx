@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Copy, Save, Wand2 } from 'lucide-react';
+import { StudioContextPanel } from '@/components/studio/StudioContextPanel';
 
 interface ArticleOption {
   id: string;
@@ -152,6 +153,8 @@ export default function Rewrite() {
         </p>
       </div>
 
+      <div className="mb-6"><StudioContextPanel context="article" /></div>
+
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
@@ -250,14 +253,15 @@ export default function Rewrite() {
             </div>
             <Button
               onClick={handleGenerate}
-              disabled={generating || sourceText.length < 30}
+              disabled
+              title={isFa ? 'بازنویسی تا اتصال تأییدشدهٔ Studio غیرفعال است.' : 'Rewrite is disabled until the Studio connection is approved.'}
               className="w-full"
               size="lg"
             >
               {generating ? (
                 <><Loader2 className="h-4 w-4 animate-spin mr-2" />{isFa ? 'در حال بازنویسی...' : 'Rewriting...'}</>
               ) : (
-                <><Wand2 className="h-4 w-4 mr-2" />{isFa ? 'بازنویسی کن' : 'Rewrite'}</>
+                <><Wand2 className="h-4 w-4 mr-2" />{isFa ? 'در انتظار Studio' : 'Awaiting Studio'}</>
               )}
             </Button>
           </CardContent>

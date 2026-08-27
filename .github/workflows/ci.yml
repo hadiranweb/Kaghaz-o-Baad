@@ -79,6 +79,8 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run test:auth
+      - run: npm run test:casio
+      - run: npm run test:studio
       - run: npm run build
       - run: npm run migrate:dry-run
       - name: Production dependency audit

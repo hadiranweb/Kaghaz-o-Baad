@@ -8,6 +8,8 @@ const envSchema = z.object({
   DATABASE_SSL: z.coerce.boolean().default(false),
   AUTH_JWT_SECRET: z.string().min(32, 'AUTH_JWT_SECRET must be at least 32 characters').optional(),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  STUDIO_PROVIDER: z.enum(['disabled', 'direct_compat', 'external_studio']).default('disabled'),
+  STUDIO_DIRECT_COMPAT_ENABLED: z.coerce.boolean().default(false),
   AI_PROVIDER: z.string().default('openai'),
   AI_API_KEY: z.string().optional(),
   AI_BASE_URL: z.string().url().default('https://api.openai.com/v1'),
@@ -76,6 +78,26 @@ const envSchema = z.object({
   OPENCLAW_BASE_URL: z.string().url().optional(),
   OPENCLAW_GATEWAY_TOKEN: z.string().min(32).optional(),
   OPENWEBUI_BASE_URL: z.string().url().optional(),
+  CASIO_PLUS_ENABLED: z.coerce.boolean().default(false),
+  CASIO_PLUS_BASE_URL: z.string().url().optional(),
+  CASIO_PLUS_INTEGRATION_KEY: z.literal('kaghazbaad').default('kaghazbaad'),
+  CASIO_PLUS_SIGNING_KEY_ID: z.string().trim().min(1).max(80).default('v1'),
+  CASIO_PLUS_PREVIOUS_SIGNING_KEY_ID: z.string().trim().min(1).max(80).optional(),
+  KAGHAZBAAD_TO_CASIO_HMAC_SECRET: z.string().min(32).optional(),
+  CASIO_TO_KAGHAZBAAD_HMAC_SECRET: z.string().min(32).optional(),
+  CASIO_TO_KAGHAZBAAD_PREVIOUS_HMAC_SECRET: z.string().min(32).optional(),
+  CASIO_OUTBOX_WORKER_ENABLED: z.coerce.boolean().default(false),
+  CASIO_OUTBOX_WORKER_POLL_MS: z.coerce.number().int().positive().min(250).max(300_000).default(2_000),
+  CASIO_OUTBOX_WORKER_BATCH_SIZE: z.coerce.number().int().positive().max(100).default(10),
+  CASIO_OUTBOX_WORKER_CONCURRENCY: z.coerce.number().int().positive().max(10).default(2),
+  CASIO_OUTBOX_MAX_ATTEMPTS: z.coerce.number().int().positive().max(20).default(12),
+  CASIO_OUTBOX_BACKOFF_BASE_MS: z.coerce.number().int().positive().max(300_000).default(2_000),
+  CASIO_OUTBOX_BACKOFF_MAX_MS: z.coerce.number().int().positive().max(86_400_000).default(900_000),
+  CASIO_OUTBOX_LEASE_MS: z.coerce.number().int().positive().min(5_000).max(3_600_000).default(120_000),
+  CASIO_PLUS_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().min(1_000).max(120_000).default(15_000),
+  CASIO_OUTBOX_HEALTH_PORT: z.coerce.number().int().positive().max(65_535).default(8080),
+  CASIO_SNAPSHOT_RETENTION_DAYS: z.coerce.number().int().positive().max(3650).default(30),
+  CASIO_INLINE_SNAPSHOT_MAX_BYTES: z.coerce.number().int().positive().max(256 * 1024).default(180 * 1024),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
@@ -88,6 +110,26 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env, options: { requ
   }
   if (options.requireAuthSecret && !parsed.data.AUTH_JWT_SECRET) {
     throw new Error('Invalid backend environment: AUTH_JWT_SECRET: Required');
+  }
+  if (parsed.data.STUDIO_PROVIDER === 'external_studio' && !parsed.data.CASIO_PLUS_ENABLED) {
+    throw new Error('Invalid backend environment: STUDIO_PROVIDER=external_studio requires CASIO_PLUS_ENABLED');
+  }
+  if (parsed.data.STUDIO_PROVIDER === 'direct_compat' && !parsed.data.STUDIO_DIRECT_COMPAT_ENABLED) {
+    throw new Error('Invalid backend environment: STUDIO_PROVIDER=direct_compat requires STUDIO_DIRECT_COMPAT_ENABLED');
+  }
+  if (parsed.data.CASIO_PLUS_ENABLED) {
+    if (!parsed.data.CASIO_PLUS_BASE_URL || !parsed.data.KAGHAZBAAD_TO_CASIO_HMAC_SECRET || !parsed.data.CASIO_TO_KAGHAZBAAD_HMAC_SECRET) {
+      throw new Error('Invalid backend environment: Casioplus requires base URL and both directional HMAC secrets');
+    }
+  }
+  if (parsed.data.CASIO_PLUS_PREVIOUS_SIGNING_KEY_ID && !parsed.data.CASIO_TO_KAGHAZBAAD_PREVIOUS_HMAC_SECRET) {
+    throw new Error('Invalid backend environment: previous Casioplus key ID requires previous inbound HMAC secret');
+  }
+  if (parsed.data.CASIO_TO_KAGHAZBAAD_PREVIOUS_HMAC_SECRET && !parsed.data.CASIO_PLUS_PREVIOUS_SIGNING_KEY_ID) {
+    throw new Error('Invalid backend environment: previous inbound Casioplus HMAC secret requires previous key ID');
+  }
+  if (parsed.data.CASIO_OUTBOX_WORKER_ENABLED && !parsed.data.CASIO_PLUS_ENABLED) {
+    throw new Error('Invalid backend environment: CASIO_OUTBOX_WORKER_ENABLED requires CASIO_PLUS_ENABLED');
   }
   return parsed.data;
 }

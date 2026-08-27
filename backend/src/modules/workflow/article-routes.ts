@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { getAuthUser, hasRole } from '../../auth/service.js';
 import { db } from '../../db/pool.js';
+import { cancelPendingCasioOutboxForArticle } from '../../integrations/casio-plus/outbox-repository.js';
 
 const createSchema = z.object({
   slug: z.string().trim().min(1).max(160).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
@@ -110,8 +111,25 @@ export async function registerArticleRoutes(app: FastifyInstance) {
     const fields = [['slug', body.data.slug], ['title_fa', body.data.titleFa], ['title_en', body.data.titleEn], ['content_fa', body.data.contentFa], ['content_en', body.data.contentEn] as const].filter(([, value]) => value !== undefined);
     const values: unknown[] = [];
     const assignments = fields.map(([column, value]) => { values.push(value); return `${column} = $${values.length}`; });
+    const contentChanged = (
+      (body.data.slug !== undefined && current.slug !== body.data.slug)
+      || (body.data.titleFa !== undefined && current.title_fa !== body.data.titleFa)
+      || (body.data.titleEn !== undefined && current.title_en !== body.data.titleEn)
+      || (body.data.contentFa !== undefined && current.content_fa !== body.data.contentFa)
+      || (body.data.contentEn !== undefined && current.content_en !== body.data.contentEn)
+    );
+    if (contentChanged) assignments.push('content_revision = content_revision + 1');
     values.push(params.data.articleId);
     const updated = await db.query(`UPDATE articles SET ${assignments.join(', ')}, updated_at = now() WHERE id = $${values.length} RETURNING *`, values);
+    if (contentChanged) {
+      await db.query(
+        `UPDATE article_ai_proposals
+            SET state = 'stale', updated_at = now()
+          WHERE article_id = $1 AND state = 'pending_review'`,
+        [current.id],
+      );
+      await cancelPendingCasioOutboxForArticle(current.id);
+    }
     await db.query(
       `INSERT INTO activity_events (user_id, event_name, entity_type, entity_id, metadata)
        VALUES ($1, 'article.updated', 'article', $2, $3)`,

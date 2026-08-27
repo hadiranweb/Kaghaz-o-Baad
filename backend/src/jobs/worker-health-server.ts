@@ -9,6 +9,12 @@ export type WorkerHealthState = {
   lastLoopError?: string;
 };
 
+export type WorkerHealthOptions = {
+  service: string;
+  isEnabled: () => boolean;
+  isConfigurationComplete: () => boolean;
+};
+
 function sendJson(res: import('node:http').ServerResponse, statusCode: number, payload: Record<string, unknown>) {
   const body = JSON.stringify(payload);
   res.statusCode = statusCode;
@@ -18,7 +24,19 @@ function sendJson(res: import('node:http').ServerResponse, statusCode: number, p
   res.end(body);
 }
 
-export function createWorkerHealthServer(env: AppEnv, state: WorkerHealthState): Server {
+function mailboxWorkerOptions(env: AppEnv): WorkerHealthOptions {
+  return {
+    service: 'kaghazbaad-mailbox-worker',
+    isEnabled: () => env.MAILBOX_PROVISIONING_ENABLED && env.MAILBOX_WORKER_ENABLED,
+    isConfigurationComplete: () => Boolean(env.LIARA_MAIL_API_TOKEN && env.LIARA_MAIL_SERVER_ID),
+  };
+}
+
+export function createWorkerHealthServer(
+  env: AppEnv,
+  state: WorkerHealthState,
+  options: WorkerHealthOptions = mailboxWorkerOptions(env),
+): Server {
   return createServer(async (req, res) => {
     const requestUrl = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
     if (req.method !== 'GET') {
@@ -30,7 +48,7 @@ export function createWorkerHealthServer(env: AppEnv, state: WorkerHealthState):
     if (requestUrl.pathname === '/' || requestUrl.pathname === '/healthz' || requestUrl.pathname === '/health') {
       sendJson(res, 200, {
         ok: true,
-        service: 'kaghazbaad-mailbox-worker',
+        service: options.service,
         status: state.stopping ? 'stopping' : 'alive',
         uptimeSeconds: Math.floor((Date.now() - state.startedAt) / 1000),
       });
@@ -42,11 +60,11 @@ export function createWorkerHealthServer(env: AppEnv, state: WorkerHealthState):
         sendJson(res, 503, { ok: false, status: 'stopping' });
         return;
       }
-      if (!env.MAILBOX_PROVISIONING_ENABLED || !env.MAILBOX_WORKER_ENABLED) {
+      if (!options.isEnabled()) {
         sendJson(res, 503, { ok: false, status: 'disabled' });
         return;
       }
-      if (!env.LIARA_MAIL_API_TOKEN || !env.LIARA_MAIL_SERVER_ID) {
+      if (!options.isConfigurationComplete()) {
         sendJson(res, 503, { ok: false, status: 'configuration_missing' });
         return;
       }
@@ -68,7 +86,11 @@ export function createWorkerHealthServer(env: AppEnv, state: WorkerHealthState):
   });
 }
 
-export async function listenWorkerHealthServer(server: Server, env: AppEnv): Promise<void> {
+export async function listenWorkerHealthServer(
+  server: Server,
+  env: AppEnv,
+  healthPort = env.MAILBOX_HEALTH_PORT,
+): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const onError = (error: Error) => {
       server.off('listening', onListening);
@@ -80,7 +102,7 @@ export async function listenWorkerHealthServer(server: Server, env: AppEnv): Pro
     };
     server.once('error', onError);
     server.once('listening', onListening);
-    server.listen(env.MAILBOX_HEALTH_PORT, env.HOST);
+    server.listen(healthPort, env.HOST);
   });
 }
 
