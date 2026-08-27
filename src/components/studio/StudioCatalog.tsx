@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle2, CircleOff, Loader2, LockKeyhole, RefreshCw, Sparkles } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CircleOff, Eye, Loader2, LockKeyhole, RefreshCw, Sparkles } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { listStudioCapabilities, type StudioCapabilityContext, type StudioCatalogCapability } from '@/lib/backend-api';
 import { Badge } from '@/components/ui/badge';
@@ -116,6 +116,21 @@ function CapabilityCard({ item, fa }: { item: StudioCatalogCapability; fa: boole
           <div><dt className="text-xs">{fa ? 'ورودی مجاز' : 'Allowed input'}</dt><dd className="mt-0.5 text-foreground">{item.inputSummaryFa}</dd></div>
           <div><dt className="text-xs">{fa ? 'خروجی مجاز' : 'Allowed output'}</dt><dd className="mt-0.5 text-foreground">{item.outputSummaryFa}</dd></div>
         </dl>
+        <details className="group rounded-lg border border-primary/20 bg-primary/[0.035] p-3">
+          <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-foreground marker:content-none">
+            <Eye className="h-3.5 w-3.5 text-primary" />
+            {fa ? 'پیش‌نمایش آموزشیِ غیرفعال' : 'Disabled educational preview'}
+            <span className="ms-auto text-muted-foreground group-open:hidden">{fa ? 'نمایش نمونه' : 'Show sample'}</span>
+          </summary>
+          <div className="mt-3 space-y-2 border-t border-primary/15 pt-3 text-xs">
+            <p><span className="font-medium text-foreground">{fa ? 'سناریوی ساختگی: ' : 'Fictional scenario: '}</span><span className="text-muted-foreground">{item.preview.scenarioFa}</span></p>
+            <div className="rounded-md border border-border/60 bg-background/80 p-2.5">
+              <p className="mb-1 font-medium text-foreground">{fa ? 'خروجی نمونهٔ قابل‌بررسی' : 'Sample reviewable output'}</p>
+              <pre className="whitespace-pre-wrap font-sans leading-5 text-muted-foreground">{item.preview.sampleOutputFa}</pre>
+            </div>
+            <p className="text-muted-foreground">{item.preview.safetyNoteFa}</p>
+          </div>
+        </details>
         <p className="rounded-md border border-border/60 px-3 py-2 text-xs text-muted-foreground">{item.activationBlockedByFa}</p>
         <Button className="w-full" disabled title={item.activationBlockedByFa}><CircleOff className="h-4 w-4" />{fa ? 'در انتظار آماده‌سازی Studio' : 'Awaiting Studio readiness'}</Button>
       </CardContent>
