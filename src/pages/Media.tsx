@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Image as ImageIcon, Video, FileText, Headphones, Upload, HardDrive, Share2, Lock, Globe, Trash2, Eye, UserPlus, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { StudioContextPanel } from '@/components/studio/StudioContextPanel';
 
 type MediaItem = {
   id: string;
@@ -280,6 +281,8 @@ export default function Media() {
             </CardContent>
           </Card>
         )}
+
+        {user && <div className="mb-6"><StudioContextPanel context="media" /></div>}
 
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'image' | 'video' | 'audio' | 'pdf')} className="w-full">
           <TabsList className="grid grid-cols-4 w-full max-w-xl mx-auto mb-6">

@@ -528,3 +528,35 @@ export function getStudioReadiness() {
     };
   }>('/admin/studio/readiness');
 }
+
+export type StudioCapabilityContext = 'article' | 'publication' | 'live' | 'media' | 'community' | 'operations';
+export type StudioReadiness = 'connection_ready' | 'contract_pending' | 'foundation_pending' | 'governance_pending';
+export type StudioRiskLevel = 'low' | 'medium' | 'high';
+
+export type StudioCatalogCapability = {
+  key: string;
+  context: StudioCapabilityContext;
+  titleFa: string;
+  titleEn: string;
+  descriptionFa: string;
+  descriptionEn: string;
+  inputSummaryFa: string;
+  outputSummaryFa: string;
+  readiness: StudioReadiness;
+  risk: StudioRiskLevel;
+  requiresHumanReview: true;
+  requiresConsent: boolean;
+  activationBlockedByFa: string;
+  enabled: false;
+  status: 'disabled';
+};
+
+export function listStudioCapabilities(context?: StudioCapabilityContext) {
+  const query = context ? `?context=${encodeURIComponent(context)}` : '';
+  return backendRequest<{
+    ok: true;
+    catalogVersion: string;
+    connection: { externalStudioConfigured: boolean; provider: 'disabled' | 'direct_compat' | 'external_studio' };
+    capabilities: StudioCatalogCapability[];
+  }>(`/studio/catalog${query}`);
+}

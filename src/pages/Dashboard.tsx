@@ -32,6 +32,8 @@ import LiveSessionsManager from '@/components/admin/LiveSessionsManager';
 import CircuitBreakerMonitor from '@/components/admin/CircuitBreakerMonitor';
 import { CasioIntegrationStatus } from '@/components/admin/CasioIntegrationStatus';
 import { StudioReadinessCard } from '@/components/admin/StudioReadinessCard';
+import { StudioCatalog } from '@/components/studio/StudioCatalog';
+import { StudioContextPanel } from '@/components/studio/StudioContextPanel';
 import SystemWiki from '@/components/admin/SystemWiki';
 import UsageCostReport from '@/components/admin/UsageCostReport';
 import VerifiedFactorsCard from '@/components/auth/VerifiedFactorsCard';
@@ -46,6 +48,7 @@ type DashboardView =
   | 'project'
   | 'wiki'
   | 'usage_report'
+  | 'studio'
   | 'security';
 
 const articleSchema = z.object({
@@ -387,6 +390,7 @@ export default function Dashboard() {
     if (activeView === 'all_articles') return t('بررسی همه مقالات سامانه', 'All Articles (System Review)');
     if (activeView === 'users') return t('مدیریت کاربران و نقش‌ها', 'Users & Roles');
     if (activeView === 'resilience') return t('تاب‌آوری و مدارشکن‌ها', 'Resilience & Breakers');
+    if (activeView === 'studio') return t('Studio و نقشهٔ قابلیت‌ها', 'Studio & Capability Map');
     if (activeView === 'all_live') return t('پایش پخش‌های زنده', 'Live Sessions (Monitor)');
     if (activeView === 'project') return t('ویرایش شرح پروژه', 'Project Description');
     if (activeView === 'security') return t('امنیت و عوامل تأیید', 'Security & Verified Factors');
@@ -490,6 +494,15 @@ export default function Dashboard() {
                         >
                           <Users className="h-4 w-4 text-accent" />
                           <span>{t('کاربران و نقش‌ها', 'Users & Roles')}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          isActive={activeView === 'studio'}
+                          onClick={() => handleSelectView('studio')}
+                        >
+                          <Sparkles className="h-4 w-4 text-violet-500" />
+                          <span>{t('Studio و قابلیت‌ها', 'Studio & Capabilities')}</span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
                       <SidebarMenuItem>
@@ -605,6 +618,9 @@ export default function Dashboard() {
 
               {/* VIEW: 'users' (مدیریت کاربران و نقش‌های RBAC) */}
               {activeView === 'users' && canAccessAdmin && <UsersManager />}
+
+              {/* VIEW: 'studio' (کاتالوگ قابلیت‌های Studio؛ همهٔ اجراها غیرفعال) */}
+              {activeView === 'studio' && canAccessAdmin && <StudioCatalog />}
 
               {/* VIEW: 'resilience' (مدارشکن‌ها و تاب‌آوری) */}
               {activeView === 'resilience' && canAccessAdmin && (
@@ -856,6 +872,8 @@ export default function Dashboard() {
                           {t('بستن پیشنهادها', 'Close suggestions')}
                         </Button>
                       </div>
+                      <StudioContextPanel context="article" />
+                      <StudioContextPanel context="publication" />
                       <ArticleAiProposals articleId={managingAiFor} canRequest={canAccessAdmin} />
                     </div>
                   )}

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Radio, Calendar, Plus, Clock, Video } from 'lucide-react';
+import { StudioContextPanel } from '@/components/studio/StudioContextPanel';
 
 interface LiveSession {
   id: string;
@@ -116,6 +117,8 @@ export default function LiveSessions() {
           </Button>
         )}
       </div>
+
+      {user && <div className="mb-6"><StudioContextPanel context="live" /></div>}
 
       {loading ? (
         <div className="text-foreground/40 text-sm">{locale === 'fa' ? 'در حال بارگذاری…' : 'Loading…'}</div>
