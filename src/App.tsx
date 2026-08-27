@@ -2,7 +2,7 @@ import { Suspense, lazy } from "react";
 import { DeferredNotifications } from "@/components/DeferredNotifications";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -41,21 +41,18 @@ const RouteFallback = () => (
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
-      <LanguageProvider>
-        <MotionProvider>
-        <TooltipProvider>
-          <DeferredNotifications />
-          <BrowserRouter>
-            <AuthProvider>
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <main className="flex-1 min-h-[calc(100vh-5.5rem)]">
-                <ErrorBoundary>
-                  <Suspense fallback={<RouteFallback />}>
-                    <Routes>
+const AppShell = () => {
+  const { pathname } = useLocation();
+  const isMinimalHome = pathname === '/' || pathname === '/fa' || pathname === '/en';
+
+  return (
+    <AuthProvider>
+      <div className="flex min-h-screen flex-col">
+        {!isMinimalHome && <Header />}
+        <main className={isMinimalHome ? 'flex-1' : 'min-h-[calc(100vh-5.5rem)] flex-1'}>
+          <ErrorBoundary>
+            <Suspense fallback={<RouteFallback />}>
+              <Routes>
                     <Route path="/" element={<PublicSeoRoute page="home"><Home /></PublicSeoRoute>} />
                     <Route path="/read" element={<PublicSeoRoute page="read"><Read /></PublicSeoRoute>} />
                     <Route path="/fa" element={<LocalizedRoute locale="fa"><PublicSeoRoute page="home"><Home /></PublicSeoRoute></LocalizedRoute>} />
@@ -90,18 +87,29 @@ const App = () => (
                     <Route path="/change-password" element={<SeoGuard><ChangePassword /></SeoGuard>} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </ErrorBoundary>
-              </main>
-                <Footer />
-            </div>
-          </AuthProvider>
-        </BrowserRouter>
-              </TooltipProvider>
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+        {!isMinimalHome && <Footer />}
+      </div>
+    </AuthProvider>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+      <LanguageProvider>
+        <MotionProvider>
+          <TooltipProvider>
+            <DeferredNotifications />
+            <BrowserRouter>
+              <AppShell />
+            </BrowserRouter>
+          </TooltipProvider>
         </MotionProvider>
       </LanguageProvider>
-
     </ThemeProvider>
   </QueryClientProvider>
 );
