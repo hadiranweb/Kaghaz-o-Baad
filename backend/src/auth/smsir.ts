@@ -2,6 +2,13 @@ import { AppEnv } from '../config/env.js';
 
 const SMSIR_VERIFY_URL = 'https://api.sms.ir/v1/send/verify';
 
+function toSmsIrVerifyMobile(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  const national = digits.startsWith('0') ? digits.slice(1) : digits;
+  if (!/^9\d{9}$/.test(national)) throw new SmsProviderError(400, 'invalid_phone');
+  return national;
+}
+
 export class SmsProviderError extends Error {
   constructor(
     public readonly statusCode: number,
@@ -20,6 +27,7 @@ export async function sendSmsIrVerificationCode(input: {
   if (!input.env.SMSIR_API_KEY || !input.env.SMSIR_TEMPLATE_ID) {
     throw new SmsProviderError(503, 'sms_provider_not_configured');
   }
+  const mobile = toSmsIrVerifyMobile(input.phone);
 
   try {
     const response = await fetch(SMSIR_VERIFY_URL, {
@@ -30,7 +38,7 @@ export async function sendSmsIrVerificationCode(input: {
         'X-API-KEY': input.env.SMSIR_API_KEY,
       },
       body: JSON.stringify({
-        mobile: input.phone,
+        mobile,
         templateId: input.env.SMSIR_TEMPLATE_ID,
         parameters: [{ name: input.env.SMSIR_CODE_PARAMETER, value: input.code }],
       }),
